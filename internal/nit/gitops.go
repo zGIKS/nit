@@ -47,27 +47,26 @@ func loadGraphLines() ([]string, error) {
 	return strings.Split(string(out), "\n"), nil
 }
 
-func loadChanges() ([]changeEntry, []string, error) {
+func loadChanges() ([]changeEntry, error) {
 	cmd := exec.Command("git", "status", "--porcelain")
 	out, err := cmd.Output()
 	if err != nil {
-		return nil, []string{"Unable to load changes."}, err
+		return nil, err
 	}
 
-	trimmed := bytes.TrimSpace(out)
+	// Keep leading spaces because porcelain status uses column-aligned codes.
+	trimmed := bytes.TrimRight(out, "\r\n")
 	if len(trimmed) == 0 {
-		return []changeEntry{}, []string{"Working tree clean."}, nil
+		return []changeEntry{}, nil
 	}
 
 	rawLines := strings.Split(string(trimmed), "\n")
 	entries := make([]changeEntry, 0, len(rawLines))
-	lines := make([]string, 0, len(rawLines))
 	for _, raw := range rawLines {
 		e := parseChangeLine(raw)
 		entries = append(entries, e)
-		lines = append(lines, formatChangeLine(e))
 	}
-	return entries, lines, nil
+	return entries, nil
 }
 
 func parseChangeLine(raw string) changeEntry {
@@ -82,18 +81,6 @@ func parseChangeLine(raw string) changeEntry {
 	e.staged = e.x != ' ' && e.x != '?'
 	e.changed = e.y != ' ' || e.x == '?'
 	return e
-}
-
-func formatChangeLine(e changeEntry) string {
-	stagedMark := " "
-	if e.staged {
-		stagedMark = "S"
-	}
-	changedMark := " "
-	if e.changed {
-		changedMark = "M"
-	}
-	return "[" + stagedMark + "][" + changedMark + "] " + e.path
 }
 
 func linesFromOutput(out []byte) []string {

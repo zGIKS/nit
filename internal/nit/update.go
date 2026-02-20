@@ -60,6 +60,7 @@ func (m model) updateBrowse(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 		if m.focus == focusGraph {
 			m.focus = focusChanges
+			m.snapChangesCursorToSelectable(1)
 		} else {
 			m.focus = focusGraph
 		}
@@ -182,6 +183,11 @@ func (m *model) moveCursor(delta int) {
 		return
 	}
 	m.changesCursor += delta
+	if delta >= 0 {
+		m.snapChangesCursorToSelectable(1)
+	} else {
+		m.snapChangesCursorToSelectable(-1)
+	}
 	m.clamp()
 }
 
@@ -193,6 +199,7 @@ func (m *model) moveHome() {
 		return
 	}
 	m.changesCursor = 0
+	m.snapChangesCursorToSelectable(1)
 	m.changesOffset = 0
 	m.clamp()
 }
@@ -204,5 +211,40 @@ func (m *model) moveEnd() {
 		return
 	}
 	m.changesCursor = len(m.changeLines) - 1
+	m.snapChangesCursorToSelectable(-1)
 	m.clamp()
+}
+
+func (m *model) snapChangesCursorToSelectable(dir int) {
+	if len(m.changeRows) == 0 {
+		m.changesCursor = 0
+		return
+	}
+	if m.changesCursor < 0 {
+		m.changesCursor = 0
+	}
+	if m.changesCursor >= len(m.changeRows) {
+		m.changesCursor = len(m.changeRows) - 1
+	}
+	if m.changeRows[m.changesCursor].selectable {
+		return
+	}
+
+	i := m.changesCursor
+	for i >= 0 && i < len(m.changeRows) {
+		if m.changeRows[i].selectable {
+			m.changesCursor = i
+			return
+		}
+		i += dir
+	}
+
+	// Fallback scan from top when no selectable row in chosen direction.
+	for i = 0; i < len(m.changeRows); i++ {
+		if m.changeRows[i].selectable {
+			m.changesCursor = i
+			return
+		}
+	}
+	m.changesCursor = 0
 }

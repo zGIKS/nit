@@ -36,6 +36,13 @@ type changeEntry struct {
 	changed bool
 }
 
+type changeRow struct {
+	text       string
+	selectable bool
+	section    string
+	index      int
+}
+
 type cmdResultMsg struct {
 	title          string
 	output         []string
@@ -77,11 +84,14 @@ type model struct {
 	panel panelMode
 	focus paneFocus
 
-	graphLines    []string
-	outputLines   []string
-	changeEntries []changeEntry
-	changeLines   []string
-	lines         []string
+	graphLines      []string
+	outputLines     []string
+	changeEntries   []changeEntry
+	stagedChanges   []changeEntry
+	unstagedChanges []changeEntry
+	changeRows      []changeRow
+	changeLines     []string
+	lines           []string
 
 	cursor int
 	offset int

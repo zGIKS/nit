@@ -30,7 +30,7 @@ func defaultMenuItems() []action {
 
 func initialModel(keys keyConfig) model {
 	graph, graphErr := loadGraphLines()
-	changes, changeLines, changesErr := loadChanges()
+	changes, changesErr := loadChanges()
 
 	errs := make([]string, 0, 2)
 	if graphErr != nil {
@@ -45,7 +45,6 @@ func initialModel(keys keyConfig) model {
 		panel:         panelGraph,
 		focus:         focusChanges,
 		graphLines:    normalizeLines(graph),
-		changeLines:   normalizeLines(changeLines),
 		changeEntries: changes,
 		outputLines:   []string{"Run an action from the menu to see command output."},
 		height:        24,
@@ -54,6 +53,7 @@ func initialModel(keys keyConfig) model {
 		menuItems:     defaultMenuItems(),
 		keys:          keys,
 	}
+	m.rebuildChangeRows()
 	m.setActiveLines()
 	m.clamp()
 	return m

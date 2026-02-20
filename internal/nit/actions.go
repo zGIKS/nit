@@ -1,6 +1,7 @@
 package nit
 
 import (
+	"fmt"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -100,13 +101,23 @@ func shellQuote(s string) string {
 }
 
 func (m model) selectedChange() (changeEntry, bool) {
-	if len(m.changeEntries) == 0 {
+	if len(m.changeRows) == 0 || m.changesCursor < 0 || m.changesCursor >= len(m.changeRows) {
 		return changeEntry{}, false
 	}
-	if m.changesCursor < 0 || m.changesCursor >= len(m.changeEntries) {
+	row := m.changeRows[m.changesCursor]
+	if !row.selectable {
 		return changeEntry{}, false
 	}
-	return m.changeEntries[m.changesCursor], true
+	if row.section == "staged" {
+		if row.index < 0 || row.index >= len(m.stagedChanges) {
+			return changeEntry{}, false
+		}
+		return m.stagedChanges[row.index], true
+	}
+	if row.index < 0 || row.index >= len(m.unstagedChanges) {
+		return changeEntry{}, false
+	}
+	return m.unstagedChanges[row.index], true
 }
 
 func (m model) runPromptAction(kind, value string) (model, tea.Cmd) {
@@ -154,10 +165,10 @@ func (m *model) setActiveLines() {
 
 func (m *model) refreshGraphAndChanges() {
 	graph, graphErr := loadGraphLines()
-	changes, changeLines, changesErr := loadChanges()
+	changes, changesErr := loadChanges()
 	m.graphLines = normalizeLines(graph)
 	m.changeEntries = changes
-	m.changeLines = normalizeLines(changeLines)
+	m.rebuildChangeRows()
 
 	errs := make([]string, 0, 2)
 	if graphErr != nil {
@@ -168,12 +179,90 @@ func (m *model) refreshGraphAndChanges() {
 	}
 	m.err = strings.Join(errs, " | ")
 
-	if len(m.changeEntries) == 0 {
+	if len(m.changeRows) == 0 {
 		m.changesCursor = 0
 		m.changesOffset = 0
-	} else if m.changesCursor >= len(m.changeEntries) {
-		m.changesCursor = len(m.changeEntries) - 1
+	} else if m.changesCursor >= len(m.changeRows) {
+		m.changesCursor = len(m.changeRows) - 1
 	}
+	m.snapChangesCursorToSelectable(1)
 
 	m.setActiveLines()
+}
+
+func (m *model) rebuildChangeRows() {
+	m.stagedChanges = make([]changeEntry, 0, len(m.changeEntries))
+	m.unstagedChanges = make([]changeEntry, 0, len(m.changeEntries))
+	for _, e := range m.changeEntries {
+		if e.staged {
+			m.stagedChanges = append(m.stagedChanges, e)
+		}
+		if e.changed || !e.staged {
+			m.unstagedChanges = append(m.unstagedChanges, e)
+		}
+	}
+
+	rows := make([]changeRow, 0, len(m.changeEntries)+4)
+	rows = append(rows, changeRow{text: fmt.Sprintf("Staged Changes (%d)", len(m.stagedChanges)), selectable: false})
+	if len(m.stagedChanges) == 0 {
+		rows = append(rows, changeRow{text: "  (empty)", selectable: false})
+	} else {
+		for i, e := range m.stagedChanges {
+			rows = append(rows, changeRow{
+				text:       fmt.Sprintf("  %-2s %s", changeCodeForStaged(e), e.path),
+				selectable: true,
+				section:    "staged",
+				index:      i,
+			})
+		}
+	}
+
+	rows = append(rows, changeRow{text: fmt.Sprintf("Changes (%d)", len(m.unstagedChanges)), selectable: false})
+	if len(m.unstagedChanges) == 0 {
+		rows = append(rows, changeRow{text: "  (empty)", selectable: false})
+	} else {
+		for i, e := range m.unstagedChanges {
+			rows = append(rows, changeRow{
+				text:       fmt.Sprintf("  %-2s %s", changeCodeForUnstaged(e), e.path),
+				selectable: true,
+				section:    "unstaged",
+				index:      i,
+			})
+		}
+	}
+
+	m.changeRows = rows
+	m.changeLines = make([]string, 0, len(rows))
+	for _, r := range rows {
+		m.changeLines = append(m.changeLines, r.text)
+	}
+	if len(m.changeLines) == 0 {
+		m.changeLines = []string{"Working tree clean."}
+	}
+}
+
+func changeCodeForStaged(e changeEntry) string {
+	if e.x == '?' {
+		return "U"
+	}
+	if e.x != ' ' {
+		return string(e.x)
+	}
+	if e.staged {
+		return "M"
+	}
+	return "-"
+}
+
+func changeCodeForUnstaged(e changeEntry) string {
+	if e.x == '?' {
+		return "U"
+	}
+	if e.y != ' ' {
+		return string(e.y)
+	}
+	if !e.staged {
+		return "M"
+	}
+	return "-"
 }
