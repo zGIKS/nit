@@ -22,6 +22,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.status = fmt.Sprintf("%s failed: %v", msg.title, msg.err)
 		} else {
 			m.status = fmt.Sprintf("%s completed", msg.title)
+			if msg.title == "Commit" {
+				m.commitMessage = ""
+			}
 		}
 		if msg.switchToOutput {
 			m.panel = panelOutput
@@ -30,6 +33,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.cursor = 0
 		m.offset = 0
 		m.refreshGraphAndChanges()
+		m.applyPostCommandFocus(msg.title)
 		m.setActiveLines()
 		m.clamp()
 		return m, nil
@@ -48,6 +52,30 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) updateBrowse(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	key := msg.String()
+
+	// In commit focus, prioritize text input over global navigation bindings
+	// so keys like "f" are typed instead of treated as page navigation.
+	if m.panel == panelGraph && m.focus == focusCommit {
+		switch {
+		case hasKey(m.keys.CommitSubmit, key):
+			return m.commitFromInput()
+		case hasKey(m.keys.PromptBackspace, key):
+			if len(m.commitMessage) > 0 {
+				m.commitMessage = m.commitMessage[:len(m.commitMessage)-1]
+			}
+			return m, nil
+		case msg.Type == tea.KeySpace:
+			m.commitMessage += " "
+			return m, nil
+		default:
+			if len(msg.Runes) > 0 {
+				m.commitMessage += string(msg.Runes)
+				return m, nil
+			}
+			return m, nil
+		}
+	}
+
 	switch {
 	case hasKey(m.keys.Quit, key):
 		return m, tea.Quit
@@ -58,11 +86,14 @@ func (m model) updateBrowse(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if m.panel == panelOutput {
 			m.panel = panelGraph
 		}
-		if m.focus == focusGraph {
+		switch m.focus {
+		case focusChanges:
+			m.focus = focusGraph
+		case focusGraph:
+			m.focus = focusCommit
+		default:
 			m.focus = focusChanges
 			m.snapChangesCursorToSelectable(1)
-		} else {
-			m.focus = focusGraph
 		}
 		m.setActiveLines()
 		m.clamp()
@@ -88,12 +119,34 @@ func (m model) updateBrowse(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if m.panel == panelGraph && m.focus == focusChanges {
 			return m.unstageSelected()
 		}
+	case hasKey(m.keys.ToggleSelected, key):
+		if m.panel == panelGraph && m.focus == focusChanges {
+			entry, ok := m.selectedChange()
+			if !ok {
+				return m, nil
+			}
+			if entry.staged {
+				return m.unstageSelected()
+			}
+			return m.stageSelected()
+		}
 	case hasKey(m.keys.StageAll, key):
 		m.status = "Running git add -A..."
 		return m, runCommandWithOutputMode("Stage All", false, "git", "add", "-A")
 	case hasKey(m.keys.UnstageAll, key):
 		m.status = "Running git restore --staged . ..."
 		return m, runShellCommandWithOutputMode("Unstage All", false, "git restore --staged . || git reset HEAD -- .")
+	case hasKey(m.keys.CommitSubmit, key):
+		if m.panel == panelGraph && m.focus == focusCommit {
+			return m.commitFromInput()
+		}
+	case hasKey(m.keys.PromptBackspace, key):
+		if m.panel == panelGraph && m.focus == focusCommit {
+			if len(m.commitMessage) > 0 {
+				m.commitMessage = m.commitMessage[:len(m.commitMessage)-1]
+			}
+			return m, nil
+		}
 	case hasKey(m.keys.Down, key):
 		m.moveCursor(1)
 	case hasKey(m.keys.Up, key):
@@ -177,7 +230,7 @@ func (m model) updatePrompt(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 }
 
 func (m *model) moveCursor(delta int) {
-	if m.panel == panelOutput || m.focus == focusGraph {
+	if m.panel == panelOutput || m.focus == focusGraph || m.focus == focusCommit {
 		m.cursor += delta
 		m.clamp()
 		return
@@ -192,7 +245,7 @@ func (m *model) moveCursor(delta int) {
 }
 
 func (m *model) moveHome() {
-	if m.panel == panelOutput || m.focus == focusGraph {
+	if m.panel == panelOutput || m.focus == focusGraph || m.focus == focusCommit {
 		m.cursor = 0
 		m.offset = 0
 		m.clamp()
@@ -205,7 +258,7 @@ func (m *model) moveHome() {
 }
 
 func (m *model) moveEnd() {
-	if m.panel == panelOutput || m.focus == focusGraph {
+	if m.panel == panelOutput || m.focus == focusGraph || m.focus == focusCommit {
 		m.cursor = len(m.lines) - 1
 		m.clamp()
 		return
@@ -247,4 +300,40 @@ func (m *model) snapChangesCursorToSelectable(dir int) {
 		}
 	}
 	m.changesCursor = 0
+}
+
+func (m *model) applyPostCommandFocus(title string) {
+	if m.panel == panelOutput {
+		return
+	}
+
+	switch title {
+	case "Stage":
+		m.focus = focusChanges
+		if !m.moveToFirstSelectableSection("unstaged") {
+			m.moveToFirstSelectableSection("staged")
+		}
+	case "Stage All":
+		m.focus = focusChanges
+		m.moveToFirstSelectableSection("staged")
+	case "Unstage":
+		m.focus = focusChanges
+		if !m.moveToFirstSelectableSection("staged") {
+			m.moveToFirstSelectableSection("unstaged")
+		}
+	case "Unstage All":
+		m.focus = focusChanges
+		m.moveToFirstSelectableSection("unstaged")
+	}
+}
+
+func (m *model) moveToFirstSelectableSection(section string) bool {
+	for i, row := range m.changeRows {
+		if row.selectable && row.section == section {
+			m.changesCursor = i
+			m.changesOffset = 0
+			return true
+		}
+	}
+	return false
 }

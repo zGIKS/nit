@@ -14,13 +14,14 @@ func defaultKeyConfig() keyConfig {
 		Reload:          keyBinding{Keys: []string{"r"}},
 		Down:            keyBinding{Keys: []string{"down", "j"}},
 		Up:              keyBinding{Keys: []string{"up", "k"}},
-		PageDown:        keyBinding{Keys: []string{"pgdown", "f"}},
-		PageUp:          keyBinding{Keys: []string{"pgup", "b"}},
+		PageDown:        keyBinding{Keys: []string{"pgdown", "ctrl+d"}},
+		PageUp:          keyBinding{Keys: []string{"pgup", "ctrl+u"}},
 		Home:            keyBinding{Keys: []string{"home", "g"}},
 		End:             keyBinding{Keys: []string{"end", "G"}},
-		StageSelected:   keyBinding{Keys: []string{"+"}},
-		UnstageSelected: keyBinding{Keys: []string{"-"}},
-		StageAll:        keyBinding{Keys: []string{"S"}},
+		StageSelected:   keyBinding{Keys: []string{"+", "s"}},
+		UnstageSelected: keyBinding{Keys: []string{"-", "u"}},
+		ToggleSelected:  keyBinding{Keys: []string{"enter", " "}},
+		StageAll:        keyBinding{Keys: []string{"A"}},
 		UnstageAll:      keyBinding{Keys: []string{"U"}},
 		MenuDown:        keyBinding{Keys: []string{"down", "j"}},
 		MenuUp:          keyBinding{Keys: []string{"up", "k"}},
@@ -29,6 +30,7 @@ func defaultKeyConfig() keyConfig {
 		PromptSubmit:    keyBinding{Keys: []string{"enter"}},
 		PromptCancel:    keyBinding{Keys: []string{"esc"}},
 		PromptBackspace: keyBinding{Keys: []string{"backspace", "delete"}},
+		CommitSubmit:    keyBinding{Keys: []string{"ctrl+enter", "ctrl+j"}},
 	}
 }
 
@@ -62,6 +64,7 @@ func loadKeyConfig() (keyConfig, string) {
 	mergeBindings(&cfg.End, user.End)
 	mergeBindings(&cfg.StageSelected, user.StageSelected)
 	mergeBindings(&cfg.UnstageSelected, user.UnstageSelected)
+	mergeBindings(&cfg.ToggleSelected, user.ToggleSelected)
 	mergeBindings(&cfg.StageAll, user.StageAll)
 	mergeBindings(&cfg.UnstageAll, user.UnstageAll)
 	mergeBindings(&cfg.MenuDown, user.MenuDown)
@@ -71,6 +74,7 @@ func loadKeyConfig() (keyConfig, string) {
 	mergeBindings(&cfg.PromptSubmit, user.PromptSubmit)
 	mergeBindings(&cfg.PromptCancel, user.PromptCancel)
 	mergeBindings(&cfg.PromptBackspace, user.PromptBackspace)
+	mergeBindings(&cfg.CommitSubmit, user.CommitSubmit)
 
 	return cfg, ""
 }

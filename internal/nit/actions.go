@@ -64,7 +64,9 @@ func (m model) applyAction(a action) (model, tea.Cmd) {
 		m.startPrompt("checkout", "Checkout to...", "branch/ref")
 		return m, nil
 	case "commit":
-		m.startPrompt("commit", "Commit", "message")
+		m.panel = panelGraph
+		m.focus = focusCommit
+		m.status = "Type commit message and press " + primaryKey(m.keys.CommitSubmit)
 		return m, nil
 	case "clone":
 		m.startPrompt("clone", "Clone", "url [directory]")
@@ -143,6 +145,16 @@ func (m model) runPromptAction(kind, value string) (model, tea.Cmd) {
 	}
 }
 
+func (m model) commitFromInput() (model, tea.Cmd) {
+	msg := strings.TrimSpace(m.commitMessage)
+	if msg == "" {
+		m.status = "Commit message is empty"
+		return m, nil
+	}
+	m.status = "Running git commit -m ..."
+	return m, runCommandWithOutputMode("Commit", false, "git", "commit", "-m", msg)
+}
+
 func (m *model) startPrompt(kind, title, placeholder string) {
 	m.ui = uiPrompt
 	m.promptKind = kind
@@ -158,6 +170,8 @@ func (m *model) setActiveLines() {
 	}
 	if m.focus == focusGraph {
 		m.lines = normalizeLines(m.graphLines)
+	} else if m.focus == focusCommit {
+		m.lines = []string{}
 	} else {
 		m.lines = normalizeLines(m.changeLines)
 	}
@@ -203,10 +217,8 @@ func (m *model) rebuildChangeRows() {
 	}
 
 	rows := make([]changeRow, 0, len(m.changeEntries)+4)
-	rows = append(rows, changeRow{text: fmt.Sprintf("Staged Changes (%d)", len(m.stagedChanges)), selectable: false})
-	if len(m.stagedChanges) == 0 {
-		rows = append(rows, changeRow{text: "  (empty)", selectable: false})
-	} else {
+	if len(m.stagedChanges) > 0 {
+		rows = append(rows, changeRow{text: fmt.Sprintf("Staged Changes (%d)", len(m.stagedChanges)), selectable: false})
 		for i, e := range m.stagedChanges {
 			rows = append(rows, changeRow{
 				text:       fmt.Sprintf("  %-2s %s", changeCodeForStaged(e), e.path),
@@ -217,10 +229,8 @@ func (m *model) rebuildChangeRows() {
 		}
 	}
 
-	rows = append(rows, changeRow{text: fmt.Sprintf("Changes (%d)", len(m.unstagedChanges)), selectable: false})
-	if len(m.unstagedChanges) == 0 {
-		rows = append(rows, changeRow{text: "  (empty)", selectable: false})
-	} else {
+	if len(m.unstagedChanges) > 0 {
+		rows = append(rows, changeRow{text: fmt.Sprintf("Changes (%d)", len(m.unstagedChanges)), selectable: false})
 		for i, e := range m.unstagedChanges {
 			rows = append(rows, changeRow{
 				text:       fmt.Sprintf("  %-2s %s", changeCodeForUnstaged(e), e.path),

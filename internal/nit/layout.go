@@ -13,7 +13,10 @@ func (m *model) clamp() {
 		if m.cursor >= len(m.lines) {
 			m.cursor = len(m.lines) - 1
 		}
-		page := m.pageSize()
+		page := m.outputPageSize()
+		if m.focus == focusGraph && m.panel != panelOutput {
+			page = m.graphPageSize()
+		}
 		if m.cursor < m.offset {
 			m.offset = m.cursor
 		}
@@ -27,6 +30,9 @@ func (m *model) clamp() {
 		if m.offset < 0 {
 			m.offset = 0
 		}
+		return
+	}
+	if m.focus == focusCommit {
 		return
 	}
 
@@ -73,8 +79,8 @@ func (m model) bodyHeight() int {
 }
 
 func (m model) graphPaneHeight() int {
-	h := m.bodyHeight()
-	gh := (h * 2) / 3
+	h := m.bodyHeight() - m.commitPaneHeight()
+	gh := (h * 45) / 100
 	if gh < 4 {
 		gh = 4
 	}
@@ -85,20 +91,28 @@ func (m model) graphPaneHeight() int {
 }
 
 func (m model) changesPaneHeight() int {
-	h := m.bodyHeight()
+	h := m.bodyHeight() - m.commitPaneHeight()
 	ch := h - m.graphPaneHeight()
-	if ch < 3 {
-		return 3
+	if ch < 4 {
+		return 4
 	}
 	return ch
 }
 
-func (m model) pageSize() int {
-	h := m.bodyHeight() - 3
+func (m model) commitPaneHeight() int {
+	return 5
+}
+
+func (m model) outputPageSize() int {
+	h := m.bodyHeight() - 2
 	if h < 1 {
 		return 1
 	}
 	return h
+}
+
+func (m model) pageSize() int {
+	return m.changesPageSize()
 }
 
 func (m model) graphPageSize() int {

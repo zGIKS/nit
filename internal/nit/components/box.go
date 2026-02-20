@@ -2,8 +2,8 @@ package components
 
 import "strings"
 
-func BoxView(title string, width, boxHeight int, lines []string, cursor, offset int, active bool) string {
-	w := max(30, width)
+func BoxView(title string, width, boxHeight int, lines []string, cursor, offset int, active bool, footer string) string {
+	w := max(40, width)
 	innerW := w - 2
 	if innerW < 1 {
 		innerW = 1
@@ -13,12 +13,11 @@ func BoxView(title string, width, boxHeight int, lines []string, cursor, offset 
 		contentHeight = 1
 	}
 
-	label := title
+	head := title
 	if active {
-		label += " *"
+		head = "* " + head
 	}
-	top := "+" + fitText(label, innerW, '-') + "+"
-	bottom := "+" + strings.Repeat("-", innerW) + "+"
+	top := "+" + fitText("- "+head+" ", innerW, '-') + "+"
 
 	var b strings.Builder
 	b.WriteString(top + "\n")
@@ -41,10 +40,11 @@ func BoxView(title string, width, boxHeight int, lines []string, cursor, offset 
 			}
 			text = prefix + lines[idx]
 		}
-		text = fitText(text, innerW, ' ')
-		b.WriteString("|" + text + "|\n")
+		text = fitText(text, innerW-2, ' ')
+		b.WriteString("| " + text + " |\n")
 	}
 
+	bottom := "+" + fitText(" "+footer+" ", innerW, '-') + "+"
 	b.WriteString(bottom)
 	return b.String()
 }

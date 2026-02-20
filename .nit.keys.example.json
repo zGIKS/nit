@@ -6,13 +6,14 @@
   "quit": { "keys": ["ctrl+c", "q"] },
   "down": { "keys": ["down", "j"] },
   "up": { "keys": ["up", "k"] },
-  "page_down": { "keys": ["pgdown", "f"] },
-  "page_up": { "keys": ["pgup", "b"] },
+  "page_down": { "keys": ["pgdown", "ctrl+d"] },
+  "page_up": { "keys": ["pgup", "ctrl+u"] },
   "home": { "keys": ["home", "g"] },
   "end": { "keys": ["end", "G"] },
-  "stage_selected": { "keys": ["+"] },
-  "unstage_selected": { "keys": ["-"] },
-  "stage_all": { "keys": ["S"] },
+  "stage_selected": { "keys": ["+", "s"] },
+  "unstage_selected": { "keys": ["-", "u"] },
+  "toggle_selected": { "keys": ["enter", " "] },
+  "stage_all": { "keys": ["A"] },
   "unstage_all": { "keys": ["U"] },
   "menu_down": { "keys": ["down", "j"] },
   "menu_up": { "keys": ["up", "k"] },
@@ -20,5 +21,6 @@
   "menu_close": { "keys": ["esc", "q"] },
   "prompt_submit": { "keys": ["enter"] },
   "prompt_cancel": { "keys": ["esc"] },
-  "prompt_backspace": { "keys": ["backspace", "delete"] }
+  "prompt_backspace": { "keys": ["backspace", "delete"] },
+  "commit_submit": { "keys": ["ctrl+enter", "ctrl+j"] }
 }

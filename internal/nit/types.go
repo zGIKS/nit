@@ -20,6 +20,7 @@ const (
 const (
 	focusGraph paneFocus = iota
 	focusChanges
+	focusCommit
 )
 
 type action struct {
@@ -68,6 +69,7 @@ type keyConfig struct {
 	End             keyBinding `json:"end"`
 	StageSelected   keyBinding `json:"stage_selected"`
 	UnstageSelected keyBinding `json:"unstage_selected"`
+	ToggleSelected  keyBinding `json:"toggle_selected"`
 	StageAll        keyBinding `json:"stage_all"`
 	UnstageAll      keyBinding `json:"unstage_all"`
 	MenuDown        keyBinding `json:"menu_down"`
@@ -77,6 +79,7 @@ type keyConfig struct {
 	PromptSubmit    keyBinding `json:"prompt_submit"`
 	PromptCancel    keyBinding `json:"prompt_cancel"`
 	PromptBackspace keyBinding `json:"prompt_backspace"`
+	CommitSubmit    keyBinding `json:"commit_submit"`
 }
 
 type model struct {
@@ -111,6 +114,7 @@ type model struct {
 	promptPlaceholder string
 	promptValue       string
 	promptKind        string
+	commitMessage     string
 
 	keys keyConfig
 }
