@@ -4,35 +4,7 @@ import (
 	"bytes"
 	"os/exec"
 	"strings"
-
-	tea "github.com/charmbracelet/bubbletea"
 )
-
-func runCommand(title string, name string, args ...string) tea.Cmd {
-	return runCommandWithOutputMode(title, true, name, args...)
-}
-
-func runCommandWithOutputMode(title string, switchToOutput bool, name string, args ...string) tea.Cmd {
-	return func() tea.Msg {
-		cmd := exec.Command(name, args...)
-		out, err := cmd.CombinedOutput()
-		lines := linesFromOutput(out)
-		return cmdResultMsg{title: title, output: lines, err: err, switchToOutput: switchToOutput}
-	}
-}
-
-func runShellCommand(title, command string) tea.Cmd {
-	return runShellCommandWithOutputMode(title, true, command)
-}
-
-func runShellCommandWithOutputMode(title string, switchToOutput bool, command string) tea.Cmd {
-	return func() tea.Msg {
-		cmd := exec.Command("bash", "-lc", command)
-		out, err := cmd.CombinedOutput()
-		lines := linesFromOutput(out)
-		return cmdResultMsg{title: title, output: lines, err: err, switchToOutput: switchToOutput}
-	}
-}
 
 func loadGraphLines() ([]string, error) {
 	cmd := exec.Command("git", "log", "--graph", "--decorate", "--oneline", "--all")
@@ -53,8 +25,6 @@ func loadChanges() ([]changeEntry, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// Keep leading spaces because porcelain status uses column-aligned codes.
 	trimmed := bytes.TrimRight(out, "\r\n")
 	if len(trimmed) == 0 {
 		return []changeEntry{}, nil
@@ -83,10 +53,26 @@ func parseChangeLine(raw string) changeEntry {
 	return e
 }
 
-func linesFromOutput(out []byte) []string {
-	trimmed := bytes.TrimSpace(out)
-	if len(trimmed) == 0 {
-		return []string{"(no output)"}
+func stagePath(path string) error {
+	cmd := exec.Command("git", "add", "--", path)
+	return cmd.Run()
+}
+
+func unstagePath(path string) error {
+	// Prefer restore; fallback to reset for older git versions.
+	if err := exec.Command("git", "restore", "--staged", "--", path).Run(); err == nil {
+		return nil
 	}
-	return strings.Split(string(trimmed), "\n")
+	return exec.Command("git", "reset", "HEAD", "--", path).Run()
+}
+
+func stageAll() error {
+	return exec.Command("git", "add", "-A").Run()
+}
+
+func unstageAll() error {
+	if err := exec.Command("git", "restore", "--staged", ".").Run(); err == nil {
+		return nil
+	}
+	return exec.Command("git", "reset", "HEAD", "--", ".").Run()
 }

@@ -15,9 +15,9 @@ func BoxView(title string, width, boxHeight int, lines []string, cursor, offset 
 
 	head := title
 	if active {
-		head = "* " + head
+		head = "● " + head
 	}
-	top := "+" + fitText("- "+head+" ", innerW, '-') + "+"
+	top := "┌" + fitText(" "+head+" ", innerW, '─') + "┐"
 
 	var b strings.Builder
 	b.WriteString(top + "\n")
@@ -36,15 +36,15 @@ func BoxView(title string, width, boxHeight int, lines []string, cursor, offset 
 		if idx < end {
 			prefix := "  "
 			if idx == cursor {
-				prefix = "> "
+				prefix = "▌ "
 			}
 			text = prefix + lines[idx]
 		}
 		text = fitText(text, innerW-2, ' ')
-		b.WriteString("| " + text + " |\n")
+		b.WriteString("│ " + text + " │\n")
 	}
 
-	bottom := "+" + fitText(" "+footer+" ", innerW, '-') + "+"
+	bottom := "└" + fitText(" "+footer+" ", innerW, '─') + "┘"
 	b.WriteString(bottom)
 	return b.String()
 }

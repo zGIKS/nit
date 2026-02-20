@@ -1,60 +1,129 @@
 package nit
 
-import (
-	"fmt"
-	"strings"
-)
-
-func defaultMenuItems() []action {
-	return []action{
-		{label: "View Graph + Changes", kind: "view_graph"},
-		{label: "Show Git Output", kind: "show_output"},
-		{label: "Stage Selected", kind: "stage_selected"},
-		{label: "Unstage Selected", kind: "unstage_selected"},
-		{label: "Stage All", kind: "stage_all"},
-		{label: "Unstage All", kind: "unstage_all"},
-		{label: "Pull", kind: "pull"},
-		{label: "Push", kind: "push"},
-		{label: "Clone", kind: "clone"},
-		{label: "Checkout to...", kind: "checkout"},
-		{label: "Fetch", kind: "fetch"},
-		{label: "Commit", kind: "commit"},
-		{label: "Changes (status)", kind: "changes"},
-		{label: "Pull, Push", kind: "pull_push"},
-		{label: "Branch", kind: "branch"},
-		{label: "Remote", kind: "remote"},
-		{label: "Stash", kind: "stash"},
-		{label: "Tags", kind: "tags"},
-	}
-}
-
 func initialModel(keys keyConfig) model {
-	graph, graphErr := loadGraphLines()
-	changes, changesErr := loadChanges()
-
-	errs := make([]string, 0, 2)
-	if graphErr != nil {
-		errs = append(errs, fmt.Sprintf("graph error: %v", graphErr))
-	}
-	if changesErr != nil {
-		errs = append(errs, fmt.Sprintf("changes error: %v", changesErr))
-	}
+	graph, _ := loadGraphLines()
+	changes, _ := loadChanges()
 
 	m := model{
-		ui:            uiBrowse,
-		panel:         panelGraph,
 		focus:         focusChanges,
 		graphLines:    normalizeLines(graph),
 		changeEntries: changes,
-		outputLines:   []string{"Run an action from the menu to see command output."},
 		height:        24,
-		err:           strings.Join(errs, " | "),
-		status:        "Ready",
-		menuItems:     defaultMenuItems(),
 		keys:          keys,
 	}
 	m.rebuildChangeRows()
-	m.setActiveLines()
+	m.snapChangesCursorToSelectable(1)
 	m.clamp()
 	return m
+}
+
+func (m *model) refreshData() {
+	graph, _ := loadGraphLines()
+	changes, _ := loadChanges()
+	m.graphLines = normalizeLines(graph)
+	m.changeEntries = changes
+	m.rebuildChangeRows()
+}
+
+func (m *model) rebuildChangeRows() {
+	m.stagedChanges = make([]changeEntry, 0, len(m.changeEntries))
+	m.unstagedChanges = make([]changeEntry, 0, len(m.changeEntries))
+	for _, e := range m.changeEntries {
+		if e.staged {
+			m.stagedChanges = append(m.stagedChanges, e)
+		}
+		if e.changed || !e.staged {
+			m.unstagedChanges = append(m.unstagedChanges, e)
+		}
+	}
+
+	rows := make([]changeRow, 0, len(m.changeEntries)+4)
+	if len(m.stagedChanges) > 0 {
+		rows = append(rows, changeRow{text: "Staged Changes"})
+		for i, e := range m.stagedChanges {
+			rows = append(rows, changeRow{
+				text:       "  " + changeCodeForStaged(e) + "  " + e.path,
+				selectable: true,
+				section:    "staged",
+				index:      i,
+			})
+		}
+	}
+	if len(m.unstagedChanges) > 0 {
+		rows = append(rows, changeRow{text: "Changes"})
+		for i, e := range m.unstagedChanges {
+			rows = append(rows, changeRow{
+				text:       "  " + changeCodeForUnstaged(e) + "  " + e.path,
+				selectable: true,
+				section:    "unstaged",
+				index:      i,
+			})
+		}
+	}
+
+	m.changeRows = rows
+	m.changeLines = make([]string, 0, len(rows))
+	for _, r := range rows {
+		m.changeLines = append(m.changeLines, r.text)
+	}
+	if len(m.changeLines) == 0 {
+		m.changeLines = []string{"Working tree clean."}
+	}
+}
+
+func changeCodeForStaged(e changeEntry) string {
+	if e.x == '?' {
+		return "U"
+	}
+	if e.x != ' ' {
+		return string(e.x)
+	}
+	if e.staged {
+		return "M"
+	}
+	return "-"
+}
+
+func changeCodeForUnstaged(e changeEntry) string {
+	if e.x == '?' {
+		return "U"
+	}
+	if e.y != ' ' {
+		return string(e.y)
+	}
+	if !e.staged {
+		return "M"
+	}
+	return "-"
+}
+
+func (m model) selectedChange() (changeEntry, bool) {
+	if len(m.changeRows) == 0 || m.changesCursor < 0 || m.changesCursor >= len(m.changeRows) {
+		return changeEntry{}, false
+	}
+	row := m.changeRows[m.changesCursor]
+	if !row.selectable {
+		return changeEntry{}, false
+	}
+	if row.section == "staged" {
+		if row.index < 0 || row.index >= len(m.stagedChanges) {
+			return changeEntry{}, false
+		}
+		return m.stagedChanges[row.index], true
+	}
+	if row.index < 0 || row.index >= len(m.unstagedChanges) {
+		return changeEntry{}, false
+	}
+	return m.unstagedChanges[row.index], true
+}
+
+func (m *model) moveToFirstSelectableSection(section string) bool {
+	for i, row := range m.changeRows {
+		if row.selectable && row.section == section {
+			m.changesCursor = i
+			m.changesOffset = 0
+			return true
+		}
+	}
+	return false
 }

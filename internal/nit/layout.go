@@ -1,8 +1,8 @@
 package nit
 
 func (m *model) clamp() {
-	if m.panel == panelOutput || m.focus == focusGraph {
-		if len(m.lines) == 0 {
+	if m.focus == focusGraph {
+		if len(m.graphLines) == 0 {
 			m.cursor = 0
 			m.offset = 0
 			return
@@ -10,29 +10,23 @@ func (m *model) clamp() {
 		if m.cursor < 0 {
 			m.cursor = 0
 		}
-		if m.cursor >= len(m.lines) {
-			m.cursor = len(m.lines) - 1
+		if m.cursor >= len(m.graphLines) {
+			m.cursor = len(m.graphLines) - 1
 		}
-		page := m.outputPageSize()
-		if m.focus == focusGraph && m.panel != panelOutput {
-			page = m.graphPageSize()
-		}
+		page := m.graphPageSize()
 		if m.cursor < m.offset {
 			m.offset = m.cursor
 		}
 		if m.cursor >= m.offset+page {
 			m.offset = m.cursor - page + 1
 		}
-		maxOffset := max(0, len(m.lines)-page)
+		maxOffset := max(0, len(m.graphLines)-page)
 		if m.offset > maxOffset {
 			m.offset = maxOffset
 		}
 		if m.offset < 0 {
 			m.offset = 0
 		}
-		return
-	}
-	if m.focus == focusCommit {
 		return
 	}
 
@@ -64,14 +58,7 @@ func (m *model) clamp() {
 }
 
 func (m model) bodyHeight() int {
-	used := 3
-	if m.status != "" {
-		used++
-	}
-	if m.err != "" {
-		used++
-	}
-	h := m.height - used
+	h := m.height
 	if h < 6 {
 		return 6
 	}
@@ -79,40 +66,24 @@ func (m model) bodyHeight() int {
 }
 
 func (m model) graphPaneHeight() int {
-	h := m.bodyHeight() - m.commitPaneHeight()
+	h := m.bodyHeight()
 	gh := (h * 45) / 100
 	if gh < 4 {
 		gh = 4
 	}
-	if gh > h-3 {
-		gh = h - 3
+	if gh > h-4 {
+		gh = h - 4
 	}
 	return gh
 }
 
 func (m model) changesPaneHeight() int {
-	h := m.bodyHeight() - m.commitPaneHeight()
+	h := m.bodyHeight()
 	ch := h - m.graphPaneHeight()
 	if ch < 4 {
 		return 4
 	}
 	return ch
-}
-
-func (m model) commitPaneHeight() int {
-	return 5
-}
-
-func (m model) outputPageSize() int {
-	h := m.bodyHeight() - 2
-	if h < 1 {
-		return 1
-	}
-	return h
-}
-
-func (m model) pageSize() int {
-	return m.changesPageSize()
 }
 
 func (m model) graphPageSize() int {
