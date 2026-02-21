@@ -14,6 +14,14 @@ type model struct {
 	git   g.Service
 }
 
+type pollMsg struct{}
+
+const pollInterval = 700 * time.Millisecond
+
+func schedulePoll() tea.Cmd {
+	return tea.Tick(pollInterval, func(time.Time) tea.Msg { return pollMsg{} })
+}
+
 func newModel() model {
 	keys, keyErr := app.LoadKeymap()
 	state := app.New(keys)
@@ -39,7 +47,7 @@ func newModel() model {
 	return model{state: state, git: svc}
 }
 
-func (m model) Init() tea.Cmd { return nil }
+func (m model) Init() tea.Cmd { return schedulePoll() }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -49,6 +57,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.state.SetViewport(msg.Width, msg.Height)
 		return m, nil
+	case pollMsg:
+		changes, err := m.git.LoadChanges()
+		if err != nil {
+			m.state.SetError(err.Error())
+		} else {
+			m.state.SetError("")
+			if !sameChanges(m.state.Changes.Entries, changes) {
+				m.state.SetChanges(changes)
+			}
+		}
+		m.state.Clamp()
+		return m, schedulePoll()
 	case tea.KeyMsg:
 		action := m.state.Keys.Match(msg.String())
 		result := m.state.Apply(action)
@@ -77,6 +97,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	return m, nil
+}
+
+func sameChanges(a, b []g.ChangeEntry) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i].Raw != b[i].Raw {
+			return false
+		}
+	}
+	return true
 }
 
 func (m *model) execOp(op app.Operation) error {
