@@ -10,8 +10,9 @@ import (
 )
 
 type model struct {
-	state app.AppState
-	git   g.Service
+	state   app.AppState
+	git     g.Service
+	clipCfg clipboardConfig
 }
 
 type pollMsg struct{}
@@ -44,7 +45,11 @@ func newModel() model {
 	state.SetChanges(changes)
 	state.Clamp()
 
-	return model{state: state, git: svc}
+	return model{
+		state:   state,
+		git:     svc,
+		clipCfg: loadClipboardConfig(),
+	}
 }
 
 func (m model) Init() tea.Cmd { return schedulePoll() }
@@ -92,6 +97,30 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.state.SetChanges(changes)
 					}
 				}
+				if result.RefreshGraph {
+					graph, err := m.git.LoadGraph()
+					if err != nil {
+						m.state.SetError(err.Error())
+					} else {
+						m.state.SetError("")
+						m.state.SetGraph(graph)
+					}
+				}
+				m.state.Clamp()
+				return m, nil
+			case tea.KeyEsc:
+				m.state.ExitCommandFocus()
+				m.state.Clamp()
+				return m, nil
+			case tea.KeyCtrlC:
+				selected := m.state.SelectedCommandText()
+				if selected == "" {
+					m.state.Clamp()
+					return m, nil
+				}
+				m.state.SetCommandClipboard(selected)
+				_ = copyWithMode(m.clipCfg, selected)
+				m.state.SetError("")
 				m.state.Clamp()
 				return m, nil
 			case tea.KeyBackspace:
@@ -110,12 +139,41 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.state.MoveCommandCursorRight()
 				m.state.Clamp()
 				return m, nil
-			case tea.KeyHome, tea.KeyCtrlA:
+			case tea.KeyHome:
 				m.state.MoveCommandCursorToStart()
 				m.state.Clamp()
 				return m, nil
 			case tea.KeyEnd, tea.KeyCtrlE:
 				m.state.MoveCommandCursorToEnd()
+				m.state.Clamp()
+				return m, nil
+			case tea.KeyCtrlA:
+				m.state.SelectAllCommandText()
+				m.state.Clamp()
+				return m, nil
+			case tea.KeyCtrlX:
+				selected := m.state.SelectedCommandText()
+				if selected == "" {
+					m.state.Clamp()
+					return m, nil
+				}
+				m.state.SetCommandClipboard(selected)
+				_ = copyWithMode(m.clipCfg, selected)
+				m.state.DeleteCommandSelection()
+				m.state.SetError("")
+				m.state.Clamp()
+				return m, nil
+			case tea.KeyCtrlV:
+				pasted, err := pasteWithMode(m.clipCfg)
+				if err != nil || pasted == "" {
+					pasted = m.state.CommandClipboard()
+				}
+				if pasted == "" {
+					m.state.Clamp()
+					return m, nil
+				}
+				m.state.AppendCommandText(pasted)
+				m.state.SetError("")
 				m.state.Clamp()
 				return m, nil
 			case tea.KeySpace:
@@ -128,11 +186,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 			action := m.state.Keys.Match(msg.String())
-			if action == app.ActionQuit || action == app.ActionTogglePanel {
-				result := m.state.Apply(action)
-				if result.Quit {
-					return m, tea.Quit
-				}
+			if action == app.ActionQuit && msg.String() != "ctrl+c" {
+				return m, tea.Quit
+			}
+			if action == app.ActionTogglePanel {
+				m.state.Apply(action)
 			}
 			m.state.Clamp()
 			return m, nil
@@ -159,6 +217,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				m.state.SetError("")
 				m.state.SetChanges(changes)
+			}
+		}
+		if result.RefreshGraph {
+			graph, err := m.git.LoadGraph()
+			if err != nil {
+				m.state.SetError(err.Error())
+			} else {
+				m.state.SetError("")
+				m.state.SetGraph(graph)
 			}
 		}
 		m.state.Clamp()

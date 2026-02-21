@@ -44,8 +44,11 @@ type GraphState struct {
 }
 
 type CommandState struct {
-	Input  string
-	Cursor int
+	Input       string
+	Cursor      int
+	SelectAll   bool
+	Clipboard   string
+	ReturnFocus FocusState
 }
 
 type Viewport struct {
@@ -66,6 +69,9 @@ type AppState struct {
 func New(keys input.Keymap) AppState {
 	return AppState{
 		Focus: FocusChanges,
+		Command: CommandState{
+			ReturnFocus: FocusChanges,
+		},
 		Changes: ChangesState{
 			StickySection: SectionUnstaged,
 		},

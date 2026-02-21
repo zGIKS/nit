@@ -36,4 +36,5 @@ type ApplyResult struct {
 	Quit           bool
 	Operations     []Operation
 	RefreshChanges bool
+	RefreshGraph   bool
 }

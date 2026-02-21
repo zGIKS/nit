@@ -11,7 +11,11 @@ func (s *AppState) Apply(action actions.Action) actions.ApplyResult {
 	case actions.ActionQuit:
 		res.Quit = true
 	case actions.ActionFocusCommand:
+		if s.Focus != FocusCommand {
+			s.Command.ReturnFocus = s.Focus
+		}
 		s.Focus = FocusCommand
+		s.Command.SelectAll = false
 		s.MoveCommandCursorToEnd()
 	case actions.ActionTogglePanel:
 		switch s.Focus {
@@ -21,6 +25,7 @@ func (s *AppState) Apply(action actions.Action) actions.ApplyResult {
 		case FocusChanges:
 			s.Focus = FocusGraph
 		default:
+			s.Command.ReturnFocus = FocusGraph
 			s.Focus = FocusCommand
 		}
 	case actions.ActionMoveDown:
@@ -35,8 +40,10 @@ func (s *AppState) Apply(action actions.Action) actions.ApplyResult {
 			}
 			res.Operations = []actions.Operation{{Kind: actions.OpCommit, Message: msg}}
 			res.RefreshChanges = true
+			res.RefreshGraph = true
 			s.Command.Input = ""
 			s.Command.Cursor = 0
+			s.Command.SelectAll = false
 			break
 		}
 		if s.Focus != FocusChanges {
@@ -68,6 +75,7 @@ func (s *AppState) Apply(action actions.Action) actions.ApplyResult {
 		}
 	case actions.ActionPush:
 		res.Operations = []actions.Operation{{Kind: actions.OpPush}}
+		res.RefreshGraph = true
 	}
 	s.Clamp()
 	return res
