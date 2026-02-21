@@ -35,7 +35,7 @@ func Render(state app.AppState) string {
 		0,
 		0,
 		commandActive,
-		"mode:"+state.ClipboardMode,
+		"",
 	)
 	changes := BoxView(
 		"Changes",

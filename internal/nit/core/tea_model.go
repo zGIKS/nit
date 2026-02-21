@@ -88,7 +88,6 @@ func newModel() model {
 	cfg, cfgWarn := config.Load()
 	keys, keyErr := app.LoadKeymap(cfg.Keys)
 	state := app.New(keys)
-	state.ClipboardMode = string(cfg.Clipboard.Mode)
 	state.SetGraph([]string{"Loading graph..."})
 	state.SetChanges(nil)
 	if keyErr != "" {

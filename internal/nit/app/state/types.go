@@ -63,7 +63,6 @@ type AppState struct {
 	Graph         GraphState
 	Viewport      Viewport
 	Keys          input.Keymap
-	ClipboardMode string
 	LastErr       string
 }
 
