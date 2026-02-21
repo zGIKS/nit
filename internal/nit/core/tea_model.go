@@ -33,6 +33,7 @@ type opDoneMsg struct {
 	err            error
 	refreshChanges bool
 	refreshGraph   bool
+	command        string
 }
 
 const pollInterval = 700 * time.Millisecond
@@ -57,15 +58,15 @@ func loadGraphCmd(svc g.Service) tea.Cmd {
 
 func execOpCmd(svc g.Service, op app.Operation, refreshChanges, refreshGraph bool) tea.Cmd {
 	return func() tea.Msg {
-		err := execOperation(svc, op)
+		cmd, err := execOperation(svc, op)
 		if err != nil {
-			return opDoneMsg{err: err}
+			return opDoneMsg{err: err, command: cmd}
 		}
-		return opDoneMsg{refreshChanges: refreshChanges, refreshGraph: refreshGraph}
+		return opDoneMsg{refreshChanges: refreshChanges, refreshGraph: refreshGraph, command: cmd}
 	}
 }
 
-func execOperation(svc g.Service, op app.Operation) error {
+func execOperation(svc g.Service, op app.Operation) (string, error) {
 	switch op.Kind {
 	case app.OpStagePath:
 		return svc.StagePath(op.Path)
@@ -80,7 +81,7 @@ func execOperation(svc g.Service, op app.Operation) error {
 	case app.OpPush:
 		return svc.Push()
 	default:
-		return nil
+		return "", nil
 	}
 }
 
@@ -169,6 +170,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case opDoneMsg:
+		if msg.command != "" {
+			m.state.AddCommandLog(msg.command)
+		}
 		if msg.err != nil {
 			m.state.SetError(msg.err.Error())
 			m.state.Clamp()

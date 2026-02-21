@@ -61,6 +61,7 @@ type AppState struct {
 	Command       CommandState
 	Changes       ChangesState
 	Graph         GraphState
+	CommandLog    []string
 	Viewport      Viewport
 	Keys          input.Keymap
 	LastErr       string

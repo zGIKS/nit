@@ -175,6 +175,13 @@ func (s AppState) CommandClipboard() string {
 	return s.Command.Clipboard
 }
 
+func (s *AppState) AddCommandLog(cmd string) {
+	s.CommandLog = append(s.CommandLog, cmd)
+	if len(s.CommandLog) > 100 {
+		s.CommandLog = s.CommandLog[len(s.CommandLog)-100:]
+	}
+}
+
 func (s *AppState) DeleteCommandSelection() {
 	if !s.Command.SelectAll {
 		return

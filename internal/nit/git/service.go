@@ -14,7 +14,7 @@ func NewService(r Runner) Service {
 }
 
 func (s Service) LoadGraph() ([]string, error) {
-	out, err := s.runner.Run("log", "--graph", "--decorate", "--oneline", "--all")
+	out, _, err := s.runner.Run("log", "--graph", "--decorate", "--oneline", "--all")
 	if err != nil {
 		return []string{"Not a git repo or no commits yet."}, err
 	}
@@ -25,7 +25,7 @@ func (s Service) LoadGraph() ([]string, error) {
 }
 
 func (s Service) LoadChanges() ([]ChangeEntry, error) {
-	out, err := s.runner.Run("status", "--porcelain")
+	out, _, err := s.runner.Run("status", "--porcelain")
 	if err != nil {
 		return nil, err
 	}
@@ -42,42 +42,42 @@ func (s Service) LoadChanges() ([]ChangeEntry, error) {
 	return entries, nil
 }
 
-func (s Service) StagePath(path string) error {
-	_, err := s.runner.Run("add", "--", path)
-	return err
+func (s Service) StagePath(path string) (string, error) {
+	_, cmd, err := s.runner.Run("add", "--", path)
+	return cmd, err
 }
 
-func (s Service) UnstagePath(path string) error {
-	if _, err := s.runner.Run("restore", "--staged", "--", path); err == nil {
-		return nil
+func (s Service) UnstagePath(path string) (string, error) {
+	if _, cmd, err := s.runner.Run("restore", "--staged", "--", path); err == nil {
+		return cmd, nil
 	}
-	_, err := s.runner.Run("reset", "HEAD", "--", path)
-	return err
+	_, cmd, err := s.runner.Run("reset", "HEAD", "--", path)
+	return cmd, err
 }
 
-func (s Service) StageAll() error {
-	_, err := s.runner.Run("add", "-A")
-	return err
+func (s Service) StageAll() (string, error) {
+	_, cmd, err := s.runner.Run("add", "-A")
+	return cmd, err
 }
 
-func (s Service) UnstageAll() error {
-	if _, err := s.runner.Run("restore", "--staged", "."); err == nil {
-		return nil
+func (s Service) UnstageAll() (string, error) {
+	if _, cmd, err := s.runner.Run("restore", "--staged", "."); err == nil {
+		return cmd, nil
 	}
-	_, err := s.runner.Run("reset", "HEAD", "--", ".")
-	return err
+	_, cmd, err := s.runner.Run("reset", "HEAD", "--", ".")
+	return cmd, err
 }
 
-func (s Service) Commit(message string) error {
+func (s Service) Commit(message string) (string, error) {
 	msg := strings.TrimSpace(message)
 	if msg == "" {
-		return errors.New("commit message is empty")
+		return "", errors.New("commit message is empty")
 	}
-	_, err := s.runner.Run("commit", "-m", msg)
-	return err
+	_, cmd, err := s.runner.Run("commit", "-m", msg)
+	return cmd, err
 }
 
-func (s Service) Push() error {
-	_, err := s.runner.Run("push")
-	return err
+func (s Service) Push() (string, error) {
+	_, cmd, err := s.runner.Run("push")
+	return cmd, err
 }

@@ -57,6 +57,16 @@ func Render(state app.AppState) string {
 		graphActive,
 		fmt.Sprintf("%d of %d", graphSel, graphTotal),
 	)
+	commandLog := BoxView(
+		"Command Log",
+		state.Viewport.Width,
+		state.CommandLogPaneHeight(),
+		state.CommandLog,
+		len(state.CommandLog)-1,
+		max(0, len(state.CommandLog)-(state.CommandLogPaneHeight()-2)),
+		false,
+		"",
+	)
 
 	if state.LastErr != "" {
 		err := BoxView(
@@ -69,8 +79,8 @@ func Render(state app.AppState) string {
 			true,
 			"diagnostics",
 		)
-		return command + "\n" + changes + "\n" + graph + "\n" + err
+		return command + "\n" + changes + "\n" + graph + "\n" + commandLog + "\n" + err
 	}
 
-	return command + "\n" + changes + "\n" + graph
+	return command + "\n" + changes + "\n" + graph + "\n" + commandLog
 }

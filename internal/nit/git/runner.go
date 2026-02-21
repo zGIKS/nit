@@ -20,10 +20,11 @@ func NewRunner(timeout time.Duration) Runner {
 	return Runner{Timeout: timeout}
 }
 
-func (r Runner) Run(args ...string) (string, error) {
+func (r Runner) Run(args ...string) (string, string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), r.Timeout)
 	defer cancel()
 
+	cmdStr := "git " + strings.Join(args, " ")
 	cmd := exec.CommandContext(ctx, "git", args...)
 	var out bytes.Buffer
 	var errBuf bytes.Buffer
@@ -34,13 +35,13 @@ func (r Runner) Run(args ...string) (string, error) {
 	stdout := strings.TrimRight(out.String(), "\r\n")
 	stderr := strings.TrimSpace(errBuf.String())
 	if err == nil {
-		return stdout, nil
+		return stdout, cmdStr, nil
 	}
 	if ctx.Err() == context.DeadlineExceeded {
-		return stdout, fmt.Errorf("git %s timeout after %s", strings.Join(args, " "), r.Timeout)
+		return stdout, cmdStr, fmt.Errorf("git %s timeout after %s", strings.Join(args, " "), r.Timeout)
 	}
 	if stderr != "" {
-		return stdout, fmt.Errorf("git %s failed: %s", strings.Join(args, " "), stderr)
+		return stdout, cmdStr, fmt.Errorf("git %s failed: %s", strings.Join(args, " "), stderr)
 	}
-	return stdout, fmt.Errorf("git %s failed: %w", strings.Join(args, " "), err)
+	return stdout, cmdStr, fmt.Errorf("git %s failed: %w", strings.Join(args, " "), err)
 }
