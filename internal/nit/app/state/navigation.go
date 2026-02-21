@@ -10,18 +10,35 @@ func (s *AppState) Apply(action actions.Action) actions.ApplyResult {
 	switch action {
 	case actions.ActionQuit:
 		res.Quit = true
+	case actions.ActionFocusCommand:
+		s.Focus = FocusCommand
+		s.MoveCommandCursorToEnd()
 	case actions.ActionTogglePanel:
-		if s.Focus == FocusChanges {
-			s.Focus = FocusGraph
-		} else {
+		switch s.Focus {
+		case FocusCommand:
 			s.Focus = FocusChanges
 			s.snapChangesCursor(1)
+		case FocusChanges:
+			s.Focus = FocusGraph
+		default:
+			s.Focus = FocusCommand
 		}
 	case actions.ActionMoveDown:
 		s.moveCursor(1)
 	case actions.ActionMoveUp:
 		s.moveCursor(-1)
 	case actions.ActionToggleOne:
+		if s.Focus == FocusCommand {
+			msg := s.Command.Input
+			if msg == "" {
+				break
+			}
+			res.Operations = []actions.Operation{{Kind: actions.OpCommit, Message: msg}}
+			res.RefreshChanges = true
+			s.Command.Input = ""
+			s.Command.Cursor = 0
+			break
+		}
 		if s.Focus != FocusChanges {
 			break
 		}
@@ -49,6 +66,8 @@ func (s *AppState) Apply(action actions.Action) actions.ApplyResult {
 			res.Operations = []actions.Operation{{Kind: actions.OpUnstageAll}}
 			res.RefreshChanges = true
 		}
+	case actions.ActionPush:
+		res.Operations = []actions.Operation{{Kind: actions.OpPush}}
 	}
 	s.Clamp()
 	return res
@@ -58,6 +77,9 @@ func (s *AppState) moveCursor(delta int) {
 	if s.Focus == FocusGraph {
 		s.Graph.Cursor += delta
 		s.Clamp()
+		return
+	}
+	if s.Focus != FocusChanges {
 		return
 	}
 	s.Changes.Cursor += delta

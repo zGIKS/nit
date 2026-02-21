@@ -19,20 +19,25 @@ type (
 )
 
 const (
-	ActionNone        = actionspkg.ActionNone
-	ActionQuit        = actionspkg.ActionQuit
-	ActionTogglePanel = actionspkg.ActionTogglePanel
-	ActionMoveUp      = actionspkg.ActionMoveUp
-	ActionMoveDown    = actionspkg.ActionMoveDown
-	ActionToggleOne   = actionspkg.ActionToggleOne
-	ActionStageAll    = actionspkg.ActionStageAll
-	ActionUnstageAll  = actionspkg.ActionUnstageAll
+	ActionNone         = actionspkg.ActionNone
+	ActionQuit         = actionspkg.ActionQuit
+	ActionTogglePanel  = actionspkg.ActionTogglePanel
+	ActionFocusCommand = actionspkg.ActionFocusCommand
+	ActionMoveUp       = actionspkg.ActionMoveUp
+	ActionMoveDown     = actionspkg.ActionMoveDown
+	ActionToggleOne    = actionspkg.ActionToggleOne
+	ActionStageAll     = actionspkg.ActionStageAll
+	ActionUnstageAll   = actionspkg.ActionUnstageAll
+	ActionPush         = actionspkg.ActionPush
 
 	OpStagePath   = actionspkg.OpStagePath
 	OpUnstagePath = actionspkg.OpUnstagePath
 	OpStageAll    = actionspkg.OpStageAll
 	OpUnstageAll  = actionspkg.OpUnstageAll
+	OpCommit      = actionspkg.OpCommit
+	OpPush        = actionspkg.OpPush
 
+	FocusCommand = statepkg.FocusCommand
 	FocusChanges = statepkg.FocusChanges
 	FocusGraph   = statepkg.FocusGraph
 )

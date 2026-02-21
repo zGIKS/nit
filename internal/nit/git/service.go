@@ -1,6 +1,7 @@
 package git
 
 import (
+	"errors"
 	"strings"
 )
 
@@ -64,5 +65,19 @@ func (s Service) UnstageAll() error {
 		return nil
 	}
 	_, err := s.runner.Run("reset", "HEAD", "--", ".")
+	return err
+}
+
+func (s Service) Commit(message string) error {
+	msg := strings.TrimSpace(message)
+	if msg == "" {
+		return errors.New("commit message is empty")
+	}
+	_, err := s.runner.Run("commit", "-m", msg)
+	return err
+}
+
+func (s Service) Push() error {
+	_, err := s.runner.Run("push")
 	return err
 }

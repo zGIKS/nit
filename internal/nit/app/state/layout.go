@@ -66,24 +66,28 @@ func (s AppState) bodyHeight() int {
 }
 
 func (s AppState) GraphPaneHeight() int {
-	h := s.bodyHeight()
-	gh := (h * 45) / 100
+	content := max(8, s.bodyHeight()-s.CommandPaneHeight())
+	gh := (content * 45) / 100
 	if gh < 4 {
 		gh = 4
 	}
-	if gh > h-4 {
-		gh = h - 4
+	if gh > content-4 {
+		gh = content - 4
 	}
 	return gh
 }
 
 func (s AppState) ChangesPaneHeight() int {
-	h := s.bodyHeight()
-	ch := h - s.GraphPaneHeight()
+	content := max(8, s.bodyHeight()-s.CommandPaneHeight())
+	ch := content - s.GraphPaneHeight()
 	if ch < 4 {
 		return 4
 	}
 	return ch
+}
+
+func (s AppState) CommandPaneHeight() int {
+	return 3
 }
 
 func (s AppState) graphPageSize() int {

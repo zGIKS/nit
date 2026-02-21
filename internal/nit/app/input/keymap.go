@@ -17,24 +17,28 @@ type keyBinding struct {
 }
 
 type keyConfig struct {
-	Quit        keyBinding `json:"quit"`
-	TogglePanel keyBinding `json:"toggle_panel"`
-	Down        keyBinding `json:"down"`
-	Up          keyBinding `json:"up"`
-	ToggleOne   keyBinding `json:"toggle_one"`
-	StageAll    keyBinding `json:"stage_all"`
-	UnstageAll  keyBinding `json:"unstage_all"`
+	Quit         keyBinding `json:"quit"`
+	TogglePanel  keyBinding `json:"toggle_panel"`
+	FocusCommand keyBinding `json:"focus_command"`
+	Down         keyBinding `json:"down"`
+	Up           keyBinding `json:"up"`
+	ToggleOne    keyBinding `json:"toggle_one"`
+	StageAll     keyBinding `json:"stage_all"`
+	UnstageAll   keyBinding `json:"unstage_all"`
+	Push         keyBinding `json:"push"`
 }
 
 func DefaultKeymap() Keymap {
 	return Keymap{bindings: map[actions.Action][]string{
-		actions.ActionQuit:        {"ctrl+c", "q"},
-		actions.ActionTogglePanel: {"tab"},
-		actions.ActionMoveDown:    {"down", "j"},
-		actions.ActionMoveUp:      {"up", "k"},
-		actions.ActionToggleOne:   {"enter"},
-		actions.ActionStageAll:    {"s"},
-		actions.ActionUnstageAll:  {"u"},
+		actions.ActionQuit:         {"ctrl+c", "q"},
+		actions.ActionTogglePanel:  {"tab"},
+		actions.ActionFocusCommand: {"c"},
+		actions.ActionMoveDown:     {"down", "j"},
+		actions.ActionMoveUp:       {"up", "k"},
+		actions.ActionToggleOne:    {"enter"},
+		actions.ActionStageAll:     {"s"},
+		actions.ActionUnstageAll:   {"u"},
+		actions.ActionPush:         {"p"},
 	}}
 }
 
@@ -61,11 +65,13 @@ func LoadKeymap() (Keymap, string) {
 	}
 	merge(actions.ActionQuit, cfg.Quit)
 	merge(actions.ActionTogglePanel, cfg.TogglePanel)
+	merge(actions.ActionFocusCommand, cfg.FocusCommand)
 	merge(actions.ActionMoveDown, cfg.Down)
 	merge(actions.ActionMoveUp, cfg.Up)
 	merge(actions.ActionToggleOne, cfg.ToggleOne)
 	merge(actions.ActionStageAll, cfg.StageAll)
 	merge(actions.ActionUnstageAll, cfg.UnstageAll)
+	merge(actions.ActionPush, cfg.Push)
 
 	if err := validateKeyConflicts(km); err != nil {
 		return DefaultKeymap(), "invalid key config: " + err.Error()

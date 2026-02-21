@@ -7,10 +7,17 @@ import (
 )
 
 func Render(state app.AppState) string {
+	commandActive := state.Focus == app.FocusCommand
 	changesActive := state.Focus == app.FocusChanges
 	graphActive := state.Focus == app.FocusGraph
 	changeSel, changeTotal := state.ChangesPosition()
 	graphSel, graphTotal := state.GraphPosition()
+	commandText := state.Command.Input
+	if commandActive {
+		commandText = state.CommandLineWithCaret()
+	} else if commandText == "" {
+		commandText = "Message (c to focus, Enter to commit, p to push)"
+	}
 
 	changeLines := make([]string, 0, len(state.Changes.Rows))
 	for _, r := range state.Changes.Rows {
@@ -20,6 +27,16 @@ func Render(state app.AppState) string {
 		changeLines = []string{"Working tree clean."}
 	}
 
+	command := BoxView(
+		"Commit",
+		state.Viewport.Width,
+		state.CommandPaneHeight(),
+		[]string{commandText},
+		0,
+		0,
+		commandActive,
+		"ready",
+	)
 	changes := BoxView(
 		"Changes",
 		state.Viewport.Width,
@@ -52,8 +69,8 @@ func Render(state app.AppState) string {
 			true,
 			"diagnostics",
 		)
-		return changes + "\n" + graph + "\n" + err
+		return command + "\n" + changes + "\n" + graph + "\n" + err
 	}
 
-	return changes + "\n" + graph
+	return command + "\n" + changes + "\n" + graph
 }

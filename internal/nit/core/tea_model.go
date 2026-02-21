@@ -70,6 +70,74 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.state.Clamp()
 		return m, schedulePoll()
 	case tea.KeyMsg:
+		if m.state.Focus == app.FocusCommand {
+			switch msg.Type {
+			case tea.KeyEnter:
+				result := m.state.Apply(app.ActionToggleOne)
+				if len(result.Operations) > 0 {
+					for _, op := range result.Operations {
+						if err := m.execOp(op); err != nil {
+							m.state.SetError(err.Error())
+							break
+						}
+						m.state.SetError("")
+					}
+				}
+				if result.RefreshChanges {
+					changes, err := m.git.LoadChanges()
+					if err != nil {
+						m.state.SetError(err.Error())
+					} else {
+						m.state.SetError("")
+						m.state.SetChanges(changes)
+					}
+				}
+				m.state.Clamp()
+				return m, nil
+			case tea.KeyBackspace:
+				m.state.BackspaceCommandText()
+				m.state.Clamp()
+				return m, nil
+			case tea.KeyDelete:
+				m.state.DeleteCommandText()
+				m.state.Clamp()
+				return m, nil
+			case tea.KeyLeft:
+				m.state.MoveCommandCursorLeft()
+				m.state.Clamp()
+				return m, nil
+			case tea.KeyRight:
+				m.state.MoveCommandCursorRight()
+				m.state.Clamp()
+				return m, nil
+			case tea.KeyHome, tea.KeyCtrlA:
+				m.state.MoveCommandCursorToStart()
+				m.state.Clamp()
+				return m, nil
+			case tea.KeyEnd, tea.KeyCtrlE:
+				m.state.MoveCommandCursorToEnd()
+				m.state.Clamp()
+				return m, nil
+			case tea.KeySpace:
+				m.state.AppendCommandText(" ")
+				m.state.Clamp()
+				return m, nil
+			case tea.KeyRunes:
+				m.state.AppendCommandText(string(msg.Runes))
+				m.state.Clamp()
+				return m, nil
+			}
+			action := m.state.Keys.Match(msg.String())
+			if action == app.ActionQuit || action == app.ActionTogglePanel {
+				result := m.state.Apply(action)
+				if result.Quit {
+					return m, tea.Quit
+				}
+			}
+			m.state.Clamp()
+			return m, nil
+		}
+
 		action := m.state.Keys.Match(msg.String())
 		result := m.state.Apply(action)
 		if result.Quit {
@@ -121,6 +189,10 @@ func (m *model) execOp(op app.Operation) error {
 		return m.git.StageAll()
 	case app.OpUnstageAll:
 		return m.git.UnstageAll()
+	case app.OpCommit:
+		return m.git.Commit(op.Message)
+	case app.OpPush:
+		return m.git.Push()
 	default:
 		return nil
 	}

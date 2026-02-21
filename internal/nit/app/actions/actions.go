@@ -6,11 +6,13 @@ const (
 	ActionNone Action = iota
 	ActionQuit
 	ActionTogglePanel
+	ActionFocusCommand
 	ActionMoveUp
 	ActionMoveDown
 	ActionToggleOne
 	ActionStageAll
 	ActionUnstageAll
+	ActionPush
 )
 
 type OpKind int
@@ -20,11 +22,14 @@ const (
 	OpUnstagePath
 	OpStageAll
 	OpUnstageAll
+	OpCommit
+	OpPush
 )
 
 type Operation struct {
-	Kind OpKind
-	Path string
+	Kind    OpKind
+	Path    string
+	Message string
 }
 
 type ApplyResult struct {

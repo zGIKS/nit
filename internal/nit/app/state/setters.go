@@ -42,3 +42,92 @@ func (s *AppState) SetChanges(entries []git.ChangeEntry) {
 	}
 	s.Clamp()
 }
+
+func (s *AppState) AppendCommandText(text string) {
+	if text == "" {
+		return
+	}
+	r := []rune(s.Command.Input)
+	if s.Command.Cursor < 0 {
+		s.Command.Cursor = 0
+	}
+	if s.Command.Cursor > len(r) {
+		s.Command.Cursor = len(r)
+	}
+	insert := []rune(text)
+	out := make([]rune, 0, len(r)+len(insert))
+	out = append(out, r[:s.Command.Cursor]...)
+	out = append(out, insert...)
+	out = append(out, r[s.Command.Cursor:]...)
+	s.Command.Input = string(out)
+	s.Command.Cursor += len(insert)
+}
+
+func (s *AppState) BackspaceCommandText() {
+	r := []rune(s.Command.Input)
+	if len(r) == 0 || s.Command.Cursor <= 0 {
+		return
+	}
+	if s.Command.Cursor > len(r) {
+		s.Command.Cursor = len(r)
+	}
+	out := make([]rune, 0, len(r)-1)
+	out = append(out, r[:s.Command.Cursor-1]...)
+	out = append(out, r[s.Command.Cursor:]...)
+	s.Command.Input = string(out)
+	s.Command.Cursor--
+}
+
+func (s *AppState) DeleteCommandText() {
+	r := []rune(s.Command.Input)
+	if len(r) == 0 {
+		return
+	}
+	if s.Command.Cursor < 0 {
+		s.Command.Cursor = 0
+	}
+	if s.Command.Cursor >= len(r) {
+		return
+	}
+	out := make([]rune, 0, len(r)-1)
+	out = append(out, r[:s.Command.Cursor]...)
+	out = append(out, r[s.Command.Cursor+1:]...)
+	s.Command.Input = string(out)
+}
+
+func (s *AppState) MoveCommandCursorLeft() {
+	if s.Command.Cursor > 0 {
+		s.Command.Cursor--
+	}
+}
+
+func (s *AppState) MoveCommandCursorRight() {
+	r := []rune(s.Command.Input)
+	if s.Command.Cursor < len(r) {
+		s.Command.Cursor++
+	}
+}
+
+func (s *AppState) MoveCommandCursorToStart() {
+	s.Command.Cursor = 0
+}
+
+func (s *AppState) MoveCommandCursorToEnd() {
+	s.Command.Cursor = len([]rune(s.Command.Input))
+}
+
+func (s AppState) CommandLineWithCaret() string {
+	r := []rune(s.Command.Input)
+	cursor := s.Command.Cursor
+	if cursor < 0 {
+		cursor = 0
+	}
+	if cursor > len(r) {
+		cursor = len(r)
+	}
+	out := make([]rune, 0, len(r)+1)
+	out = append(out, r[:cursor]...)
+	out = append(out, '|')
+	out = append(out, r[cursor:]...)
+	return string(out)
+}

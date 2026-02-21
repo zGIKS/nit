@@ -10,7 +10,8 @@ type FocusState int
 type Section string
 
 const (
-	FocusChanges FocusState = iota
+	FocusCommand FocusState = iota
+	FocusChanges
 	FocusGraph
 )
 
@@ -42,6 +43,11 @@ type GraphState struct {
 	Offset int
 }
 
+type CommandState struct {
+	Input  string
+	Cursor int
+}
+
 type Viewport struct {
 	Width  int
 	Height int
@@ -49,6 +55,7 @@ type Viewport struct {
 
 type AppState struct {
 	Focus    FocusState
+	Command  CommandState
 	Changes  ChangesState
 	Graph    GraphState
 	Viewport Viewport
