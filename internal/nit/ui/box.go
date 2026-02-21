@@ -1,6 +1,9 @@
-package components
+package ui
 
-import "strings"
+import (
+	"strings"
+	"unicode/utf8"
+)
 
 func BoxView(title string, width, boxHeight int, lines []string, cursor, offset int, active bool, footer string) string {
 	w := max(40, width)
@@ -53,16 +56,17 @@ func fitText(text string, width int, fill rune) string {
 	if width <= 0 {
 		return ""
 	}
-	if len(text) > width {
+	textLen := utf8.RuneCountInString(text)
+	if textLen > width {
 		if width <= 3 {
-			return text[:width]
+			return string([]rune(text)[:width])
 		}
-		return text[:width-3] + "..."
+		return string([]rune(text)[:width-3]) + "..."
 	}
-	if len(text) == width {
+	if textLen == width {
 		return text
 	}
-	return text + strings.Repeat(string(fill), width-len(text))
+	return text + strings.Repeat(string(fill), width-textLen)
 }
 
 func min(a, b int) int {
