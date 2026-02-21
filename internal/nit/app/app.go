@@ -4,6 +4,7 @@ import (
 	actionspkg "nit/internal/nit/app/actions"
 	inputpkg "nit/internal/nit/app/input"
 	statepkg "nit/internal/nit/app/state"
+	"nit/internal/nit/config"
 )
 
 type (
@@ -46,6 +47,6 @@ func New(keys Keymap) AppState {
 	return statepkg.New(keys)
 }
 
-func LoadKeymap() (Keymap, string) {
-	return inputpkg.LoadKeymap()
+func LoadKeymap(cfg config.KeyConfig) (Keymap, string) {
+	return inputpkg.LoadKeymap(cfg)
 }

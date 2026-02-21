@@ -57,13 +57,14 @@ type Viewport struct {
 }
 
 type AppState struct {
-	Focus    FocusState
-	Command  CommandState
-	Changes  ChangesState
-	Graph    GraphState
-	Viewport Viewport
-	Keys     input.Keymap
-	LastErr  string
+	Focus         FocusState
+	Command       CommandState
+	Changes       ChangesState
+	Graph         GraphState
+	Viewport      Viewport
+	Keys          input.Keymap
+	ClipboardMode string
+	LastErr       string
 }
 
 func New(keys input.Keymap) AppState {

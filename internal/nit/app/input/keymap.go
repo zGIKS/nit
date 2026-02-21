@@ -1,31 +1,14 @@
 package input
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
 
 	"nit/internal/nit/app/actions"
+	"nit/internal/nit/config"
 )
 
 type Keymap struct {
 	bindings map[actions.Action][]string
-}
-
-type keyBinding struct {
-	Keys []string `json:"keys"`
-}
-
-type keyConfig struct {
-	Quit         keyBinding `json:"quit"`
-	TogglePanel  keyBinding `json:"toggle_panel"`
-	FocusCommand keyBinding `json:"focus_command"`
-	Down         keyBinding `json:"down"`
-	Up           keyBinding `json:"up"`
-	ToggleOne    keyBinding `json:"toggle_one"`
-	StageAll     keyBinding `json:"stage_all"`
-	UnstageAll   keyBinding `json:"unstage_all"`
-	Push         keyBinding `json:"push"`
 }
 
 func DefaultKeymap() Keymap {
@@ -42,23 +25,9 @@ func DefaultKeymap() Keymap {
 	}}
 }
 
-func LoadKeymap() (Keymap, string) {
+func LoadKeymap(cfg config.KeyConfig) (Keymap, string) {
 	km := DefaultKeymap()
-	path := os.Getenv("NIT_KEYS_FILE")
-	if path == "" {
-		path = ".nit.keys.json"
-	}
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return km, ""
-	}
-
-	var cfg keyConfig
-	if err := json.Unmarshal(data, &cfg); err != nil {
-		return km, "invalid key config: " + err.Error()
-	}
-
-	merge := func(a actions.Action, b keyBinding) {
+	merge := func(a actions.Action, b config.KeyBinding) {
 		if len(b.Keys) > 0 {
 			km.bindings[a] = b.Keys
 		}

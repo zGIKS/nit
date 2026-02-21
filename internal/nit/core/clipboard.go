@@ -8,46 +8,18 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
+
+	"nit/internal/nit/config"
 )
 
-type clipboardMode string
-
-const (
-	clipboardOnlyCopy clipboardMode = "only_copy"
-	clipboardAuto     clipboardMode = "auto"
-	clipboardOSC52    clipboardMode = "osc52"
-	clipboardSystem   clipboardMode = "system"
-	clipboardInternal clipboardMode = "internal"
-)
-
-type clipboardConfig struct {
-	Mode     clipboardMode
-	CopyCmd  string
-	PasteCmd string
-}
-
-func loadClipboardConfig() clipboardConfig {
-	mode := clipboardMode(strings.ToLower(strings.TrimSpace(os.Getenv("NIT_CLIPBOARD_MODE"))))
-	switch mode {
-	case clipboardOnlyCopy, clipboardOSC52, clipboardSystem, clipboardInternal, clipboardAuto:
-	default:
-		mode = clipboardOnlyCopy
-	}
-	return clipboardConfig{
-		Mode:     mode,
-		CopyCmd:  strings.TrimSpace(os.Getenv("NIT_CLIPBOARD_COPY_CMD")),
-		PasteCmd: strings.TrimSpace(os.Getenv("NIT_CLIPBOARD_PASTE_CMD")),
-	}
-}
-
-func copyWithMode(cfg clipboardConfig, text string) error {
+func copyWithMode(cfg config.ClipboardConfig, text string) error {
 	if text == "" {
 		return nil
 	}
 	switch cfg.Mode {
-	case clipboardInternal:
+	case config.ClipboardInternal:
 		return nil
-	case clipboardOnlyCopy:
+	case config.ClipboardOnlyCopy:
 		if err := copyWithOSC52(text); err == nil {
 			return nil
 		}
@@ -55,12 +27,12 @@ func copyWithMode(cfg clipboardConfig, text string) error {
 			return nil
 		}
 		return nil
-	case clipboardOSC52:
+	case config.ClipboardOSC52:
 		if err := copyWithOSC52(text); err == nil {
 			return nil
 		}
 		return nil
-	case clipboardSystem:
+	case config.ClipboardSystem:
 		if err := copyToSystemClipboard(text, cfg.CopyCmd); err == nil {
 			return nil
 		}
@@ -76,9 +48,9 @@ func copyWithMode(cfg clipboardConfig, text string) error {
 	}
 }
 
-func pasteWithMode(cfg clipboardConfig) (string, error) {
+func pasteWithMode(cfg config.ClipboardConfig) (string, error) {
 	switch cfg.Mode {
-	case clipboardInternal, clipboardOSC52, clipboardOnlyCopy:
+	case config.ClipboardInternal, config.ClipboardOSC52, config.ClipboardOnlyCopy:
 		return "", nil
 	default:
 		return pasteFromSystemClipboard(cfg.PasteCmd)

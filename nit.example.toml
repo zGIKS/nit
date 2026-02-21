@@ -1,0 +1,31 @@
+[clipboard]
+mode = "only_copy" # only_copy | auto | osc52 | system | internal
+# copy_cmd = "wl-copy"
+# paste_cmd = "wl-paste -n"
+
+[keys.quit]
+keys = ["ctrl+c", "q"]
+
+[keys.toggle_panel]
+keys = ["tab"]
+
+[keys.focus_command]
+keys = ["c"]
+
+[keys.down]
+keys = ["down", "j"]
+
+[keys.up]
+keys = ["up", "k"]
+
+[keys.toggle_one]
+keys = ["enter"]
+
+[keys.stage_all]
+keys = ["s"]
+
+[keys.unstage_all]
+keys = ["u"]
+
+[keys.push]
+keys = ["p"]
