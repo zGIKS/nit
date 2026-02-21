@@ -1,4 +1,4 @@
-package app
+package state
 
 import "nit/internal/nit/git"
 

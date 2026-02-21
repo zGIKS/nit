@@ -1,4 +1,4 @@
-package nit
+package core
 
 import (
 	"time"

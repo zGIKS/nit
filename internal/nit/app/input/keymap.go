@@ -1,13 +1,15 @@
-package app
+package input
 
 import (
 	"encoding/json"
 	"fmt"
 	"os"
+
+	"nit/internal/nit/app/actions"
 )
 
 type Keymap struct {
-	bindings map[Action][]string
+	bindings map[actions.Action][]string
 }
 
 type keyBinding struct {
@@ -25,14 +27,14 @@ type keyConfig struct {
 }
 
 func DefaultKeymap() Keymap {
-	return Keymap{bindings: map[Action][]string{
-		ActionQuit:        {"ctrl+c", "q"},
-		ActionTogglePanel: {"tab"},
-		ActionMoveDown:    {"down", "j"},
-		ActionMoveUp:      {"up", "k"},
-		ActionToggleOne:   {"enter"},
-		ActionStageAll:    {"s"},
-		ActionUnstageAll:  {"u"},
+	return Keymap{bindings: map[actions.Action][]string{
+		actions.ActionQuit:        {"ctrl+c", "q"},
+		actions.ActionTogglePanel: {"tab"},
+		actions.ActionMoveDown:    {"down", "j"},
+		actions.ActionMoveUp:      {"up", "k"},
+		actions.ActionToggleOne:   {"enter"},
+		actions.ActionStageAll:    {"s"},
+		actions.ActionUnstageAll:  {"u"},
 	}}
 }
 
@@ -52,18 +54,18 @@ func LoadKeymap() (Keymap, string) {
 		return km, "invalid key config: " + err.Error()
 	}
 
-	merge := func(a Action, b keyBinding) {
+	merge := func(a actions.Action, b keyBinding) {
 		if len(b.Keys) > 0 {
 			km.bindings[a] = b.Keys
 		}
 	}
-	merge(ActionQuit, cfg.Quit)
-	merge(ActionTogglePanel, cfg.TogglePanel)
-	merge(ActionMoveDown, cfg.Down)
-	merge(ActionMoveUp, cfg.Up)
-	merge(ActionToggleOne, cfg.ToggleOne)
-	merge(ActionStageAll, cfg.StageAll)
-	merge(ActionUnstageAll, cfg.UnstageAll)
+	merge(actions.ActionQuit, cfg.Quit)
+	merge(actions.ActionTogglePanel, cfg.TogglePanel)
+	merge(actions.ActionMoveDown, cfg.Down)
+	merge(actions.ActionMoveUp, cfg.Up)
+	merge(actions.ActionToggleOne, cfg.ToggleOne)
+	merge(actions.ActionStageAll, cfg.StageAll)
+	merge(actions.ActionUnstageAll, cfg.UnstageAll)
 
 	if err := validateKeyConflicts(km); err != nil {
 		return DefaultKeymap(), "invalid key config: " + err.Error()
@@ -72,7 +74,7 @@ func LoadKeymap() (Keymap, string) {
 }
 
 func validateKeyConflicts(km Keymap) error {
-	seen := map[string]Action{}
+	seen := map[string]actions.Action{}
 	for action, keys := range km.bindings {
 		for _, k := range keys {
 			if prev, ok := seen[k]; ok {
@@ -84,7 +86,7 @@ func validateKeyConflicts(km Keymap) error {
 	return nil
 }
 
-func (k Keymap) Match(key string) Action {
+func (k Keymap) Match(key string) actions.Action {
 	for action, keys := range k.bindings {
 		for _, cand := range keys {
 			if cand == key {
@@ -92,5 +94,5 @@ func (k Keymap) Match(key string) Action {
 			}
 		}
 	}
-	return ActionNone
+	return actions.ActionNone
 }

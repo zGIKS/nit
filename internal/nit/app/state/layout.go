@@ -1,4 +1,4 @@
-package app
+package state
 
 func (s *AppState) Clamp() {
 	if s.Focus == FocusGraph {

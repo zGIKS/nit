@@ -1,4 +1,4 @@
-package app
+package state
 
 func (s AppState) ChangesPosition() (int, int) {
 	total := len(s.Changes.Staged) + len(s.Changes.Unstaged)

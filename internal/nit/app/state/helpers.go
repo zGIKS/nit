@@ -1,4 +1,4 @@
-package app
+package state
 
 func max(a, b int) int {
 	if a > b {

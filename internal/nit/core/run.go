@@ -1,4 +1,4 @@
-package nit
+package core
 
 import tea "github.com/charmbracelet/bubbletea"
 

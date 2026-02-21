@@ -1,6 +1,58 @@
-package app
+package state
 
-import "nit/internal/nit/git"
+import (
+	"nit/internal/nit/app/actions"
+	"nit/internal/nit/git"
+)
+
+func (s *AppState) Apply(action actions.Action) actions.ApplyResult {
+	res := actions.ApplyResult{}
+	switch action {
+	case actions.ActionQuit:
+		res.Quit = true
+	case actions.ActionTogglePanel:
+		if s.Focus == FocusChanges {
+			s.Focus = FocusGraph
+		} else {
+			s.Focus = FocusChanges
+			s.snapChangesCursor(1)
+		}
+	case actions.ActionMoveDown:
+		s.moveCursor(1)
+	case actions.ActionMoveUp:
+		s.moveCursor(-1)
+	case actions.ActionToggleOne:
+		if s.Focus != FocusChanges {
+			break
+		}
+		entry, section, ok := s.selectedChange()
+		if !ok {
+			break
+		}
+		if section == SectionStaged {
+			s.Changes.StickySection = SectionStaged
+			res.Operations = []actions.Operation{{Kind: actions.OpUnstagePath, Path: entry.Path}}
+		} else {
+			s.Changes.StickySection = SectionUnstaged
+			res.Operations = []actions.Operation{{Kind: actions.OpStagePath, Path: entry.Path}}
+		}
+		res.RefreshChanges = true
+	case actions.ActionStageAll:
+		if s.Focus == FocusChanges {
+			s.Changes.StickySection = SectionStaged
+			res.Operations = []actions.Operation{{Kind: actions.OpStageAll}}
+			res.RefreshChanges = true
+		}
+	case actions.ActionUnstageAll:
+		if s.Focus == FocusChanges {
+			s.Changes.StickySection = SectionUnstaged
+			res.Operations = []actions.Operation{{Kind: actions.OpUnstageAll}}
+			res.RefreshChanges = true
+		}
+	}
+	s.Clamp()
+	return res
+}
 
 func (s *AppState) moveCursor(delta int) {
 	if s.Focus == FocusGraph {

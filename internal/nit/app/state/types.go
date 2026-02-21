@@ -1,6 +1,9 @@
-package app
+package state
 
-import "nit/internal/nit/git"
+import (
+	"nit/internal/nit/app/input"
+	"nit/internal/nit/git"
+)
 
 type FocusState int
 
@@ -49,11 +52,11 @@ type AppState struct {
 	Changes  ChangesState
 	Graph    GraphState
 	Viewport Viewport
-	Keys     Keymap
+	Keys     input.Keymap
 	LastErr  string
 }
 
-func New(keys Keymap) AppState {
+func New(keys input.Keymap) AppState {
 	return AppState{
 		Focus: FocusChanges,
 		Changes: ChangesState{
