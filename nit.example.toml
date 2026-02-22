@@ -5,10 +5,10 @@ mode = "only_copy" # only_copy | auto | osc52 | system | internal
 
 [ui]
 # Top bar labels/icons (emoji style)
-repo_label = "📘"
-branch_label = "🌿"
-fetch_label = "🔄 fetch"
-menu_label = "..."
+repo_label   = "📂"
+branch_label = "🌱"
+fetch_label  = "⇅ Fetch"
+menu_label   = "≡"
 
 # Monospace/ASCII examples (if emoji width looks misaligned)
 # repo_label = "repo"

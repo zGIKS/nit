@@ -116,7 +116,7 @@ func (s AppState) ChangesPaneHeight() int {
 }
 
 func (s AppState) CommandPaneHeight() int {
-	return 4
+	return 7
 }
 
 func (s AppState) CommandLogPaneHeight() int {

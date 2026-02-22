@@ -2,7 +2,6 @@ package ui
 
 import (
 	"strings"
-	"unicode/utf8"
 
 	"github.com/mattn/go-runewidth"
 )
@@ -110,21 +109,46 @@ func TopBarView(width int, left, right string) string {
 	return left + strings.Repeat(" ", space) + right
 }
 
+func MiniBoxView(text string, width int) string {
+	w := max(8, width)
+	innerW := w - 2
+	if innerW < 1 {
+		innerW = 1
+	}
+	top := "┌" + strings.Repeat("─", innerW) + "┐"
+	mid := "│" + fitText(" "+strings.TrimSpace(text)+" ", innerW, ' ') + "│"
+	bot := "└" + strings.Repeat("─", innerW) + "┘"
+	return top + "\n" + mid + "\n" + bot
+}
+
+func HStackMany(parts []string, widths []int) string {
+	if len(parts) == 0 || len(parts) != len(widths) {
+		return ""
+	}
+	out := parts[0]
+	outW := widths[0]
+	for i := 1; i < len(parts); i++ {
+		out = HStack(out, outW, parts[i], widths[i])
+		outW += 1 + widths[i]
+	}
+	return out
+}
+
 func fitText(text string, width int, fill rune) string {
 	if width <= 0 {
 		return ""
 	}
-	textLen := utf8.RuneCountInString(text)
-	if textLen > width {
+	textW := runewidth.StringWidth(text)
+	if textW > width {
 		if width <= 3 {
-			return string([]rune(text)[:width])
+			return truncateDisplayWidth(text, width)
 		}
-		return string([]rune(text)[:width-3]) + "..."
+		return truncateDisplayWidth(text, width-3) + "..."
 	}
-	if textLen == width {
+	if textW == width {
 		return text
 	}
-	return text + strings.Repeat(string(fill), width-textLen)
+	return text + strings.Repeat(string(fill), width-textW)
 }
 
 func min(a, b int) int {
@@ -139,4 +163,25 @@ func max(a, b int) int {
 		return a
 	}
 	return b
+}
+
+func truncateDisplayWidth(s string, width int) string {
+	if width <= 0 {
+		return ""
+	}
+	var b strings.Builder
+	cur := 0
+	for _, r := range s {
+		rw := runewidth.RuneWidth(r)
+		if rw == 0 {
+			b.WriteRune(r)
+			continue
+		}
+		if cur+rw > width {
+			break
+		}
+		b.WriteRune(r)
+		cur += rw
+	}
+	return b.String()
 }

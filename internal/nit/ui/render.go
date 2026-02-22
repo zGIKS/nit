@@ -2,7 +2,9 @@ package ui
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/mattn/go-runewidth"
 	"nit/internal/nit/app"
 )
 
@@ -44,10 +46,61 @@ func Render(state app.AppState) string {
 	if branchName == "" {
 		branchName = "-"
 	}
-	topBar := TopBarView(
-		totalW,
-		state.RepoLabel+" "+repoName,
-		state.BranchLabel+" "+branchName+"   "+state.FetchLabel+"   "+state.MenuLabel,
+	repoText := strings.TrimSpace(state.RepoLabel + " " + repoName)
+	branchText := strings.TrimSpace(state.BranchLabel + " " + branchName)
+	fetchText := strings.TrimSpace(state.FetchLabel)
+	menuText := strings.TrimSpace(state.MenuLabel)
+
+	repoW := max(16, runewidth.StringWidth(repoText)+4)
+	branchW := max(16, runewidth.StringWidth(branchText)+4)
+	fetchW := max(14, runewidth.StringWidth(fetchText)+4)
+	menuW := max(8, runewidth.StringWidth(menuText)+4)
+	minRepoW := 14
+	minBranchW := 12
+	minFetchW := 10
+	minMenuW := 8
+	totalNeeded := repoW + branchW + fetchW + menuW + 3
+	overflow := totalNeeded - totalW
+	shrink := func(w *int, minW int) {
+		if overflow <= 0 {
+			return
+		}
+		can := *w - minW
+		if can <= 0 {
+			return
+		}
+		d := min(can, overflow)
+		*w -= d
+		overflow -= d
+	}
+	shrink(&repoW, minRepoW)
+	shrink(&branchW, minBranchW)
+	shrink(&fetchW, minFetchW)
+	shrink(&menuW, minMenuW)
+	if overflow > 0 {
+		// Last resort: give remaining width to repo box and let text truncate.
+		repoW = max(minRepoW, repoW-overflow)
+	}
+
+	leftTop := MiniBoxView(repoText, repoW)
+	rightTopW := branchW + fetchW + menuW + 2
+	rightTop := HStackMany(
+		[]string{
+			MiniBoxView(branchText, branchW),
+			MiniBoxView(fetchText, fetchW),
+			MiniBoxView(menuText, menuW),
+		},
+		[]int{branchW, fetchW, menuW},
+	)
+	gapW := totalW - repoW - rightTopW - 2
+	if gapW < 1 {
+		gapW = 1
+	}
+	spacerLine := strings.Repeat(" ", gapW)
+	spacer := spacerLine + "\n" + spacerLine + "\n" + spacerLine
+	topBar := HStackMany(
+		[]string{leftTop, spacer, rightTop},
+		[]int{repoW, gapW, rightTopW},
 	)
 
 	commandBox := BoxView(

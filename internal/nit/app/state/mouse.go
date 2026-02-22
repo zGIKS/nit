@@ -1,7 +1,13 @@
 package state
 
+import (
+	"strings"
+
+	"github.com/mattn/go-runewidth"
+	"nit/internal/nit/app/actions"
+)
+
 func (s *AppState) HandleMouseClick(x, y int) {
-	_ = x // boxes span full width for now
 	if y < 0 {
 		return
 	}
@@ -30,6 +36,72 @@ func (s *AppState) HandleMouseClick(x, y int) {
 		s.Clamp()
 		return
 	}
+}
+
+func (s *AppState) TopBarActionAt(x, y int) (actions.Action, bool) {
+	// Top bar is the first 3 rows of the command pane.
+	if y < 0 || y >= 3 || x < 0 {
+		return actions.ActionNone, false
+	}
+
+	totalW := max(40, s.Viewport.Width)
+	repoName := s.RepoName
+	if repoName == "" {
+		repoName = "unknown"
+	}
+	branchName := s.BranchName
+	if branchName == "" {
+		branchName = "-"
+	}
+
+	repoText := strings.TrimSpace(s.RepoLabel + " " + repoName)
+	branchText := strings.TrimSpace(s.BranchLabel + " " + branchName)
+	fetchText := strings.TrimSpace(s.FetchLabel)
+	menuText := strings.TrimSpace(s.MenuLabel)
+
+	repoW := max(16, runewidth.StringWidth(repoText)+4)
+	branchW := max(16, runewidth.StringWidth(branchText)+4)
+	fetchW := max(14, runewidth.StringWidth(fetchText)+4)
+	menuW := max(8, runewidth.StringWidth(menuText)+4)
+	minRepoW, minBranchW, minFetchW, minMenuW := 14, 12, 10, 8
+
+	totalNeeded := repoW + branchW + fetchW + menuW + 3
+	overflow := totalNeeded - totalW
+	shrink := func(w *int, minW int) {
+		if overflow <= 0 {
+			return
+		}
+		can := *w - minW
+		if can <= 0 {
+			return
+		}
+		d := min(can, overflow)
+		*w -= d
+		overflow -= d
+	}
+	shrink(&repoW, minRepoW)
+	shrink(&branchW, minBranchW)
+	shrink(&fetchW, minFetchW)
+	shrink(&menuW, minMenuW)
+	if overflow > 0 {
+		repoW = max(minRepoW, repoW-overflow)
+	}
+
+	rightTopW := branchW + fetchW + menuW + 2
+	gapW := totalW - repoW - rightTopW - 2
+	if gapW < 1 {
+		gapW = 1
+	}
+
+	branchX := repoW + 1 + gapW + 1
+	fetchX := branchX + branchW + 1
+	menuX := fetchX + fetchW + 1
+	_ = menuX // reserved for future click actions
+
+	if x >= fetchX && x < fetchX+fetchW {
+		return actions.ActionFetch, true
+	}
+	return actions.ActionNone, false
 }
 
 func (s *AppState) HandleMouseWheel(x, y, delta int) {
