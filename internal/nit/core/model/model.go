@@ -21,6 +21,7 @@ func New() Model {
 	cfg, cfgWarn := config.Load()
 	keys, keyErr := app.LoadKeymap(cfg.Keys)
 	state := app.New(keys)
+	state.SetTopBarLabels(cfg.UI.RepoLabel, cfg.UI.BranchLabel, cfg.UI.FetchLabel, cfg.UI.MenuLabel)
 	state.SetGraph([]string{"Loading graph..."})
 	state.SetChanges(nil)
 	if keyErr != "" {
@@ -40,5 +41,5 @@ func New() Model {
 }
 
 func (m Model) Init() tea.Cmd {
-	return tea.Batch(cmds.SchedulePoll(), cmds.LoadChangesCmd(m.Git), cmds.LoadGraphCmd(m.Git))
+	return tea.Batch(cmds.SchedulePoll(), cmds.LoadChangesCmd(m.Git), cmds.LoadGraphCmd(m.Git), cmds.LoadRepoSummaryCmd(m.Git))
 }

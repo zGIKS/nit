@@ -17,6 +17,8 @@ func ExecOperation(svc g.Service, op app.Operation) (string, error) {
 		return svc.UnstageAll()
 	case app.OpCommit:
 		return svc.Commit(op.Message)
+	case app.OpFetch:
+		return svc.Fetch()
 	case app.OpPush:
 		return svc.Push()
 	default:

@@ -3,6 +3,25 @@ mode = "only_copy" # only_copy | auto | osc52 | system | internal
 # copy_cmd = "wl-copy"
 # paste_cmd = "wl-paste -n"
 
+[ui]
+# Top bar labels/icons (emoji style)
+repo_label = "📘"
+branch_label = "🌿"
+fetch_label = "🔄 fetch"
+menu_label = "..."
+
+# Monospace/ASCII examples (if emoji width looks misaligned)
+# repo_label = "repo"
+# branch_label = "branch"
+# fetch_label = "[f] fetch"
+# menu_label = "..."
+
+# Nerd Font examples (if your terminal font supports them)
+# repo_label = "󰉋"
+# branch_label = ""
+# fetch_label = "󰓦 fetch"
+# menu_label = "⋯"
+
 [keys.quit]
 keys = ["ctrl+c", "q"]
 
@@ -26,6 +45,9 @@ keys = ["s"]
 
 [keys.unstage_all]
 keys = ["u"]
+
+[keys.fetch]
+keys = ["f"]
 
 [keys.push]
 keys = ["p", "ctrl+p"] # ctrl+p funciona incluso mientras escribes en Commit

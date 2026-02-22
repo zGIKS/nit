@@ -44,6 +44,13 @@ func LoadGraphCmd(svc g.Service) tea.Cmd {
 	}
 }
 
+func LoadRepoSummaryCmd(svc g.Service) tea.Cmd {
+	return func() tea.Msg {
+		repo, branch, err := svc.LoadRepoSummary()
+		return common.RepoSummaryLoadedMsg{Repo: repo, Branch: branch, Err: err}
+	}
+}
+
 func ExecOpCmd(svc g.Service, op app.Operation, refreshChanges, refreshGraph bool) tea.Cmd {
 	return func() tea.Msg {
 		cmd, err := ExecOperation(svc, op)

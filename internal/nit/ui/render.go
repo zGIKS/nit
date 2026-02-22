@@ -36,31 +36,42 @@ func Render(state app.AppState) string {
 		pushW = max(8, totalW-commitW-1)
 	}
 
+	repoName := state.RepoName
+	if repoName == "" {
+		repoName = "unknown"
+	}
+	branchName := state.BranchName
+	if branchName == "" {
+		branchName = "-"
+	}
+	topBar := TopBarView(
+		totalW,
+		state.RepoLabel+" "+repoName,
+		state.BranchLabel+" "+branchName+"   "+state.FetchLabel+"   "+state.MenuLabel,
+	)
+
 	commandBox := BoxView(
 		"Commit",
 		commitW,
-		state.CommandPaneHeight(),
+		3,
 		[]string{commandText},
 		0,
 		0,
 		commandActive,
 		"",
 	)
-	pushHint := "p"
-	if commandActive {
-		pushHint = "Ctrl+P"
-	}
 	pushBox := BoxView(
 		"Push",
 		pushW,
-		state.CommandPaneHeight(),
-		[]string{pushHint},
+		3,
+		[]string{"p"},
 		0,
 		0,
 		false,
 		"",
 	)
-	command := HStack(commandBox, commitW, pushBox, pushW)
+	commandRow := HStack(commandBox, commitW, pushBox, pushW)
+	command := topBar + "\n" + commandRow
 	changes := BoxView(
 		"Changes",
 		totalW,
@@ -81,6 +92,10 @@ func Render(state app.AppState) string {
 		graphActive,
 		fmt.Sprintf("%d of %d", graphSel, graphTotal),
 	)
+	commandLogFooter := ""
+	if state.LastErr != "" {
+		commandLogFooter = "error: " + state.LastErr
+	}
 	commandLog := BoxView(
 		"Command Log",
 		totalW,
@@ -99,22 +114,8 @@ func Render(state app.AppState) string {
 			return max(0, len(state.CommandLog)-(state.CommandLogPaneHeight()-2))
 		}(),
 		commandLogActive,
-		"",
+		commandLogFooter,
 	)
-
-	if state.LastErr != "" {
-		err := BoxView(
-			"Error",
-			totalW,
-			3,
-			[]string{state.LastErr},
-			0,
-			0,
-			true,
-			"diagnostics",
-		)
-		return command + "\n" + changes + "\n" + graph + "\n" + commandLog + "\n" + err
-	}
 
 	return command + "\n" + changes + "\n" + graph + "\n" + commandLog
 }

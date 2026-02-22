@@ -72,6 +72,12 @@ type AppState struct {
 	Viewport       Viewport
 	Keys           input.Keymap
 	LastErr        string
+	RepoName       string
+	BranchName     string
+	RepoLabel      string
+	BranchLabel    string
+	FetchLabel     string
+	MenuLabel      string
 }
 
 func New(keys input.Keymap) AppState {
@@ -83,6 +89,12 @@ func New(keys input.Keymap) AppState {
 		Changes: ChangesState{
 			StickySection: SectionUnstaged,
 		},
-		Keys: keys,
+		Keys:        keys,
+		RepoName:    "loading...",
+		BranchName:  "loading...",
+		RepoLabel:   "repo",
+		BranchLabel: "branch",
+		FetchLabel:  "[f] fetch",
+		MenuLabel:   "...",
 	}
 }

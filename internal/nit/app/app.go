@@ -29,6 +29,7 @@ const (
 	ActionToggleOne    = actionspkg.ActionToggleOne
 	ActionStageAll     = actionspkg.ActionStageAll
 	ActionUnstageAll   = actionspkg.ActionUnstageAll
+	ActionFetch        = actionspkg.ActionFetch
 	ActionPush         = actionspkg.ActionPush
 
 	OpStagePath   = actionspkg.OpStagePath
@@ -36,6 +37,7 @@ const (
 	OpStageAll    = actionspkg.OpStageAll
 	OpUnstageAll  = actionspkg.OpUnstageAll
 	OpCommit      = actionspkg.OpCommit
+	OpFetch       = actionspkg.OpFetch
 	OpPush        = actionspkg.OpPush
 
 	FocusCommand    = statepkg.FocusCommand

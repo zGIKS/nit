@@ -32,6 +32,22 @@ func HandleGraphLoaded(state *app.AppState, msg common.GraphLoadedMsg) tea.Cmd {
 	return nil
 }
 
+func HandleRepoSummaryLoaded(state *app.AppState, msg common.RepoSummaryLoadedMsg) tea.Cmd {
+	if msg.Err != nil {
+		if state.RepoName == "" {
+			state.SetRepoSummary("not-a-repo", "-")
+		}
+		state.SetError(msg.Err.Error())
+	} else {
+		state.SetRepoSummary(msg.Repo, msg.Branch)
+		if state.LastErr == "" {
+			state.SetError("")
+		}
+	}
+	state.Clamp()
+	return nil
+}
+
 func HandleOpDone(state *app.AppState, git g.Service, msg common.OpDoneMsg) tea.Cmd {
 	if msg.Command != "" {
 		state.AddCommandLog(msg.Command)

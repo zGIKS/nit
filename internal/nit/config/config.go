@@ -32,6 +32,7 @@ type KeyConfig struct {
 	ToggleOne    KeyBinding `toml:"toggle_one"`
 	StageAll     KeyBinding `toml:"stage_all"`
 	UnstageAll   KeyBinding `toml:"unstage_all"`
+	Fetch        KeyBinding `toml:"fetch"`
 	Push         KeyBinding `toml:"push"`
 }
 
@@ -41,15 +42,24 @@ type ClipboardConfig struct {
 	PasteCmd string        `toml:"paste_cmd"`
 }
 
+type UIConfig struct {
+	RepoLabel   string `toml:"repo_label"`
+	BranchLabel string `toml:"branch_label"`
+	FetchLabel  string `toml:"fetch_label"`
+	MenuLabel   string `toml:"menu_label"`
+}
+
 type FileConfig struct {
 	Clipboard ClipboardConfig `toml:"clipboard"`
 	Keys      KeyConfig       `toml:"keys"`
+	UI        UIConfig        `toml:"ui"`
 }
 
 type AppConfig struct {
 	ConfigFile string
 	Clipboard  ClipboardConfig
 	Keys       KeyConfig
+	UI         UIConfig
 }
 
 func Load() (AppConfig, string) {
@@ -57,6 +67,12 @@ func Load() (AppConfig, string) {
 		ConfigFile: "nit.toml",
 		Clipboard: ClipboardConfig{
 			Mode: ClipboardOnlyCopy,
+		},
+		UI: UIConfig{
+			RepoLabel:   "repo",
+			BranchLabel: "branch",
+			FetchLabel:  "[f] fetch",
+			MenuLabel:   "...",
 		},
 	}
 
@@ -98,6 +114,18 @@ func loadFromTOML(cfg *AppConfig) string {
 		cfg.Clipboard.PasteCmd = strings.TrimSpace(fileCfg.Clipboard.PasteCmd)
 	}
 	cfg.Keys = fileCfg.Keys
+	if v := strings.TrimSpace(fileCfg.UI.RepoLabel); v != "" {
+		cfg.UI.RepoLabel = v
+	}
+	if v := strings.TrimSpace(fileCfg.UI.BranchLabel); v != "" {
+		cfg.UI.BranchLabel = v
+	}
+	if v := strings.TrimSpace(fileCfg.UI.FetchLabel); v != "" {
+		cfg.UI.FetchLabel = v
+	}
+	if v := strings.TrimSpace(fileCfg.UI.MenuLabel); v != "" {
+		cfg.UI.MenuLabel = v
+	}
 	return modeWarn
 }
 

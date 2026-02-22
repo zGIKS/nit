@@ -14,6 +14,12 @@ type GraphLoadedMsg struct {
 	Err   error
 }
 
+type RepoSummaryLoadedMsg struct {
+	Repo   string
+	Branch string
+	Err    error
+}
+
 type OpDoneMsg struct {
 	Err            error
 	RefreshChanges bool

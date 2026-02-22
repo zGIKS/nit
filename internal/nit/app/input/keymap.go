@@ -21,6 +21,7 @@ func DefaultKeymap() Keymap {
 		actions.ActionToggleOne:    {"enter"},
 		actions.ActionStageAll:     {"s"},
 		actions.ActionUnstageAll:   {"u"},
+		actions.ActionFetch:        {"f"},
 		actions.ActionPush:         {"p", "ctrl+p"},
 	}}
 }
@@ -40,6 +41,7 @@ func LoadKeymap(cfg config.KeyConfig) (Keymap, string) {
 	merge(actions.ActionToggleOne, cfg.ToggleOne)
 	merge(actions.ActionStageAll, cfg.StageAll)
 	merge(actions.ActionUnstageAll, cfg.UnstageAll)
+	merge(actions.ActionFetch, cfg.Fetch)
 	merge(actions.ActionPush, cfg.Push)
 
 	if err := validateKeyConflicts(km); err != nil {

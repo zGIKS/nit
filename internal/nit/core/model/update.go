@@ -25,6 +25,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case common.GraphLoadedMsg:
 		return m, handlers.HandleGraphLoaded(&m.State, msg)
 
+	case common.RepoSummaryLoadedMsg:
+		return m, handlers.HandleRepoSummaryLoaded(&m.State, msg)
+
 	case common.OpDoneMsg:
 		return m, handlers.HandleOpDone(&m.State, m.Git, msg)
 

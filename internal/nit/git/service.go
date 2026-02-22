@@ -2,6 +2,7 @@ package git
 
 import (
 	"errors"
+	"path/filepath"
 	"strings"
 )
 
@@ -80,4 +81,26 @@ func (s Service) Commit(message string) (string, error) {
 func (s Service) Push() (string, error) {
 	_, cmd, err := s.runner.Run("push")
 	return cmd, err
+}
+
+func (s Service) Fetch() (string, error) {
+	_, cmd, err := s.runner.Run("fetch")
+	return cmd, err
+}
+
+func (s Service) LoadRepoSummary() (string, string, error) {
+	root, _, err := s.runner.Run("--no-optional-locks", "rev-parse", "--show-toplevel")
+	if err != nil {
+		return "", "", err
+	}
+	repo := filepath.Base(strings.TrimSpace(root))
+	branch, _, err := s.runner.Run("--no-optional-locks", "branch", "--show-current")
+	if err != nil {
+		return repo, "", err
+	}
+	br := strings.TrimSpace(branch)
+	if br == "" {
+		br = "(detached)"
+	}
+	return repo, br, nil
 }

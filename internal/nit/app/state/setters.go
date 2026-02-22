@@ -1,6 +1,10 @@
 package state
 
-import "nit/internal/nit/git"
+import (
+	"strings"
+
+	"nit/internal/nit/git"
+)
 
 func (s *AppState) SetViewport(width, height int) {
 	s.Viewport.Width = width
@@ -10,6 +14,30 @@ func (s *AppState) SetViewport(width, height int) {
 
 func (s *AppState) SetError(errMsg string) {
 	s.LastErr = errMsg
+}
+
+func (s *AppState) SetRepoSummary(repo, branch string) {
+	if strings.TrimSpace(repo) != "" {
+		s.RepoName = strings.TrimSpace(repo)
+	}
+	if strings.TrimSpace(branch) != "" {
+		s.BranchName = strings.TrimSpace(branch)
+	}
+}
+
+func (s *AppState) SetTopBarLabels(repo, branch, fetch, menu string) {
+	if strings.TrimSpace(repo) != "" {
+		s.RepoLabel = strings.TrimSpace(repo)
+	}
+	if strings.TrimSpace(branch) != "" {
+		s.BranchLabel = strings.TrimSpace(branch)
+	}
+	if strings.TrimSpace(fetch) != "" {
+		s.FetchLabel = strings.TrimSpace(fetch)
+	}
+	if strings.TrimSpace(menu) != "" {
+		s.MenuLabel = strings.TrimSpace(menu)
+	}
 }
 
 func (s *AppState) SetGraph(lines []string) {

@@ -3,6 +3,8 @@ package ui
 import (
 	"strings"
 	"unicode/utf8"
+
+	"github.com/mattn/go-runewidth"
 )
 
 func BoxView(title string, width, boxHeight int, lines []string, cursor, offset int, active bool, footer string) string {
@@ -77,6 +79,35 @@ func HStack(left string, leftWidth int, right string, rightWidth int) string {
 		}
 	}
 	return b.String()
+}
+
+func TopBarView(width int, left, right string) string {
+	w := max(8, width)
+	left = strings.TrimSpace(left)
+	right = strings.TrimSpace(right)
+
+	leftLen := runewidth.StringWidth(left)
+	rightLen := runewidth.StringWidth(right)
+
+	if rightLen >= w {
+		return fitText(right, w, ' ')
+	}
+
+	space := w - leftLen - rightLen
+	if space < 1 {
+		maxLeft := w - rightLen - 1
+		if maxLeft < 0 {
+			maxLeft = 0
+		}
+		left = fitText(left, maxLeft, ' ')
+		left = strings.TrimRight(left, " ")
+		space = w - runewidth.StringWidth(left) - rightLen
+		if space < 1 {
+			space = 1
+		}
+	}
+
+	return left + strings.Repeat(" ", space) + right
 }
 
 func fitText(text string, width int, fill rune) string {
