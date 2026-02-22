@@ -6,7 +6,7 @@ import (
 )
 
 func BoxView(title string, width, boxHeight int, lines []string, cursor, offset int, active bool, footer string) string {
-	w := max(40, width)
+	w := max(8, width)
 	innerW := w - 2
 	if innerW < 1 {
 		innerW = 1
@@ -49,6 +49,33 @@ func BoxView(title string, width, boxHeight int, lines []string, cursor, offset 
 
 	bottom := "└" + fitText(" "+footer+" ", innerW, '─') + "┘"
 	b.WriteString(bottom)
+	return b.String()
+}
+
+func HStack(left string, leftWidth int, right string, rightWidth int) string {
+	leftLines := strings.Split(left, "\n")
+	rightLines := strings.Split(right, "\n")
+	h := max(len(leftLines), len(rightLines))
+
+	var b strings.Builder
+	for i := 0; i < h; i++ {
+		l := ""
+		if i < len(leftLines) {
+			l = fitText(leftLines[i], leftWidth, ' ')
+		} else {
+			l = strings.Repeat(" ", leftWidth)
+		}
+		r := ""
+		if i < len(rightLines) {
+			r = fitText(rightLines[i], rightWidth, ' ')
+		} else {
+			r = strings.Repeat(" ", rightWidth)
+		}
+		b.WriteString(l + " " + r)
+		if i != h-1 {
+			b.WriteString("\n")
+		}
+	}
 	return b.String()
 }
 

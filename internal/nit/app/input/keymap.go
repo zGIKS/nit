@@ -21,7 +21,7 @@ func DefaultKeymap() Keymap {
 		actions.ActionToggleOne:    {"enter"},
 		actions.ActionStageAll:     {"s"},
 		actions.ActionUnstageAll:   {"u"},
-		actions.ActionPush:         {"p"},
+		actions.ActionPush:         {"p", "ctrl+p"},
 	}}
 }
 

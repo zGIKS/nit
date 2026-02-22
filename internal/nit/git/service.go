@@ -14,7 +14,7 @@ func NewService(r Runner) Service {
 }
 
 func (s Service) LoadGraph() ([]string, error) {
-	out, _, err := s.runner.Run("log", "--graph", "--decorate", "--oneline", "--all")
+	out, _, err := s.runner.Run("--no-optional-locks", "log", "--graph", "--decorate", "--oneline", "--all")
 	if err != nil {
 		return []string{"Not a git repo or no commits yet."}, err
 	}
@@ -25,7 +25,7 @@ func (s Service) LoadGraph() ([]string, error) {
 }
 
 func (s Service) LoadChanges() ([]ChangeEntry, error) {
-	out, _, err := s.runner.Run("status", "--porcelain", "--untracked-files=all")
+	out, _, err := s.runner.Run("--no-optional-locks", "status", "--porcelain", "--untracked-files=all")
 	if err != nil {
 		return nil, err
 	}

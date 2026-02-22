@@ -16,33 +16,46 @@ func CopyWithMode(cfg config.ClipboardConfig, text string) error {
 	if text == "" {
 		return nil
 	}
+	var lastErr error
 	switch cfg.Mode {
 	case config.ClipboardInternal:
 		return nil
 	case config.ClipboardOnlyCopy:
 		if err := copyWithOSC52(text); err == nil {
 			return nil
+		} else {
+			lastErr = err
 		}
 		if err := copyToSystemClipboard(text, cfg.CopyCmd); err == nil {
 			return nil
+		} else {
+			lastErr = err
 		}
 		return nil
 	case config.ClipboardOSC52:
 		if err := copyWithOSC52(text); err == nil {
 			return nil
+		} else {
+			lastErr = err
 		}
-		return nil
+		return lastErr
 	case config.ClipboardSystem:
 		if err := copyToSystemClipboard(text, cfg.CopyCmd); err == nil {
 			return nil
+		} else {
+			lastErr = err
 		}
-		return nil
+		return lastErr
 	default:
 		if err := copyWithOSC52(text); err == nil {
 			return nil
+		} else {
+			lastErr = err
 		}
 		if err := copyToSystemClipboard(text, cfg.CopyCmd); err == nil {
 			return nil
+		} else {
+			lastErr = err
 		}
 		return nil
 	}
@@ -124,7 +137,7 @@ func clipboardCopyCommand() (*exec.Cmd, error) {
 			return exec.Command(p, "--clipboard", "--input"), nil
 		}
 	}
-	return nil, fmt.Errorf("no clipboard copy tool found (tried wl-copy/xclip/xsel/pbcopy/clip)")
+	return nil, fmt.Errorf("no clipboard copy tool found (macOS: pbcopy, Windows: clip, Linux/NixOS: wl-clipboard/xclip/xsel)")
 }
 
 func clipboardPasteCommand() (*exec.Cmd, error) {
@@ -149,5 +162,5 @@ func clipboardPasteCommand() (*exec.Cmd, error) {
 			return exec.Command(p, "--clipboard", "--output"), nil
 		}
 	}
-	return nil, fmt.Errorf("no clipboard paste tool found (tried wl-paste/xclip/xsel/pbpaste/powershell)")
+	return nil, fmt.Errorf("no clipboard paste tool found (macOS: pbpaste, Windows: powershell Get-Clipboard, Linux/NixOS: wl-clipboard/xclip/xsel)")
 }

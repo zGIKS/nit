@@ -17,7 +17,7 @@ func Render(state app.AppState) string {
 	if commandActive {
 		commandText = state.CommandLineWithCaret()
 	} else if commandText == "" {
-		commandText = "Message (c to focus, Enter to commit, p to push)"
+		commandText = "Message (c focus, Enter commit)"
 	}
 
 	changeLines := make([]string, 0, len(state.Changes.Rows))
@@ -28,9 +28,17 @@ func Render(state app.AppState) string {
 		changeLines = []string{"Working tree clean."}
 	}
 
-	command := BoxView(
+	totalW := max(40, state.Viewport.Width)
+	pushW := max(18, totalW/4)
+	commitW := totalW - pushW - 1
+	if commitW < 20 {
+		commitW = 20
+		pushW = max(8, totalW-commitW-1)
+	}
+
+	commandBox := BoxView(
 		"Commit",
-		state.Viewport.Width,
+		commitW,
 		state.CommandPaneHeight(),
 		[]string{commandText},
 		0,
@@ -38,9 +46,24 @@ func Render(state app.AppState) string {
 		commandActive,
 		"",
 	)
+	pushHint := "p"
+	if commandActive {
+		pushHint = "Ctrl+P"
+	}
+	pushBox := BoxView(
+		"Push",
+		pushW,
+		state.CommandPaneHeight(),
+		[]string{pushHint},
+		0,
+		0,
+		false,
+		"",
+	)
+	command := HStack(commandBox, commitW, pushBox, pushW)
 	changes := BoxView(
 		"Changes",
-		state.Viewport.Width,
+		totalW,
 		state.ChangesPaneHeight(),
 		changeLines,
 		state.Changes.Cursor,
@@ -50,7 +73,7 @@ func Render(state app.AppState) string {
 	)
 	graph := BoxView(
 		"Commits - Reflog",
-		state.Viewport.Width,
+		totalW,
 		state.GraphPaneHeight(),
 		state.Graph.Lines,
 		state.Graph.Cursor,
@@ -60,7 +83,7 @@ func Render(state app.AppState) string {
 	)
 	commandLog := BoxView(
 		"Command Log",
-		state.Viewport.Width,
+		totalW,
 		state.CommandLogPaneHeight(),
 		state.CommandLog,
 		func() int {
@@ -82,7 +105,7 @@ func Render(state app.AppState) string {
 	if state.LastErr != "" {
 		err := BoxView(
 			"Error",
-			state.Viewport.Width,
+			totalW,
 			3,
 			[]string{state.LastErr},
 			0,

@@ -1,6 +1,9 @@
 package cmds
 
 import (
+	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -9,10 +12,22 @@ import (
 	g "nit/internal/nit/git"
 )
 
-const pollInterval = 700 * time.Millisecond
+const defaultPollInterval = 1500 * time.Millisecond
+
+func pollInterval() time.Duration {
+	raw := strings.TrimSpace(os.Getenv("NIT_POLL_MS"))
+	if raw == "" {
+		return defaultPollInterval
+	}
+	ms, err := strconv.Atoi(raw)
+	if err != nil || ms < 250 {
+		return defaultPollInterval
+	}
+	return time.Duration(ms) * time.Millisecond
+}
 
 func SchedulePoll() tea.Cmd {
-	return tea.Tick(pollInterval, func(time.Time) tea.Msg { return common.PollMsg{} })
+	return tea.Tick(pollInterval(), func(time.Time) tea.Msg { return common.PollMsg{} })
 }
 
 func LoadChangesCmd(svc g.Service) tea.Cmd {

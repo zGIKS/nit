@@ -28,4 +28,11 @@ keys = ["s"]
 keys = ["u"]
 
 [keys.push]
-keys = ["p"]
+keys = ["p", "ctrl+p"] # ctrl+p funciona incluso mientras escribes en Commit
+
+# Atajos del editor de Commit (actualmente hardcoded, no configurables en TOML):
+# enter, esc
+# ctrl+c, ctrl+x, ctrl+v
+# ctrl+a, ctrl+e
+# backspace, delete
+# left, right, home, end

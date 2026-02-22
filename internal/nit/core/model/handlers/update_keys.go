@@ -9,7 +9,7 @@ import (
 	g "nit/internal/nit/git"
 )
 
-// We need a way to access Model without circular dependency if possible, 
+// We need a way to access Model without circular dependency if possible,
 // but since handlers depends on Model fields, we can pass State/Git/etc.
 
 func HandleKeyMsg(
@@ -36,8 +36,11 @@ func HandleKeyMsg(
 				return nil
 			}
 			state.SetCommandClipboard(selected)
-			_ = common.CopyWithMode(clipCfg, selected)
-			state.SetError("")
+			if err := common.CopyWithMode(clipCfg, selected); err != nil {
+				state.SetError(err.Error())
+			} else {
+				state.SetError("")
+			}
 			state.Clamp()
 			return nil
 		case tea.KeyBackspace:
@@ -75,9 +78,12 @@ func HandleKeyMsg(
 				return nil
 			}
 			state.SetCommandClipboard(selected)
-			_ = common.CopyWithMode(clipCfg, selected)
+			if err := common.CopyWithMode(clipCfg, selected); err != nil {
+				state.SetError(err.Error())
+			} else {
+				state.SetError("")
+			}
 			state.DeleteCommandSelection()
-			state.SetError("")
 			state.Clamp()
 			return nil
 		case tea.KeyCtrlV:
@@ -89,6 +95,8 @@ func HandleKeyMsg(
 				if !*pasteHintAlreadySeen && clipCfg.Mode == config.ClipboardOnlyCopy {
 					state.SetError("paste from OS disabled in only_copy mode")
 					*pasteHintAlreadySeen = true
+				} else if err != nil {
+					state.SetError(err.Error())
 				}
 				state.Clamp()
 				return nil
@@ -108,7 +116,7 @@ func HandleKeyMsg(
 		}
 
 		action := state.Keys.Match(msg.String())
-		if action == app.ActionTogglePanel {
+		if action == app.ActionTogglePanel || action == app.ActionPush {
 			result := state.Apply(action)
 			state.Clamp()
 			return cmds.HandleResult(git, result)
