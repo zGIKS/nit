@@ -30,6 +30,35 @@ func (s *AppState) Clamp() {
 		return
 	}
 
+	if s.Focus == FocusCommandLog {
+		if len(s.CommandLog) == 0 {
+			s.CommandLogView.Cursor = 0
+			s.CommandLogView.Offset = 0
+			return
+		}
+		if s.CommandLogView.Cursor < 0 {
+			s.CommandLogView.Cursor = 0
+		}
+		if s.CommandLogView.Cursor >= len(s.CommandLog) {
+			s.CommandLogView.Cursor = len(s.CommandLog) - 1
+		}
+		page := s.commandLogPageSize()
+		if s.CommandLogView.Cursor < s.CommandLogView.Offset {
+			s.CommandLogView.Offset = s.CommandLogView.Cursor
+		}
+		if s.CommandLogView.Cursor >= s.CommandLogView.Offset+page {
+			s.CommandLogView.Offset = s.CommandLogView.Cursor - page + 1
+		}
+		maxOffset := max(0, len(s.CommandLog)-page)
+		if s.CommandLogView.Offset > maxOffset {
+			s.CommandLogView.Offset = maxOffset
+		}
+		if s.CommandLogView.Offset < 0 {
+			s.CommandLogView.Offset = 0
+		}
+		return
+	}
+
 	if len(s.Changes.Rows) == 0 {
 		s.Changes.Cursor = 0
 		s.Changes.Offset = 0
@@ -104,6 +133,14 @@ func (s AppState) graphPageSize() int {
 
 func (s AppState) changesPageSize() int {
 	h := s.ChangesPaneHeight() - 2
+	if h < 1 {
+		return 1
+	}
+	return h
+}
+
+func (s AppState) commandLogPageSize() int {
+	h := s.CommandLogPaneHeight() - 2
 	if h < 1 {
 		return 1
 	}

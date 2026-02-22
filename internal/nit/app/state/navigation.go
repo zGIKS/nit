@@ -24,6 +24,8 @@ func (s *AppState) Apply(action actions.Action) actions.ApplyResult {
 			s.snapChangesCursor(1)
 		case FocusChanges:
 			s.Focus = FocusGraph
+		case FocusGraph:
+			s.Focus = FocusCommandLog
 		default:
 			s.Command.ReturnFocus = FocusGraph
 			s.Focus = FocusCommand
@@ -84,6 +86,11 @@ func (s *AppState) Apply(action actions.Action) actions.ApplyResult {
 func (s *AppState) moveCursor(delta int) {
 	if s.Focus == FocusGraph {
 		s.Graph.Cursor += delta
+		s.Clamp()
+		return
+	}
+	if s.Focus == FocusCommandLog {
+		s.CommandLogView.Cursor += delta
 		s.Clamp()
 		return
 	}

@@ -180,6 +180,14 @@ func (s *AppState) AddCommandLog(cmd string) {
 	if len(s.CommandLog) > 100 {
 		s.CommandLog = s.CommandLog[len(s.CommandLog)-100:]
 	}
+	if len(s.CommandLog) == 0 {
+		s.CommandLogView.Cursor = 0
+		s.CommandLogView.Offset = 0
+		return
+	}
+	s.CommandLogView.Cursor = len(s.CommandLog) - 1
+	page := s.commandLogPageSize()
+	s.CommandLogView.Offset = max(0, len(s.CommandLog)-page)
 }
 
 func (s *AppState) DeleteCommandSelection() {

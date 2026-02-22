@@ -13,6 +13,7 @@ const (
 	FocusCommand FocusState = iota
 	FocusChanges
 	FocusGraph
+	FocusCommandLog
 )
 
 const (
@@ -51,20 +52,26 @@ type CommandState struct {
 	ReturnFocus FocusState
 }
 
+type CommandLogState struct {
+	Cursor int
+	Offset int
+}
+
 type Viewport struct {
 	Width  int
 	Height int
 }
 
 type AppState struct {
-	Focus         FocusState
-	Command       CommandState
-	Changes       ChangesState
-	Graph         GraphState
-	CommandLog    []string
-	Viewport      Viewport
-	Keys          input.Keymap
-	LastErr       string
+	Focus          FocusState
+	Command        CommandState
+	Changes        ChangesState
+	Graph          GraphState
+	CommandLogView CommandLogState
+	CommandLog     []string
+	Viewport       Viewport
+	Keys           input.Keymap
+	LastErr        string
 }
 
 func New(keys input.Keymap) AppState {

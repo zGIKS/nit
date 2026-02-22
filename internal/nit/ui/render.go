@@ -10,6 +10,7 @@ func Render(state app.AppState) string {
 	commandActive := state.Focus == app.FocusCommand
 	changesActive := state.Focus == app.FocusChanges
 	graphActive := state.Focus == app.FocusGraph
+	commandLogActive := state.Focus == app.FocusCommandLog
 	changeSel, changeTotal := state.ChangesPosition()
 	graphSel, graphTotal := state.GraphPosition()
 	commandText := state.Command.Input
@@ -62,9 +63,19 @@ func Render(state app.AppState) string {
 		state.Viewport.Width,
 		state.CommandLogPaneHeight(),
 		state.CommandLog,
-		len(state.CommandLog)-1,
-		max(0, len(state.CommandLog)-(state.CommandLogPaneHeight()-2)),
-		false,
+		func() int {
+			if commandLogActive {
+				return state.CommandLogView.Cursor
+			}
+			return len(state.CommandLog) - 1
+		}(),
+		func() int {
+			if commandLogActive {
+				return state.CommandLogView.Offset
+			}
+			return max(0, len(state.CommandLog)-(state.CommandLogPaneHeight()-2))
+		}(),
+		commandLogActive,
 		"",
 	)
 

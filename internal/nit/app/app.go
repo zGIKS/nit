@@ -38,9 +38,10 @@ const (
 	OpCommit      = actionspkg.OpCommit
 	OpPush        = actionspkg.OpPush
 
-	FocusCommand = statepkg.FocusCommand
-	FocusChanges = statepkg.FocusChanges
-	FocusGraph   = statepkg.FocusGraph
+	FocusCommand    = statepkg.FocusCommand
+	FocusChanges    = statepkg.FocusChanges
+	FocusGraph      = statepkg.FocusGraph
+	FocusCommandLog = statepkg.FocusCommandLog
 )
 
 func New(keys Keymap) AppState {

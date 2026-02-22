@@ -296,6 +296,23 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		result := m.state.Apply(action)
 		m.state.Clamp()
 		return m, m.handleResult(result)
+
+	case tea.MouseMsg:
+		if msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft {
+			m.state.HandleMouseClick(msg.X, msg.Y)
+			m.state.Clamp()
+			return m, nil
+		}
+		if msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonWheelUp {
+			m.state.HandleMouseWheel(msg.X, msg.Y, -1)
+			m.state.Clamp()
+			return m, nil
+		}
+		if msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonWheelDown {
+			m.state.HandleMouseWheel(msg.X, msg.Y, 1)
+			m.state.Clamp()
+			return m, nil
+		}
 	}
 
 	return m, nil
