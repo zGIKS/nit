@@ -3,6 +3,13 @@ package common
 import g "nit/internal/nit/git"
 
 type PollMsg struct{}
+type GraphPollMsg struct{}
+type WatchTickMsg struct{}
+
+type WatchReadyMsg struct {
+	Watcher *g.FSWatcher
+	Err     error
+}
 
 type ChangesLoadedMsg struct {
 	Entries []g.ChangeEntry

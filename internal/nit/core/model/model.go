@@ -13,6 +13,7 @@ import (
 type Model struct {
 	State                app.AppState
 	Git                  g.Service
+	Watcher              *g.FSWatcher
 	ClipCfg              config.ClipboardConfig
 	PasteHintAlreadySeen bool
 }
@@ -41,5 +42,12 @@ func New() Model {
 }
 
 func (m Model) Init() tea.Cmd {
-	return tea.Batch(cmds.SchedulePoll(), cmds.LoadChangesCmd(m.Git), cmds.LoadGraphCmd(m.Git), cmds.LoadRepoSummaryCmd(m.Git))
+	return tea.Batch(
+		cmds.ScheduleChangesPoll(),
+		cmds.ScheduleGraphPoll(),
+		cmds.LoadChangesCmd(m.Git),
+		cmds.LoadGraphCmd(m.Git),
+		cmds.LoadRepoSummaryCmd(m.Git),
+		cmds.InitWatchCmd(m.Git),
+	)
 }

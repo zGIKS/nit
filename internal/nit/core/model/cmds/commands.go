@@ -12,22 +12,38 @@ import (
 	g "nit/internal/nit/git"
 )
 
-const defaultPollInterval = 1500 * time.Millisecond
+const (
+	defaultChangesPollInterval = 4 * time.Second
+	defaultGraphPollInterval   = 15 * time.Second
+)
 
-func pollInterval() time.Duration {
-	raw := strings.TrimSpace(os.Getenv("NIT_POLL_MS"))
+func pollInterval(envKey string, fallback time.Duration) time.Duration {
+	raw := strings.TrimSpace(os.Getenv(envKey))
 	if raw == "" {
-		return defaultPollInterval
+		if envKey == "NIT_POLL_MS" {
+			raw = strings.TrimSpace(os.Getenv("NIT_POLL_MS"))
+		}
+		if raw == "" {
+			return fallback
+		}
 	}
 	ms, err := strconv.Atoi(raw)
 	if err != nil || ms < 250 {
-		return defaultPollInterval
+		return fallback
 	}
 	return time.Duration(ms) * time.Millisecond
 }
 
-func SchedulePoll() tea.Cmd {
-	return tea.Tick(pollInterval(), func(time.Time) tea.Msg { return common.PollMsg{} })
+func ScheduleChangesPoll() tea.Cmd {
+	return tea.Tick(pollInterval("NIT_POLL_CHANGES_MS", defaultChangesPollInterval), func(time.Time) tea.Msg {
+		return common.PollMsg{}
+	})
+}
+
+func ScheduleGraphPoll() tea.Cmd {
+	return tea.Tick(pollInterval("NIT_POLL_GRAPH_MS", defaultGraphPollInterval), func(time.Time) tea.Msg {
+		return common.GraphPollMsg{}
+	})
 }
 
 func LoadChangesCmd(svc g.Service) tea.Cmd {
@@ -48,6 +64,25 @@ func LoadRepoSummaryCmd(svc g.Service) tea.Cmd {
 	return func() tea.Msg {
 		repo, branch, err := svc.LoadRepoSummary()
 		return common.RepoSummaryLoadedMsg{Repo: repo, Branch: branch, Err: err}
+	}
+}
+
+func InitWatchCmd(svc g.Service) tea.Cmd {
+	return func() tea.Msg {
+		w, err := svc.NewFSWatcher()
+		return common.WatchReadyMsg{Watcher: w, Err: err}
+	}
+}
+
+func WaitWatchCmd(w *g.FSWatcher) tea.Cmd {
+	return func() tea.Msg {
+		if w == nil {
+			return nil
+		}
+		if _, ok := <-w.Events(); !ok {
+			return nil
+		}
+		return common.WatchTickMsg{}
 	}
 }
 

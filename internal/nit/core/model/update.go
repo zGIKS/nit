@@ -17,7 +17,26 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case common.PollMsg:
-		return m, tea.Batch(cmds.SchedulePoll(), cmds.LoadChangesCmd(m.Git))
+		return m, tea.Batch(cmds.ScheduleChangesPoll(), cmds.LoadChangesCmd(m.Git))
+
+	case common.GraphPollMsg:
+		return m, tea.Batch(cmds.ScheduleGraphPoll(), cmds.LoadGraphCmd(m.Git), cmds.LoadRepoSummaryCmd(m.Git))
+
+	case common.WatchReadyMsg:
+		if msg.Err != nil {
+			// Fallback polling remains active; surface the watcher error once.
+			m.State.SetError(msg.Err.Error())
+			return m, nil
+		}
+		m.Watcher = msg.Watcher
+		return m, cmds.WaitWatchCmd(m.Watcher)
+
+	case common.WatchTickMsg:
+		return m, tea.Batch(
+			cmds.WaitWatchCmd(m.Watcher),
+			cmds.LoadChangesCmd(m.Git),
+			cmds.LoadRepoSummaryCmd(m.Git),
+		)
 
 	case common.ChangesLoadedMsg:
 		return m, handlers.HandleChangesLoaded(&m.State, msg)
