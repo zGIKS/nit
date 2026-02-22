@@ -17,7 +17,7 @@ func Render(state app.AppState) string {
 	graphSel, graphTotal := state.GraphPosition()
 	commandText := state.Command.Input
 	if commandActive {
-		commandText = state.CommandLineWithCaret()
+		commandText = commandLineViewport(state, max(1, commitContentWidth(state.Viewport.Width)))
 	} else if commandText == "" {
 		commandText = "Message (c focus, Enter commit)"
 	}
@@ -117,7 +117,12 @@ func Render(state app.AppState) string {
 		"Push",
 		pushW,
 		3,
-		[]string{"p"},
+		[]string{func() string {
+			if commandActive {
+				return "Ctrl+P"
+			}
+			return "p"
+		}()},
 		0,
 		0,
 		false,
@@ -171,4 +176,48 @@ func Render(state app.AppState) string {
 	)
 
 	return command + "\n" + changes + "\n" + graph + "\n" + commandLog
+}
+
+func commitContentWidth(totalWidth int) int {
+	totalW := max(40, totalWidth)
+	pushW := max(18, totalW/4)
+	commitW := totalW - pushW - 1
+	if commitW < 20 {
+		commitW = 20
+	}
+	// BoxView visible width for content line is (w-4), but it also prepends
+	// a 2-char cursor prefix ("▌ " or "  "), so the user text gets (w-6).
+	return commitW - 6
+}
+
+func commandLineViewport(state app.AppState, width int) string {
+	if width < 4 {
+		return state.CommandLineWithCaret()
+	}
+	full := state.CommandLineWithCaret()
+	r := []rune(full)
+	if len(r) <= width {
+		return full
+	}
+
+	caret := 0
+	for i, ch := range r {
+		if ch == '|' {
+			caret = i
+			break
+		}
+	}
+
+	start := caret - width/2
+	if start < 0 {
+		start = 0
+	}
+	if start+width > len(r) {
+		start = len(r) - width
+	}
+	if start < 0 {
+		start = 0
+	}
+	end := min(len(r), start+width)
+	return string(r[start:end])
 }
