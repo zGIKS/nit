@@ -25,7 +25,7 @@ func (s Service) LoadGraph() ([]string, error) {
 }
 
 func (s Service) LoadChanges() ([]ChangeEntry, error) {
-	out, _, err := s.runner.Run("status", "--porcelain")
+	out, _, err := s.runner.Run("status", "--porcelain", "--untracked-files=all")
 	if err != nil {
 		return nil, err
 	}
