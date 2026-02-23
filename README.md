@@ -49,9 +49,9 @@ go build -o nit ./cmd/nit
 ### Arch Linux (AUR)
 
 ```bash
-yay -S nit
+yay -S nit-bin
 # or
-paru -S nit
+paru -S nit-bin
 ```
 
 ### Debian / Ubuntu
