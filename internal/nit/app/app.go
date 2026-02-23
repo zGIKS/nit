@@ -1,10 +1,10 @@
 package app
 
 import (
-	actionspkg "nit/internal/nit/app/actions"
-	inputpkg "nit/internal/nit/app/input"
-	statepkg "nit/internal/nit/app/state"
-	"nit/internal/nit/config"
+	actionspkg "github.com/zGIKS/nit/internal/nit/app/actions"
+	inputpkg "github.com/zGIKS/nit/internal/nit/app/input"
+	statepkg "github.com/zGIKS/nit/internal/nit/app/state"
+	"github.com/zGIKS/nit/internal/nit/config"
 )
 
 type (

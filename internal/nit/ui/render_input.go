@@ -1,6 +1,6 @@
 package ui
 
-import "nit/internal/nit/app"
+import "github.com/zGIKS/nit/internal/nit/app"
 
 func commitContentWidth(totalWidth int) int {
 	totalW := max(40, totalWidth)

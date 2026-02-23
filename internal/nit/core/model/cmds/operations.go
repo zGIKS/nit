@@ -1,8 +1,8 @@
 package cmds
 
 import (
-	"nit/internal/nit/app"
-	g "nit/internal/nit/git"
+	"github.com/zGIKS/nit/internal/nit/app"
+	g "github.com/zGIKS/nit/internal/nit/git"
 )
 
 func ExecOperation(svc g.Service, op app.Operation) (string, error) {

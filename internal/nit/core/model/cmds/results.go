@@ -2,8 +2,8 @@ package cmds
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"nit/internal/nit/app"
-	g "nit/internal/nit/git"
+	"github.com/zGIKS/nit/internal/nit/app"
+	g "github.com/zGIKS/nit/internal/nit/git"
 )
 
 func HandleResult(git g.Service, result app.ApplyResult) tea.Cmd {

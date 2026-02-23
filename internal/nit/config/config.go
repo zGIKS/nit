@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -68,9 +70,26 @@ type AppConfig struct {
 	UI         UIConfig
 }
 
+func defaultConfigPath() string {
+	switch runtime.GOOS {
+	case "darwin":
+		if home, err := os.UserHomeDir(); err == nil {
+			return filepath.Join(home, "Library", "Application Support", "nit", "nit.toml")
+		}
+	default:
+		if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
+			return filepath.Join(xdg, "nit", "nit.toml")
+		}
+		if home, err := os.UserHomeDir(); err == nil {
+			return filepath.Join(home, ".config", "nit", "nit.toml")
+		}
+	}
+	return "nit.toml"
+}
+
 func Load() (AppConfig, string) {
 	cfg := AppConfig{
-		ConfigFile: "nit.toml",
+		ConfigFile: defaultConfigPath(),
 		Clipboard: ClipboardConfig{
 			Mode: ClipboardOnlyCopy,
 		},
@@ -90,6 +109,11 @@ func Load() (AppConfig, string) {
 
 	if v := strings.TrimSpace(os.Getenv("NIT_CONFIG_FILE")); v != "" {
 		cfg.ConfigFile = v
+	} else if _, err := os.Stat(cfg.ConfigFile); errors.Is(err, os.ErrNotExist) {
+		// fall back to nit.toml in CWD for backwards compatibility
+		if _, cwdErr := os.Stat("nit.toml"); cwdErr == nil {
+			cfg.ConfigFile = "nit.toml"
+		}
 	}
 
 	var warns []string

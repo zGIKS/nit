@@ -1,4 +1,4 @@
-module nit
+module github.com/zGIKS/nit
 
 go 1.22
 

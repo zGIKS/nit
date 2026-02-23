@@ -1,6 +1,6 @@
 package state
 
-import "nit/internal/nit/git"
+import "github.com/zGIKS/nit/internal/nit/git"
 
 func (s *AppState) rebuildChangesSlices() {
 	s.Changes.Staged = s.Changes.Staged[:0]

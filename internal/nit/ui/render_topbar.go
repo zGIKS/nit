@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/mattn/go-runewidth"
-	"nit/internal/nit/app"
+	"github.com/zGIKS/nit/internal/nit/app"
 )
 
 func buildTopBar(state app.AppState, totalW int) string {

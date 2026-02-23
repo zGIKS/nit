@@ -2,10 +2,10 @@ package handlers
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"nit/internal/nit/app"
-	"nit/internal/nit/core/model/cmds"
-	"nit/internal/nit/core/model/common"
-	g "nit/internal/nit/git"
+	"github.com/zGIKS/nit/internal/nit/app"
+	"github.com/zGIKS/nit/internal/nit/core/model/cmds"
+	"github.com/zGIKS/nit/internal/nit/core/model/common"
+	g "github.com/zGIKS/nit/internal/nit/git"
 )
 
 func HandleChangesLoaded(state *app.AppState, msg common.ChangesLoadedMsg) tea.Cmd {

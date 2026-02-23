@@ -1,6 +1,6 @@
 package state
 
-import "nit/internal/nit/git"
+import "github.com/zGIKS/nit/internal/nit/git"
 
 func (s *AppState) selectedChange() (git.ChangeEntry, Section, bool) {
 	if len(s.Changes.Rows) == 0 || s.Changes.Cursor < 0 || s.Changes.Cursor >= len(s.Changes.Rows) {

@@ -1,7 +1,7 @@
 package state
 
 import (
-	"nit/internal/nit/app/actions"
+	"github.com/zGIKS/nit/internal/nit/app/actions"
 )
 
 func (s *AppState) HandleMouseClick(x, y int) {

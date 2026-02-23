@@ -4,10 +4,10 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"nit/internal/nit/app"
-	"nit/internal/nit/config"
-	"nit/internal/nit/core/model/cmds"
-	g "nit/internal/nit/git"
+	"github.com/zGIKS/nit/internal/nit/app"
+	"github.com/zGIKS/nit/internal/nit/config"
+	"github.com/zGIKS/nit/internal/nit/core/model/cmds"
+	g "github.com/zGIKS/nit/internal/nit/git"
 )
 
 func HandleKeyMsg(

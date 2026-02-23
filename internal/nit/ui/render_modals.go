@@ -3,7 +3,7 @@ package ui
 import (
 	"strings"
 
-	"nit/internal/nit/app"
+	"github.com/zGIKS/nit/internal/nit/app"
 )
 
 func menuDropdownView(state app.AppState, width int) string {

@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"nit/internal/nit/core/model"
+	"github.com/zGIKS/nit/internal/nit/core/model"
 )
 
 func Run() error {

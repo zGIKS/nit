@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"nit/internal/nit/app/actions"
-	"nit/internal/nit/config"
+	"github.com/zGIKS/nit/internal/nit/app/actions"
+	"github.com/zGIKS/nit/internal/nit/config"
 )
 
 type Keymap struct {

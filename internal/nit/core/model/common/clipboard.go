@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"strings"
 
-	"nit/internal/nit/config"
+	"github.com/zGIKS/nit/internal/nit/config"
 )
 
 func CopyWithMode(cfg config.ClipboardConfig, text string) error {
@@ -31,8 +31,7 @@ func CopyWithMode(cfg config.ClipboardConfig, text string) error {
 		} else {
 			lastErr = err
 		}
-		return nil
-	case config.ClipboardOSC52:
+		return lastErr
 		if err := copyWithOSC52(text); err == nil {
 			return nil
 		} else {
@@ -57,7 +56,7 @@ func CopyWithMode(cfg config.ClipboardConfig, text string) error {
 		} else {
 			lastErr = err
 		}
-		return nil
+		return lastErr
 	}
 }
 

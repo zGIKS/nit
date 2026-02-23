@@ -1,0 +1,11 @@
+# compiled binary
+nit
+
+# Go build/test artifacts
+*.test
+*.out
+dist/
+
+# environment / local config overrides
+.env
+.env.*

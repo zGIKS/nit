@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"nit/internal/nit/app"
+	"github.com/zGIKS/nit/internal/nit/app"
 )
 
 func Render(state app.AppState) string {

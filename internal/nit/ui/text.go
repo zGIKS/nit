@@ -6,7 +6,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/mattn/go-runewidth"
-	"nit/internal/nit/util"
+	"github.com/zGIKS/nit/internal/nit/util"
 )
 
 func fitText(text string, width int, fill rune) string {

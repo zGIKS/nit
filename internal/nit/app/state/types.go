@@ -1,8 +1,8 @@
 package state
 
 import (
-	"nit/internal/nit/app/input"
-	"nit/internal/nit/git"
+	"github.com/zGIKS/nit/internal/nit/app/input"
+	"github.com/zGIKS/nit/internal/nit/git"
 )
 
 type FocusState int

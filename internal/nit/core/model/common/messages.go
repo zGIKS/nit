@@ -1,6 +1,6 @@
 package common
 
-import g "nit/internal/nit/git"
+import g "github.com/zGIKS/nit/internal/nit/git"
 
 type PollMsg struct{}
 type GraphPollMsg struct{}

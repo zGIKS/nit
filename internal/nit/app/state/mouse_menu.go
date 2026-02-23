@@ -1,6 +1,6 @@
 package state
 
-import "nit/internal/nit/app/actions"
+import "github.com/zGIKS/nit/internal/nit/app/actions"
 
 func (s *AppState) handleMenuClick(x, y int) bool {
 	if idx, ok := s.MenuItemIndexAt(x, y); ok {

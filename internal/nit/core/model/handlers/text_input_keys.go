@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"nit/internal/nit/app"
-	"nit/internal/nit/config"
-	"nit/internal/nit/core/model/common"
+	"github.com/zGIKS/nit/internal/nit/app"
+	"github.com/zGIKS/nit/internal/nit/config"
+	"github.com/zGIKS/nit/internal/nit/core/model/common"
 
 	tea "github.com/charmbracelet/bubbletea"
 )

@@ -2,9 +2,9 @@ package model
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"nit/internal/nit/core/model/cmds"
-	"nit/internal/nit/core/model/common"
-	"nit/internal/nit/core/model/handlers"
+	"github.com/zGIKS/nit/internal/nit/core/model/cmds"
+	"github.com/zGIKS/nit/internal/nit/core/model/common"
+	"github.com/zGIKS/nit/internal/nit/core/model/handlers"
 )
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
