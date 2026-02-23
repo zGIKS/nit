@@ -1,9 +1,6 @@
 package state
 
 import (
-	"strings"
-
-	"github.com/mattn/go-runewidth"
 	"nit/internal/nit/app/actions"
 )
 
@@ -44,64 +41,96 @@ func (s *AppState) TopBarActionAt(x, y int) (actions.Action, bool) {
 		return actions.ActionNone, false
 	}
 
-	totalW := max(40, s.Viewport.Width)
-	repoName := s.RepoName
-	if repoName == "" {
-		repoName = "unknown"
-	}
-	branchName := s.BranchName
-	if branchName == "" {
-		branchName = "-"
-	}
-
-	repoText := strings.TrimSpace(s.RepoLabel + " " + repoName)
-	branchText := strings.TrimSpace(s.BranchLabel + " " + branchName)
-	fetchText := strings.TrimSpace(s.FetchLabel)
-	menuText := strings.TrimSpace(s.MenuLabel)
-
-	repoW := max(16, runewidth.StringWidth(repoText)+4)
-	branchW := max(16, runewidth.StringWidth(branchText)+4)
-	fetchW := max(14, runewidth.StringWidth(fetchText)+4)
-	menuW := max(8, runewidth.StringWidth(menuText)+4)
-	minRepoW, minBranchW, minFetchW, minMenuW := 14, 12, 10, 8
-
-	totalNeeded := repoW + branchW + fetchW + menuW + 3
-	overflow := totalNeeded - totalW
-	shrink := func(w *int, minW int) {
-		if overflow <= 0 {
-			return
-		}
-		can := *w - minW
-		if can <= 0 {
-			return
-		}
-		d := min(can, overflow)
-		*w -= d
-		overflow -= d
-	}
-	shrink(&repoW, minRepoW)
-	shrink(&branchW, minBranchW)
-	shrink(&fetchW, minFetchW)
-	shrink(&menuW, minMenuW)
-	if overflow > 0 {
-		repoW = max(minRepoW, repoW-overflow)
-	}
-
-	rightTopW := branchW + fetchW + menuW + 2
-	gapW := totalW - repoW - rightTopW - 2
-	if gapW < 1 {
-		gapW = 1
-	}
-
-	branchX := repoW + 1 + gapW + 1
-	fetchX := branchX + branchW + 1
-	menuX := fetchX + fetchW + 1
-	_ = menuX // reserved for future click actions
+	fetchX, fetchW, _, _ := s.topBarBoxes()
 
 	if x >= fetchX && x < fetchX+fetchW {
 		return actions.ActionFetch, true
 	}
 	return actions.ActionNone, false
+}
+
+func (s *AppState) HandleMouseMove(x, y int) {
+	s.HoverFetch = false
+	s.HoverMenu = false
+	if y < 0 || x < 0 {
+		s.MenuHoverIndex = -1
+		return
+	}
+
+	if fx, fy, fw, fh := s.FetchButtonRect(); x >= fx && x < fx+fw && y >= fy && y < fy+fh {
+		s.HoverFetch = true
+	}
+	if mx, my, mw, mh := s.MenuButtonRect(); x >= mx && x < mx+mw && y >= my && y < my+mh {
+		s.HoverMenu = true
+	}
+	if idx, ok := s.MenuItemIndexAt(x, y); ok {
+		s.MenuHoverIndex = idx
+		return
+	}
+	s.MenuHoverIndex = -1
+}
+
+func (s *AppState) handleMenuClick(x, y int) bool {
+	if idx, ok := s.MenuItemIndexAt(x, y); ok {
+		s.CloseMenu()
+		_ = idx
+		return true
+	}
+	if mx, my, mw, mh := s.MenuButtonRect(); x >= mx && x < mx+mw && y >= my && y < my+mh {
+		s.ToggleMenu()
+		if s.MenuOpen {
+			s.MenuHoverIndex = -1
+		}
+		return true
+	}
+	if s.MenuOpen {
+		s.CloseMenu()
+		return false
+	}
+	return false
+}
+
+func (s *AppState) MenuClickActionAt(x, y int) (actions.Action, bool) {
+	idx, ok := s.MenuItemIndexAt(x, y)
+	if !ok {
+		return actions.ActionNone, false
+	}
+	item := s.MenuItems()[idx]
+	s.CloseMenu()
+	switch item {
+	case "Fetch":
+		return actions.ActionFetch, true
+	case "Push":
+		return actions.ActionPush, true
+	default:
+		s.SetError("menu action not implemented yet")
+		return actions.ActionNone, false
+	}
+}
+
+func (s *AppState) ToggleMenuClick(x, y int) bool {
+	if mx, my, mw, mh := s.MenuButtonRect(); x >= mx && x < mx+mw && y >= my && y < my+mh {
+		s.ToggleMenu()
+		return true
+	}
+	return false
+}
+
+func (s *AppState) CloseMenuOnOutsideClick(x, y int) {
+	if !s.MenuOpen {
+		return
+	}
+	if _, ok := s.MenuItemIndexAt(x, y); ok {
+		return
+	}
+	if mx, my, mw, mh := s.MenuButtonRect(); x >= mx && x < mx+mw && y >= my && y < my+mh {
+		return
+	}
+	px, py, pw, ph := s.MenuPanelRect()
+	if x >= px && x < px+pw && y >= py && y < py+ph {
+		return
+	}
+	s.CloseMenu()
 }
 
 func (s *AppState) HandleMouseWheel(x, y, delta int) {

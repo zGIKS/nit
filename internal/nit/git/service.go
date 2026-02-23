@@ -3,6 +3,7 @@ package git
 import (
 	"errors"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -79,6 +80,9 @@ func (s Service) Commit(message string) (string, error) {
 }
 
 func (s Service) Push() (string, error) {
+	if err := s.ensureHasOutgoingCommits(); err != nil {
+		return "", err
+	}
 	_, cmd, err := s.runner.Run("push")
 	return cmd, err
 }
@@ -103,4 +107,23 @@ func (s Service) LoadRepoSummary() (string, string, error) {
 		br = "(detached)"
 	}
 	return repo, br, nil
+}
+
+func (s Service) ensureHasOutgoingCommits() error {
+	// If there is no upstream configured, allow push so users can publish/set upstream.
+	if _, _, err := s.runner.Run("--no-optional-locks", "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"); err != nil {
+		return nil
+	}
+	out, _, err := s.runner.Run("--no-optional-locks", "rev-list", "--count", "@{u}..HEAD")
+	if err != nil {
+		return nil
+	}
+	n, convErr := strconv.Atoi(strings.TrimSpace(out))
+	if convErr != nil {
+		return nil
+	}
+	if n == 0 {
+		return errors.New("nothing to push")
+	}
+	return nil
 }

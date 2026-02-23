@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/mattn/go-runewidth"
@@ -110,13 +111,25 @@ func TopBarView(width int, left, right string) string {
 }
 
 func MiniBoxView(text string, width int) string {
+	return miniBoxViewStyled(text, width, false)
+}
+
+func MiniBoxViewUnderline(text string, width int) string {
+	return miniBoxViewStyled(text, width, true)
+}
+
+func miniBoxViewStyled(text string, width int, underline bool) string {
 	w := max(8, width)
 	innerW := w - 2
 	if innerW < 1 {
 		innerW = 1
 	}
 	top := "┌" + strings.Repeat("─", innerW) + "┐"
-	mid := "│" + fitText(" "+strings.TrimSpace(text)+" ", innerW, ' ') + "│"
+	midText := fitText(" "+strings.TrimSpace(text)+" ", innerW, ' ')
+	if underline {
+		midText = ansiUnderline(midText)
+	}
+	mid := "│" + midText + "│"
 	bot := "└" + strings.Repeat("─", innerW) + "┘"
 	return top + "\n" + mid + "\n" + bot
 }
@@ -184,4 +197,8 @@ func truncateDisplayWidth(s string, width int) string {
 		cur += rw
 	}
 	return b.String()
+}
+
+func ansiUnderline(s string) string {
+	return fmt.Sprintf("\x1b[4m%s\x1b[24m", s)
 }

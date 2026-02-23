@@ -72,6 +72,10 @@ type AppState struct {
 	Viewport       Viewport
 	Keys           input.Keymap
 	LastErr        string
+	MenuOpen       bool
+	MenuHoverIndex int
+	HoverFetch     bool
+	HoverMenu      bool
 	RepoName       string
 	BranchName     string
 	RepoLabel      string
@@ -89,12 +93,13 @@ func New(keys input.Keymap) AppState {
 		Changes: ChangesState{
 			StickySection: SectionUnstaged,
 		},
-		Keys:        keys,
-		RepoName:    "loading...",
-		BranchName:  "loading...",
-		RepoLabel:   "repo",
-		BranchLabel: "branch",
-		FetchLabel:  "[f] fetch",
-		MenuLabel:   "...",
+		Keys:           keys,
+		MenuHoverIndex: -1,
+		RepoName:       "loading...",
+		BranchName:     "loading...",
+		RepoLabel:      "repo",
+		BranchLabel:    "branch",
+		FetchLabel:     "[f] fetch",
+		MenuLabel:      "...",
 	}
 }

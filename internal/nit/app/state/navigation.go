@@ -40,6 +40,10 @@ func (s *AppState) Apply(action actions.Action) actions.ApplyResult {
 			if msg == "" {
 				break
 			}
+			if len(s.Changes.Staged) == 0 {
+				s.SetError("nothing staged to commit")
+				break
+			}
 			res.Operations = []actions.Operation{{Kind: actions.OpCommit, Message: msg}}
 			res.RefreshChanges = true
 			res.RefreshGraph = true
@@ -79,11 +83,28 @@ func (s *AppState) Apply(action actions.Action) actions.ApplyResult {
 		res.Operations = []actions.Operation{{Kind: actions.OpFetch}}
 		res.RefreshGraph = true
 	case actions.ActionPush:
+		if !s.canPush() {
+			s.SetError("nothing to push")
+			break
+		}
 		res.Operations = []actions.Operation{{Kind: actions.OpPush}}
 		res.RefreshGraph = true
 	}
 	s.Clamp()
 	return res
+}
+
+func (s *AppState) canPush() bool {
+	if len(s.Graph.Lines) == 0 {
+		return true
+	}
+	if len(s.Graph.Lines) == 1 {
+		line := s.Graph.Lines[0]
+		if line == "No commits to display." || line == "Not a git repo or no commits yet." {
+			return false
+		}
+	}
+	return true
 }
 
 func (s *AppState) moveCursor(delta int) {

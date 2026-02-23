@@ -87,8 +87,18 @@ func Render(state app.AppState) string {
 	rightTop := HStackMany(
 		[]string{
 			MiniBoxView(branchText, branchW),
-			MiniBoxView(fetchText, fetchW),
-			MiniBoxView(menuText, menuW),
+			func() string {
+				if state.HoverFetch {
+					return MiniBoxViewUnderline(fetchText, fetchW)
+				}
+				return MiniBoxView(fetchText, fetchW)
+			}(),
+			func() string {
+				if state.HoverMenu {
+					return MiniBoxViewUnderline(menuText, menuW)
+				}
+				return MiniBoxView(menuText, menuW)
+			}(),
 		},
 		[]int{branchW, fetchW, menuW},
 	)
@@ -175,7 +185,60 @@ func Render(state app.AppState) string {
 		commandLogFooter,
 	)
 
-	return command + "\n" + changes + "\n" + graph + "\n" + commandLog
+	out := command + "\n" + changes + "\n" + graph + "\n" + commandLog
+	if state.MenuOpen {
+		menuPanelX, menuPanelY, menuPanelW, _ := state.MenuPanelRect()
+		out = overlayBlock(out, menuDropdownView(state, menuPanelW), menuPanelX, menuPanelY, menuPanelW)
+	}
+	return out
+}
+
+func menuDropdownView(state app.AppState, width int) string {
+	items := state.MenuItems()
+	w := max(18, width)
+	innerW := w - 2
+	if innerW < 1 {
+		innerW = 1
+	}
+	top := "┌" + strings.Repeat("─", innerW) + "┐"
+	bottom := "└" + strings.Repeat("─", innerW) + "┘"
+	lines := make([]string, 0, len(items)+2)
+	lines = append(lines, top)
+	for i, item := range items {
+		text := fitText(" "+item+" ", innerW, ' ')
+		if state.MenuHoverIndex == i {
+			text = ansiUnderline(text)
+		}
+		lines = append(lines, "│"+text+"│")
+	}
+	lines = append(lines, bottom)
+	return strings.Join(lines, "\n")
+}
+
+func overlayBlock(base, overlay string, x, y, width int) string {
+	if base == "" || overlay == "" || x < 0 || y < 0 || width <= 0 {
+		return base
+	}
+	baseLines := strings.Split(base, "\n")
+	overLines := strings.Split(overlay, "\n")
+	for i, ol := range overLines {
+		row := y + i
+		if row < 0 || row >= len(baseLines) {
+			continue
+		}
+		bl := []rune(baseLines[row])
+		if len(bl) < x {
+			bl = append(bl, []rune(strings.Repeat(" ", x-len(bl)))...)
+		}
+		end := x + width
+		if len(bl) < end {
+			bl = append(bl, []rune(strings.Repeat(" ", end-len(bl)))...)
+		}
+		left := string(bl[:x])
+		right := string(bl[end:])
+		baseLines[row] = left + ol + right
+	}
+	return strings.Join(baseLines, "\n")
 }
 
 func commitContentWidth(totalWidth int) int {
