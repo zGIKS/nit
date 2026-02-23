@@ -84,7 +84,12 @@ func Render(state app.AppState) string {
 	rightTopW := branchW + menuW + 1
 	rightTop := HStackMany(
 		[]string{
-			MiniBoxView(branchText, branchW),
+			func() string {
+				if state.HoverBranch {
+					return MiniBoxViewUnderline(branchText, branchW)
+				}
+				return MiniBoxView(branchText, branchW)
+			}(),
 			func() string {
 				if state.HoverMenu {
 					return MiniBoxViewUnderline(menuText, menuW)
@@ -194,6 +199,10 @@ func Render(state app.AppState) string {
 		menuPanelX, menuPanelY, menuPanelW, _ := state.MenuPanelRect()
 		out = overlayBlock(out, menuDropdownView(state, menuPanelW), menuPanelX, menuPanelY, menuPanelW)
 	}
+	if state.BranchCreateOpen {
+		panelX, panelY, panelW, panelH := state.BranchCreatePanelRect()
+		out = overlayBlock(out, branchCreateModalView(state, panelW, panelH), panelX, panelY, panelW)
+	}
 	return out
 }
 
@@ -216,6 +225,66 @@ func menuDropdownView(state app.AppState, width int) string {
 		lines = append(lines, "│"+text+"│")
 	}
 	lines = append(lines, bottom)
+	return strings.Join(lines, "\n")
+}
+
+func branchCreateModalView(state app.AppState, width, height int) string {
+	w := max(36, width)
+	if width > 0 {
+		w = width
+	}
+	if w < 4 {
+		w = 4
+	}
+	innerW := w - 2
+	if innerW < 1 {
+		innerW = 1
+	}
+	lines := make([]string, 0, max(3, height))
+	top := "┌" + strings.Repeat("─", innerW) + "┐"
+	bottom := "└" + strings.Repeat("─", innerW) + "┘"
+	title := fitText(" Create a branch ", innerW, ' ')
+	lines = append(lines, top)
+	lines = append(lines, "│"+title+"│")
+	lines = append(lines, "├"+strings.Repeat("─", innerW)+"┤")
+	lines = append(lines, "│"+fitText(" New branch name", innerW, ' ')+"│")
+	inputViewportW := max(1, innerW-1)
+	lines = append(lines, "│"+fitText(" "+textInputViewport(state.BranchCreateName, state.BranchCreateCursor, state.BranchCreateSelectAll, inputViewportW), innerW, ' ')+"│")
+	lines = append(lines, "│"+fitText(" Source: "+state.BranchCreateSource, innerW, ' ')+"│")
+
+	_, _, _, remaining := state.BranchCreateSourceListRect()
+	start := state.BranchCreateSourceOffset
+	for i := 0; i < remaining; i++ {
+		var row string
+		idx := start + i
+		if idx < len(state.BranchCreateSourceList) {
+			name := state.BranchCreateSourceList[idx]
+			prefix := "  "
+			if name == state.BranchCreateSource {
+				prefix = "✓ "
+			}
+			label := prefix + name
+			if state.BranchCreateHoverIndex == idx {
+				row = fitText(label, innerW, ' ')
+			} else {
+				row = fitText(label, innerW, ' ')
+			}
+		} else {
+			row = fitText("", innerW, ' ')
+		}
+		lines = append(lines, "│"+row+"│")
+	}
+	lines = append(lines, bottom)
+
+	if len(lines) > height {
+		lines = lines[:height]
+		if len(lines) > 0 {
+			lines[len(lines)-1] = bottom
+		}
+	}
+	for len(lines) < height {
+		lines = append(lines, "│"+fitText("", innerW, ' ')+"│")
+	}
 	return strings.Join(lines, "\n")
 }
 
@@ -258,34 +327,21 @@ func commitContentWidth(totalWidth int) int {
 }
 
 func commandLineViewport(state app.AppState, width int) string {
+	return textInputViewport(state.Command.Input, state.Command.Cursor, state.Command.SelectAll, width)
+}
+
+func textInputViewport(value string, cursor int, selectAll bool, width int) string {
+	full := textInputLineWithCaret(value, cursor, selectAll)
 	if width < 4 {
-		return state.CommandLineWithCaret()
+		return full
 	}
-	full := state.CommandLineWithCaret()
-	caret := 0
-	if !state.Command.SelectAll {
-		r := []rune(state.Command.Input)
-		cursor := state.Command.Cursor
-		if cursor < 0 {
-			cursor = 0
-		}
-		if cursor > len(r) {
-			cursor = len(r)
-		}
-		full = string(append(append(append([]rune{}, r[:cursor]...), '|'), r[cursor:]...))
-		caret = cursor
+	caret := cursor
+	if selectAll {
+		caret = len([]rune(value))
 	}
 	r := []rune(full)
 	if len(r) <= width {
 		return full
-	}
-	if state.Command.SelectAll {
-		for i, ch := range r {
-			if ch == '|' {
-				caret = i
-				break
-			}
-		}
 	}
 
 	start := caret - width/2
@@ -300,4 +356,22 @@ func commandLineViewport(state app.AppState, width int) string {
 	}
 	end := min(len(r), start+width)
 	return string(r[start:end])
+}
+
+func textInputLineWithCaret(value string, cursor int, selectAll bool) string {
+	if selectAll && value != "" {
+		return "[" + value + "]"
+	}
+	r := []rune(value)
+	if cursor < 0 {
+		cursor = 0
+	}
+	if cursor > len(r) {
+		cursor = len(r)
+	}
+	out := make([]rune, 0, len(r)+1)
+	out = append(out, r[:cursor]...)
+	out = append(out, '|')
+	out = append(out, r[cursor:]...)
+	return string(out)
 }

@@ -9,6 +9,19 @@ import (
 	g "nit/internal/nit/git"
 )
 
+type textInputKeyOps struct {
+	Selected        func() string
+	Append          func(string)
+	Backspace       func()
+	Delete          func()
+	MoveLeft        func()
+	MoveRight       func()
+	MoveHome        func()
+	MoveEnd         func()
+	SelectAll       func()
+	DeleteSelection func()
+}
+
 // We need a way to access Model without circular dependency if possible,
 // but since handlers depends on Model fields, we can pass State/Git/etc.
 
@@ -19,6 +32,42 @@ func HandleKeyMsg(
 	pasteHintAlreadySeen *bool,
 	msg tea.KeyMsg,
 ) tea.Cmd {
+	if state.BranchCreateOpen {
+		switch msg.Type {
+		case tea.KeyEsc:
+			state.CloseBranchCreate()
+		case tea.KeyEnter:
+			state.SetError("create branch not implemented yet")
+			state.CloseBranchCreate()
+		case tea.KeyUp:
+			state.BranchCreateMoveSource(-1)
+		case tea.KeyDown:
+			state.BranchCreateMoveSource(1)
+		case tea.KeyTab:
+			state.BranchCreateMoveSource(1)
+		case tea.KeyShiftTab:
+			state.BranchCreateMoveSource(-1)
+		default:
+			if handleSharedTextInputKey(state, clipCfg, pasteHintAlreadySeen, msg, textInputKeyOps{
+				Selected:        state.SelectedBranchCreateText,
+				Append:          state.BranchCreateAppendText,
+				Backspace:       state.BranchCreateBackspace,
+				Delete:          state.BranchCreateDelete,
+				MoveLeft:        state.BranchCreateCursorLeft,
+				MoveRight:       state.BranchCreateCursorRight,
+				MoveHome:        state.BranchCreateCursorHome,
+				MoveEnd:         state.BranchCreateCursorEnd,
+				SelectAll:       state.BranchCreateSelectAllText,
+				DeleteSelection: state.DeleteBranchCreateSelection,
+			}) {
+				state.Clamp()
+				return nil
+			}
+		}
+		state.Clamp()
+		return nil
+	}
+
 	if state.Focus == app.FocusCommand {
 		switch msg.Type {
 		case tea.KeyEnter:
@@ -29,88 +78,19 @@ func HandleKeyMsg(
 			state.ExitCommandFocus()
 			state.Clamp()
 			return nil
-		case tea.KeyCtrlC:
-			selected := state.SelectedCommandText()
-			if selected == "" {
-				state.Clamp()
-				return nil
-			}
-			state.SetCommandClipboard(selected)
-			if err := common.CopyWithMode(clipCfg, selected); err != nil {
-				state.SetError(err.Error())
-			} else {
-				state.SetError("")
-			}
-			state.Clamp()
-			return nil
-		case tea.KeyBackspace:
-			state.BackspaceCommandText()
-			state.Clamp()
-			return nil
-		case tea.KeyDelete:
-			state.DeleteCommandText()
-			state.Clamp()
-			return nil
-		case tea.KeyLeft:
-			state.MoveCommandCursorLeft()
-			state.Clamp()
-			return nil
-		case tea.KeyRight:
-			state.MoveCommandCursorRight()
-			state.Clamp()
-			return nil
-		case tea.KeyHome:
-			state.MoveCommandCursorToStart()
-			state.Clamp()
-			return nil
-		case tea.KeyEnd, tea.KeyCtrlE:
-			state.MoveCommandCursorToEnd()
-			state.Clamp()
-			return nil
-		case tea.KeyCtrlA:
-			state.SelectAllCommandText()
-			state.Clamp()
-			return nil
-		case tea.KeyCtrlX:
-			selected := state.SelectedCommandText()
-			if selected == "" {
-				state.Clamp()
-				return nil
-			}
-			state.SetCommandClipboard(selected)
-			if err := common.CopyWithMode(clipCfg, selected); err != nil {
-				state.SetError(err.Error())
-			} else {
-				state.SetError("")
-			}
-			state.DeleteCommandSelection()
-			state.Clamp()
-			return nil
-		case tea.KeyCtrlV:
-			pasted, err := common.PasteWithMode(clipCfg)
-			if err != nil || pasted == "" {
-				pasted = state.CommandClipboard()
-			}
-			if pasted == "" {
-				if !*pasteHintAlreadySeen && clipCfg.Mode == config.ClipboardOnlyCopy {
-					state.SetError("paste from OS disabled in only_copy mode")
-					*pasteHintAlreadySeen = true
-				} else if err != nil {
-					state.SetError(err.Error())
-				}
-				state.Clamp()
-				return nil
-			}
-			state.AppendCommandText(pasted)
-			state.SetError("")
-			state.Clamp()
-			return nil
-		case tea.KeySpace:
-			state.AppendCommandText(" ")
-			state.Clamp()
-			return nil
-		case tea.KeyRunes:
-			state.AppendCommandText(string(msg.Runes))
+		}
+		if handleSharedTextInputKey(state, clipCfg, pasteHintAlreadySeen, msg, textInputKeyOps{
+			Selected:        state.SelectedCommandText,
+			Append:          state.AppendCommandText,
+			Backspace:       state.BackspaceCommandText,
+			Delete:          state.DeleteCommandText,
+			MoveLeft:        state.MoveCommandCursorLeft,
+			MoveRight:       state.MoveCommandCursorRight,
+			MoveHome:        state.MoveCommandCursorToStart,
+			MoveEnd:         state.MoveCommandCursorToEnd,
+			SelectAll:       state.SelectAllCommandText,
+			DeleteSelection: state.DeleteCommandSelection,
+		}) {
 			state.Clamp()
 			return nil
 		}
@@ -130,4 +110,86 @@ func HandleKeyMsg(
 	result := state.Apply(action)
 	state.Clamp()
 	return cmds.HandleResult(git, result)
+}
+
+func handleSharedTextInputKey(
+	state *app.AppState,
+	clipCfg config.ClipboardConfig,
+	pasteHintAlreadySeen *bool,
+	msg tea.KeyMsg,
+	ops textInputKeyOps,
+) bool {
+	switch msg.Type {
+	case tea.KeyCtrlC:
+		selected := ops.Selected()
+		if selected == "" {
+			return true
+		}
+		state.SetCommandClipboard(selected)
+		if err := common.CopyWithMode(clipCfg, selected); err != nil {
+			state.SetError(err.Error())
+		} else {
+			state.SetError("")
+		}
+		return true
+	case tea.KeyCtrlX:
+		selected := ops.Selected()
+		if selected == "" {
+			return true
+		}
+		state.SetCommandClipboard(selected)
+		if err := common.CopyWithMode(clipCfg, selected); err != nil {
+			state.SetError(err.Error())
+		} else {
+			state.SetError("")
+		}
+		ops.DeleteSelection()
+		return true
+	case tea.KeyCtrlV:
+		pasted, err := common.PasteWithMode(clipCfg)
+		if err != nil || pasted == "" {
+			pasted = state.CommandClipboard()
+		}
+		if pasted == "" {
+			if !*pasteHintAlreadySeen && clipCfg.Mode == config.ClipboardOnlyCopy {
+				state.SetError("paste from OS disabled in only_copy mode")
+				*pasteHintAlreadySeen = true
+			} else if err != nil {
+				state.SetError(err.Error())
+			}
+			return true
+		}
+		ops.Append(pasted)
+		state.SetError("")
+		return true
+	case tea.KeyBackspace:
+		ops.Backspace()
+		return true
+	case tea.KeyDelete:
+		ops.Delete()
+		return true
+	case tea.KeyLeft:
+		ops.MoveLeft()
+		return true
+	case tea.KeyRight:
+		ops.MoveRight()
+		return true
+	case tea.KeyHome:
+		ops.MoveHome()
+		return true
+	case tea.KeyEnd, tea.KeyCtrlE:
+		ops.MoveEnd()
+		return true
+	case tea.KeyCtrlA:
+		ops.SelectAll()
+		return true
+	case tea.KeySpace:
+		ops.Append(" ")
+		return true
+	case tea.KeyRunes:
+		ops.Append(string(msg.Runes))
+		return true
+	default:
+		return false
+	}
 }

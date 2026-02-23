@@ -6,6 +6,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/mattn/go-runewidth"
+	"nit/internal/nit/util"
 )
 
 func BoxView(title string, width, boxHeight int, lines []string, cursor, offset int, active bool, footer string) string {
@@ -166,17 +167,11 @@ func fitText(text string, width int, fill rune) string {
 }
 
 func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
+	return util.Min(a, b)
 }
 
 func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
+	return util.Max(a, b)
 }
 
 func truncateDisplayWidth(s string, width int) string {

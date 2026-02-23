@@ -1,8 +1,7 @@
 package state
 
+import "nit/internal/nit/util"
+
 func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
+	return util.Max(a, b)
 }

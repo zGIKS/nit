@@ -84,12 +84,21 @@ type AppState struct {
 	MenuHoverIndex int
 	HoverFetch     bool
 	HoverMenu      bool
+	HoverBranch    bool
 	RepoName       string
 	BranchName     string
 	RepoLabel      string
 	BranchLabel    string
 	FetchLabel     string
 	MenuLabel      string
+	BranchCreateOpen       bool
+	BranchCreateName       string
+	BranchCreateCursor     int
+	BranchCreateSelectAll  bool
+	BranchCreateSource     string
+	BranchCreateSourceList []string
+	BranchCreateSourceOffset int
+	BranchCreateHoverIndex int
 }
 
 func New(keys input.Keymap) AppState {
@@ -106,6 +115,7 @@ func New(keys input.Keymap) AppState {
 		},
 		Keys:           keys,
 		MenuHoverIndex: -1,
+		BranchCreateHoverIndex: -1,
 		RepoName:       "loading...",
 		BranchName:     "loading...",
 		RepoLabel:      "repo",

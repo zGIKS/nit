@@ -46,8 +46,10 @@ func (s *AppState) TopBarActionAt(x, y int) (actions.Action, bool) {
 func (s *AppState) HandleMouseMove(x, y int) {
 	s.HoverFetch = false
 	s.HoverMenu = false
+	s.HoverBranch = false
 	if y < 0 || x < 0 {
 		s.MenuHoverIndex = -1
+		s.BranchCreateHoverIndex = -1
 		return
 	}
 
@@ -57,11 +59,16 @@ func (s *AppState) HandleMouseMove(x, y int) {
 	if mx, my, mw, mh := s.MenuButtonRect(); x >= mx && x < mx+mw && y >= my && y < my+mh {
 		s.HoverMenu = true
 	}
+	if bx, by, bw, bh := s.BranchButtonRect(); x >= bx && x < bx+bw && y >= by && y < by+bh {
+		s.HoverBranch = true
+	}
 	if idx, ok := s.MenuItemIndexAt(x, y); ok {
 		s.MenuHoverIndex = idx
+		s.BranchCreateHoverAt(x, y)
 		return
 	}
 	s.MenuHoverIndex = -1
+	s.BranchCreateHoverAt(x, y)
 }
 
 func (s *AppState) handleMenuClick(x, y int) bool {
@@ -106,7 +113,17 @@ func (s *AppState) MenuClickActionAt(x, y int) (actions.Action, bool) {
 
 func (s *AppState) ToggleMenuClick(x, y int) bool {
 	if mx, my, mw, mh := s.MenuButtonRect(); x >= mx && x < mx+mw && y >= my && y < my+mh {
+		s.CloseBranchCreate()
 		s.ToggleMenu()
+		return true
+	}
+	return false
+}
+
+func (s *AppState) ToggleBranchCreateClick(x, y int) bool {
+	if bx, by, bw, bh := s.BranchButtonRect(); x >= bx && x < bx+bw && y >= by && y < by+bh {
+		s.CloseMenu()
+		s.ToggleBranchCreate()
 		return true
 	}
 	return false
@@ -127,6 +144,11 @@ func (s *AppState) CloseMenuOnOutsideClick(x, y int) {
 		return
 	}
 	s.CloseMenu()
+}
+
+func (s *AppState) CloseTopMenusOnOutsideClick(x, y int) {
+	s.CloseMenuOnOutsideClick(x, y)
+	s.CloseBranchCreateOnOutsideClick(x, y)
 }
 
 func (s *AppState) HandleMouseWheel(x, y, delta int) {

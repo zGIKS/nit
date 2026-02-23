@@ -94,11 +94,7 @@ func (s Service) StagePath(path string) (string, error) {
 }
 
 func (s Service) UnstagePath(path string) (string, error) {
-	if _, cmd, err := s.runner.Run("restore", "--staged", "--", path); err == nil {
-		return cmd, nil
-	}
-	_, cmd, err := s.runner.Run("reset", "HEAD", "--", path)
-	return cmd, err
+	return s.unstageWithFallback(path)
 }
 
 func (s Service) StageAll() (string, error) {
@@ -107,11 +103,7 @@ func (s Service) StageAll() (string, error) {
 }
 
 func (s Service) UnstageAll() (string, error) {
-	if _, cmd, err := s.runner.Run("restore", "--staged", "."); err == nil {
-		return cmd, nil
-	}
-	_, cmd, err := s.runner.Run("reset", "HEAD", "--", ".")
-	return cmd, err
+	return s.unstageWithFallback(".")
 }
 
 func (s Service) Commit(message string) (string, error) {
@@ -175,6 +167,14 @@ func (s Service) ensureHasOutgoingCommits() error {
 		return errors.New("nothing to push")
 	}
 	return nil
+}
+
+func (s Service) unstageWithFallback(target string) (string, error) {
+	if _, cmd, err := s.runner.Run("restore", "--staged", "--", target); err == nil {
+		return cmd, nil
+	}
+	_, cmd, err := s.runner.Run("reset", "HEAD", "--", target)
+	return cmd, err
 }
 
 func prettifyGraphLine(line string) string {

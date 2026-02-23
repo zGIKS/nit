@@ -76,6 +76,7 @@ func (s *AppState) SetBranches(lines []string) {
 	if s.Branches.Offset < 0 {
 		s.Branches.Offset = 0
 	}
+	s.syncBranchCreateSources()
 }
 
 func (s *AppState) SetChanges(entries []git.ChangeEntry) {
@@ -99,97 +100,31 @@ func (s *AppState) SetChanges(entries []git.ChangeEntry) {
 }
 
 func (s *AppState) AppendCommandText(text string) {
-	if text == "" {
-		return
-	}
-	if s.Command.SelectAll {
-		s.Command.Input = ""
-		s.Command.Cursor = 0
-		s.Command.SelectAll = false
-	}
-	r := []rune(s.Command.Input)
-	if s.Command.Cursor < 0 {
-		s.Command.Cursor = 0
-	}
-	if s.Command.Cursor > len(r) {
-		s.Command.Cursor = len(r)
-	}
-	insert := []rune(text)
-	out := make([]rune, 0, len(r)+len(insert))
-	out = append(out, r[:s.Command.Cursor]...)
-	out = append(out, insert...)
-	out = append(out, r[s.Command.Cursor:]...)
-	s.Command.Input = string(out)
-	s.Command.Cursor += len(insert)
+	appendTextInput(&s.Command.Input, &s.Command.Cursor, &s.Command.SelectAll, text)
 }
 
 func (s *AppState) BackspaceCommandText() {
-	if s.Command.SelectAll {
-		s.Command.Input = ""
-		s.Command.Cursor = 0
-		s.Command.SelectAll = false
-		return
-	}
-	r := []rune(s.Command.Input)
-	if len(r) == 0 || s.Command.Cursor <= 0 {
-		return
-	}
-	if s.Command.Cursor > len(r) {
-		s.Command.Cursor = len(r)
-	}
-	out := make([]rune, 0, len(r)-1)
-	out = append(out, r[:s.Command.Cursor-1]...)
-	out = append(out, r[s.Command.Cursor:]...)
-	s.Command.Input = string(out)
-	s.Command.Cursor--
+	backspaceTextInput(&s.Command.Input, &s.Command.Cursor, &s.Command.SelectAll)
 }
 
 func (s *AppState) DeleteCommandText() {
-	if s.Command.SelectAll {
-		s.Command.Input = ""
-		s.Command.Cursor = 0
-		s.Command.SelectAll = false
-		return
-	}
-	r := []rune(s.Command.Input)
-	if len(r) == 0 {
-		return
-	}
-	if s.Command.Cursor < 0 {
-		s.Command.Cursor = 0
-	}
-	if s.Command.Cursor >= len(r) {
-		return
-	}
-	out := make([]rune, 0, len(r)-1)
-	out = append(out, r[:s.Command.Cursor]...)
-	out = append(out, r[s.Command.Cursor+1:]...)
-	s.Command.Input = string(out)
+	deleteTextInput(&s.Command.Input, &s.Command.Cursor, &s.Command.SelectAll)
 }
 
 func (s *AppState) MoveCommandCursorLeft() {
-	s.Command.SelectAll = false
-	if s.Command.Cursor > 0 {
-		s.Command.Cursor--
-	}
+	moveTextInputCursorLeft(&s.Command.Cursor, &s.Command.SelectAll)
 }
 
 func (s *AppState) MoveCommandCursorRight() {
-	s.Command.SelectAll = false
-	r := []rune(s.Command.Input)
-	if s.Command.Cursor < len(r) {
-		s.Command.Cursor++
-	}
+	moveTextInputCursorRight(s.Command.Input, &s.Command.Cursor, &s.Command.SelectAll)
 }
 
 func (s *AppState) MoveCommandCursorToStart() {
-	s.Command.SelectAll = false
-	s.Command.Cursor = 0
+	moveTextInputCursorHome(&s.Command.Cursor, &s.Command.SelectAll)
 }
 
 func (s *AppState) MoveCommandCursorToEnd() {
-	s.Command.SelectAll = false
-	s.Command.Cursor = len([]rune(s.Command.Input))
+	moveTextInputCursorEnd(s.Command.Input, &s.Command.Cursor, &s.Command.SelectAll)
 }
 
 func (s *AppState) ExitCommandFocus() {
@@ -206,13 +141,7 @@ func (s *AppState) ExitCommandFocus() {
 }
 
 func (s *AppState) SelectAllCommandText() {
-	if s.Command.Input == "" {
-		s.Command.SelectAll = false
-		s.Command.Cursor = 0
-		return
-	}
-	s.Command.SelectAll = true
-	s.Command.Cursor = len([]rune(s.Command.Input))
+	selectAllTextInput(s.Command.Input, &s.Command.Cursor, &s.Command.SelectAll)
 }
 
 func (s AppState) SelectedCommandText() string {
@@ -246,29 +175,5 @@ func (s *AppState) AddCommandLog(cmd string) {
 }
 
 func (s *AppState) DeleteCommandSelection() {
-	if !s.Command.SelectAll {
-		return
-	}
-	s.Command.Input = ""
-	s.Command.Cursor = 0
-	s.Command.SelectAll = false
-}
-
-func (s AppState) CommandLineWithCaret() string {
-	if s.Command.SelectAll && s.Command.Input != "" {
-		return "[" + s.Command.Input + "]"
-	}
-	r := []rune(s.Command.Input)
-	cursor := s.Command.Cursor
-	if cursor < 0 {
-		cursor = 0
-	}
-	if cursor > len(r) {
-		cursor = len(r)
-	}
-	out := make([]rune, 0, len(r)+1)
-	out = append(out, r[:cursor]...)
-	out = append(out, '|')
-	out = append(out, r[cursor:]...)
-	return string(out)
+	clearSelectedText(&s.Command.Input, &s.Command.Cursor, &s.Command.SelectAll)
 }
