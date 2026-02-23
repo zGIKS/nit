@@ -2,6 +2,7 @@ package input
 
 import (
 	"fmt"
+	"strings"
 
 	"nit/internal/nit/app/actions"
 	"nit/internal/nit/config"
@@ -72,4 +73,74 @@ func (k Keymap) Match(key string) actions.Action {
 		}
 	}
 	return actions.ActionNone
+}
+
+func (k Keymap) FirstBinding(action actions.Action) string {
+	keys := k.bindings[action]
+	if len(keys) == 0 {
+		return ""
+	}
+	return keys[0]
+}
+
+func (k Keymap) FirstBindingMatching(action actions.Action, match func(string) bool) string {
+	keys := k.bindings[action]
+	for _, key := range keys {
+		if match == nil || match(key) {
+			return key
+		}
+	}
+	return ""
+}
+
+func (k Keymap) DisplayBinding(action actions.Action) string {
+	return displayKey(k.FirstBinding(action))
+}
+
+func (k Keymap) DisplayBindingMatching(action actions.Action, match func(string) bool) string {
+	key := k.FirstBindingMatching(action, match)
+	if key == "" {
+		return ""
+	}
+	return displayKey(key)
+}
+
+func displayKey(raw string) string {
+	s := strings.TrimSpace(raw)
+	if s == "" {
+		return ""
+	}
+	switch s {
+	case "ctrl+c":
+		return "Ctrl+C"
+	case "ctrl+p":
+		return "Ctrl+P"
+	case "ctrl+b":
+		return "Ctrl+B"
+	case "ctrl+e":
+		return "Ctrl+E"
+	case "ctrl+a":
+		return "Ctrl+A"
+	case "tab":
+		return "Tab"
+	case "enter":
+		return "Enter"
+	case "space":
+		return "Space"
+	case "up":
+		return "Up"
+	case "down":
+		return "Down"
+	case "left":
+		return "Left"
+	case "right":
+		return "Right"
+	}
+	if strings.HasPrefix(s, "ctrl+") && len(s) > len("ctrl+") {
+		return "Ctrl+" + strings.ToUpper(s[len("ctrl+"):])
+	}
+	if len(s) == 1 {
+		return strings.ToLower(s)
+	}
+	return s
 }

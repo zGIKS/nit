@@ -18,10 +18,25 @@ func Render(state app.AppState) string {
 	graphSel, graphTotal := state.GraphPosition()
 	branchSel, branchTotal := state.BranchesPosition()
 	commandText := state.Command.Input
+	focusCommandKey := state.Keys.DisplayBinding(app.ActionFocusCommand)
+	if focusCommandKey == "" {
+		focusCommandKey = "c"
+	}
+	pushKeyNormal := state.Keys.DisplayBindingMatching(app.ActionPush, func(k string) bool { return !strings.HasPrefix(k, "ctrl+") })
+	if pushKeyNormal == "" {
+		pushKeyNormal = state.Keys.DisplayBinding(app.ActionPush)
+	}
+	if pushKeyNormal == "" {
+		pushKeyNormal = "p"
+	}
+	pushKeyInCommand := state.Keys.DisplayBindingMatching(app.ActionPush, func(k string) bool { return strings.HasPrefix(k, "ctrl+") })
+	if pushKeyInCommand == "" {
+		pushKeyInCommand = pushKeyNormal
+	}
 	if commandActive {
 		commandText = commandLineViewport(state, max(1, commitContentWidth(state.Viewport.Width)))
 	} else if commandText == "" {
-		commandText = "Message (c focus, Enter commit)"
+		commandText = fmt.Sprintf("Message (%s focus, Enter commit)", focusCommandKey)
 	}
 
 	changeLines := make([]string, 0, len(state.Changes.Rows))
@@ -126,9 +141,9 @@ func Render(state app.AppState) string {
 		3,
 		[]string{func() string {
 			if commandActive {
-				return "Ctrl+P"
+				return pushKeyInCommand
 			}
-			return "p"
+			return pushKeyNormal
 		}()},
 		0,
 		0,
