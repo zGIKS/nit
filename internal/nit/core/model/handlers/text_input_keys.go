@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"strings"
+
 	"github.com/zGIKS/nit/internal/nit/app"
 	"github.com/zGIKS/nit/internal/nit/config"
 	"github.com/zGIKS/nit/internal/nit/core/model/common"
@@ -24,12 +26,13 @@ type textInputKeyOps struct {
 func handleSharedTextInputKey(
 	state *app.AppState,
 	clipCfg config.ClipboardConfig,
+	keys config.CommitEditorKeyConfig,
 	pasteHintAlreadySeen *bool,
 	msg tea.KeyMsg,
 	ops textInputKeyOps,
 ) bool {
-	switch msg.Type {
-	case tea.KeyCtrlC:
+	switch {
+	case matchesConfiguredKey(msg, keys.Copy):
 		selected := ops.Selected()
 		if selected == "" {
 			return true
@@ -41,7 +44,7 @@ func handleSharedTextInputKey(
 			state.SetError("")
 		}
 		return true
-	case tea.KeyCtrlX:
+	case matchesConfiguredKey(msg, keys.Cut):
 		selected := ops.Selected()
 		if selected == "" {
 			return true
@@ -54,7 +57,7 @@ func handleSharedTextInputKey(
 		}
 		ops.DeleteSelection()
 		return true
-	case tea.KeyCtrlV:
+	case matchesConfiguredKey(msg, keys.Paste):
 		pasted, err := common.PasteWithMode(clipCfg)
 		if err != nil || pasted == "" {
 			pasted = state.CommandClipboard()
@@ -71,34 +74,46 @@ func handleSharedTextInputKey(
 		ops.Append(pasted)
 		state.SetError("")
 		return true
-	case tea.KeyBackspace:
+	case matchesConfiguredKey(msg, keys.Backspace):
 		ops.Backspace()
 		return true
-	case tea.KeyDelete:
+	case matchesConfiguredKey(msg, keys.Delete):
 		ops.Delete()
 		return true
-	case tea.KeyLeft:
+	case matchesConfiguredKey(msg, keys.Left):
 		ops.MoveLeft()
 		return true
-	case tea.KeyRight:
+	case matchesConfiguredKey(msg, keys.Right):
 		ops.MoveRight()
 		return true
-	case tea.KeyHome:
+	case matchesConfiguredKey(msg, keys.Home):
 		ops.MoveHome()
 		return true
-	case tea.KeyEnd, tea.KeyCtrlE:
+	case matchesConfiguredKey(msg, keys.End):
 		ops.MoveEnd()
 		return true
-	case tea.KeyCtrlA:
+	case matchesConfiguredKey(msg, keys.SelectAll):
 		ops.SelectAll()
 		return true
-	case tea.KeySpace:
+	case msg.Type == tea.KeySpace:
 		ops.Append(" ")
 		return true
-	case tea.KeyRunes:
+	case msg.Type == tea.KeyRunes:
 		ops.Append(string(msg.Runes))
 		return true
-	default:
+	}
+	return false
+}
+
+func matchesConfiguredKey(msg tea.KeyMsg, binding config.KeyBinding) bool {
+	raw := strings.ToLower(strings.TrimSpace(msg.String()))
+	if raw == "" {
 		return false
 	}
+	for _, k := range binding.Keys {
+		if strings.ToLower(strings.TrimSpace(k)) == raw {
+			return true
+		}
+	}
+	return false
 }

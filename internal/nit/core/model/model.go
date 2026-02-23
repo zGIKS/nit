@@ -15,6 +15,7 @@ type Model struct {
 	Git                  g.Service
 	Watcher              *g.FSWatcher
 	ClipCfg              config.ClipboardConfig
+	TextKeys             config.CommitEditorKeyConfig
 	PasteHintAlreadySeen bool
 }
 
@@ -44,9 +45,10 @@ func New() Model {
 	svc := g.NewService(runner)
 
 	return Model{
-		State:   state,
-		Git:     svc,
-		ClipCfg: cfg.Clipboard,
+		State:    state,
+		Git:      svc,
+		ClipCfg:  cfg.Clipboard,
+		TextKeys: cfg.CommitEditorKeys,
 	}
 }
 

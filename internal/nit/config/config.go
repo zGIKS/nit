@@ -26,16 +26,32 @@ type KeyBinding struct {
 }
 
 type KeyConfig struct {
-	Quit         KeyBinding `toml:"quit"`
-	TogglePanel  KeyBinding `toml:"toggle_panel"`
-	FocusCommand KeyBinding `toml:"focus_command"`
-	Down         KeyBinding `toml:"down"`
-	Up           KeyBinding `toml:"up"`
-	ToggleOne    KeyBinding `toml:"toggle_one"`
-	StageAll     KeyBinding `toml:"stage_all"`
-	UnstageAll   KeyBinding `toml:"unstage_all"`
-	Fetch        KeyBinding `toml:"fetch"`
-	Push         KeyBinding `toml:"push"`
+	Quit         KeyBinding            `toml:"quit"`
+	TogglePanel  KeyBinding            `toml:"toggle_panel"`
+	FocusCommand KeyBinding            `toml:"focus_command"`
+	Down         KeyBinding            `toml:"down"`
+	Up           KeyBinding            `toml:"up"`
+	ToggleOne    KeyBinding            `toml:"toggle_one"`
+	StageAll     KeyBinding            `toml:"stage_all"`
+	UnstageAll   KeyBinding            `toml:"unstage_all"`
+	Fetch        KeyBinding            `toml:"fetch"`
+	Push         KeyBinding            `toml:"push"`
+	CommitEditor CommitEditorKeyConfig `toml:"commit_editor"`
+}
+
+type CommitEditorKeyConfig struct {
+	Submit    KeyBinding `toml:"submit"`
+	Cancel    KeyBinding `toml:"cancel"`
+	Copy      KeyBinding `toml:"copy"`
+	Cut       KeyBinding `toml:"cut"`
+	Paste     KeyBinding `toml:"paste"`
+	SelectAll KeyBinding `toml:"select_all"`
+	Backspace KeyBinding `toml:"backspace"`
+	Delete    KeyBinding `toml:"delete"`
+	Left      KeyBinding `toml:"left"`
+	Right     KeyBinding `toml:"right"`
+	Home      KeyBinding `toml:"home"`
+	End       KeyBinding `toml:"end"`
 }
 
 type ClipboardConfig struct {
@@ -64,10 +80,11 @@ type FileConfig struct {
 }
 
 type AppConfig struct {
-	ConfigFile string
-	Clipboard  ClipboardConfig
-	Keys       KeyConfig
-	UI         UIConfig
+	ConfigFile       string
+	Clipboard        ClipboardConfig
+	Keys             KeyConfig
+	CommitEditorKeys CommitEditorKeyConfig
+	UI               UIConfig
 }
 
 func defaultConfigPath() string {
@@ -92,6 +109,20 @@ func Load() (AppConfig, string) {
 		ConfigFile: defaultConfigPath(),
 		Clipboard: ClipboardConfig{
 			Mode: ClipboardOnlyCopy,
+		},
+		CommitEditorKeys: CommitEditorKeyConfig{
+			Submit:    KeyBinding{Keys: []string{"enter"}},
+			Cancel:    KeyBinding{Keys: []string{"esc"}},
+			Copy:      KeyBinding{Keys: []string{"ctrl+c"}},
+			Cut:       KeyBinding{Keys: []string{"ctrl+x"}},
+			Paste:     KeyBinding{Keys: []string{"ctrl+v"}},
+			SelectAll: KeyBinding{Keys: []string{"ctrl+a"}},
+			Backspace: KeyBinding{Keys: []string{"backspace"}},
+			Delete:    KeyBinding{Keys: []string{"delete"}},
+			Left:      KeyBinding{Keys: []string{"left"}},
+			Right:     KeyBinding{Keys: []string{"right"}},
+			Home:      KeyBinding{Keys: []string{"home"}},
+			End:       KeyBinding{Keys: []string{"end", "ctrl+e"}},
 		},
 		UI: UIConfig{
 			RepoLabel:                "repo",
@@ -150,6 +181,7 @@ func loadFromTOML(cfg *AppConfig) string {
 		cfg.Clipboard.PasteCmd = strings.TrimSpace(fileCfg.Clipboard.PasteCmd)
 	}
 	cfg.Keys = fileCfg.Keys
+	mergeCommitEditorKeys(&cfg.CommitEditorKeys, fileCfg.Keys.CommitEditor)
 	if v := strings.TrimSpace(fileCfg.UI.RepoLabel); v != "" {
 		cfg.UI.RepoLabel = v
 	}
@@ -181,6 +213,26 @@ func loadFromTOML(cfg *AppConfig) string {
 		cfg.UI.BranchCreateSourceLabel = v
 	}
 	return modeWarn
+}
+
+func mergeCommitEditorKeys(dst *CommitEditorKeyConfig, src CommitEditorKeyConfig) {
+	merge := func(dstBinding *KeyBinding, srcBinding KeyBinding) {
+		if len(srcBinding.Keys) > 0 {
+			dstBinding.Keys = srcBinding.Keys
+		}
+	}
+	merge(&dst.Submit, src.Submit)
+	merge(&dst.Cancel, src.Cancel)
+	merge(&dst.Copy, src.Copy)
+	merge(&dst.Cut, src.Cut)
+	merge(&dst.Paste, src.Paste)
+	merge(&dst.SelectAll, src.SelectAll)
+	merge(&dst.Backspace, src.Backspace)
+	merge(&dst.Delete, src.Delete)
+	merge(&dst.Left, src.Left)
+	merge(&dst.Right, src.Right)
+	merge(&dst.Home, src.Home)
+	merge(&dst.End, src.End)
 }
 
 func applyEnvOverrides(cfg *AppConfig) string {

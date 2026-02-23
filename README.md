@@ -176,4 +176,4 @@ See [`nit.example.toml`](nit.example.toml) for the full list of options.
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0 — see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.

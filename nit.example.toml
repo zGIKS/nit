@@ -52,9 +52,38 @@ keys = ["f"]
 [keys.push]
 keys = ["p", "ctrl+p"] # ctrl+p funciona incluso mientras escribes en Commit
 
-# Atajos del editor de Commit (actualmente hardcoded, no configurables en TOML):
-# enter, esc
-# ctrl+c, ctrl+x, ctrl+v
-# ctrl+a, ctrl+e
-# backspace, delete
-# left, right, home, end
+[keys.commit_editor.submit]
+keys = ["enter"]
+
+[keys.commit_editor.cancel]
+keys = ["esc"]
+
+[keys.commit_editor.copy]
+keys = ["ctrl+c"]
+
+[keys.commit_editor.cut]
+keys = ["ctrl+x"]
+
+[keys.commit_editor.paste]
+keys = ["ctrl+v"]
+
+[keys.commit_editor.select_all]
+keys = ["ctrl+a"]
+
+[keys.commit_editor.backspace]
+keys = ["backspace"]
+
+[keys.commit_editor.delete]
+keys = ["delete"]
+
+[keys.commit_editor.left]
+keys = ["left"]
+
+[keys.commit_editor.right]
+keys = ["right"]
+
+[keys.commit_editor.home]
+keys = ["home"]
+
+[keys.commit_editor.end]
+keys = ["end", "ctrl+e"]

@@ -55,7 +55,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, handlers.HandleOpDone(&m.State, m.Git, msg)
 
 	case tea.KeyMsg:
-		return m, handlers.HandleKeyMsg(&m.State, m.Git, m.ClipCfg, &m.PasteHintAlreadySeen, msg)
+		return m, handlers.HandleKeyMsg(&m.State, m.Git, m.ClipCfg, m.TextKeys, &m.PasteHintAlreadySeen, msg)
 
 	case tea.MouseMsg:
 		return m, handlers.HandleMouseMsg(&m.State, m.Git, msg)

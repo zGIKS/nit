@@ -14,27 +14,12 @@ func HandleKeyMsg(
 	state *app.AppState,
 	git g.Service,
 	clipCfg config.ClipboardConfig,
+	textKeys config.CommitEditorKeyConfig,
 	pasteHintAlreadySeen *bool,
 	msg tea.KeyMsg,
 ) tea.Cmd {
 	if state.BranchCreateOpen {
 		switch msg.Type {
-		case tea.KeyEsc:
-			state.CloseBranchCreate()
-		case tea.KeyEnter:
-			name := strings.TrimSpace(state.BranchCreateName)
-			if name == "" {
-				state.SetError("branch name is empty")
-				state.Clamp()
-				return nil
-			}
-			source := strings.TrimSpace(state.BranchCreateSource)
-			state.CloseBranchCreate()
-			state.BranchCreateName = ""
-			state.BranchCreateCursor = 0
-			state.BranchCreateSelectAll = false
-			state.Clamp()
-			return cmds.CreateBranchCmd(git, name, source, false)
 		case tea.KeyCtrlB:
 			name := strings.TrimSpace(state.BranchCreateName)
 			if name == "" {
@@ -58,20 +43,39 @@ func HandleKeyMsg(
 		case tea.KeyShiftTab:
 			state.BranchCreateMoveSource(-1)
 		default:
-			if handleSharedTextInputKey(state, clipCfg, pasteHintAlreadySeen, msg, textInputKeyOps{
-				Selected:        state.SelectedBranchCreateText,
-				Append:          state.BranchCreateAppendText,
-				Backspace:       state.BranchCreateBackspace,
-				Delete:          state.BranchCreateDelete,
-				MoveLeft:        state.BranchCreateCursorLeft,
-				MoveRight:       state.BranchCreateCursorRight,
-				MoveHome:        state.BranchCreateCursorHome,
-				MoveEnd:         state.BranchCreateCursorEnd,
-				SelectAll:       state.BranchCreateSelectAllText,
-				DeleteSelection: state.DeleteBranchCreateSelection,
-			}) {
+			switch {
+			case matchesConfiguredKey(msg, textKeys.Cancel):
+				state.CloseBranchCreate()
+			case matchesConfiguredKey(msg, textKeys.Submit):
+				name := strings.TrimSpace(state.BranchCreateName)
+				if name == "" {
+					state.SetError("branch name is empty")
+					state.Clamp()
+					return nil
+				}
+				source := strings.TrimSpace(state.BranchCreateSource)
+				state.CloseBranchCreate()
+				state.BranchCreateName = ""
+				state.BranchCreateCursor = 0
+				state.BranchCreateSelectAll = false
 				state.Clamp()
-				return nil
+				return cmds.CreateBranchCmd(git, name, source, false)
+			default:
+				if handleSharedTextInputKey(state, clipCfg, textKeys, pasteHintAlreadySeen, msg, textInputKeyOps{
+					Selected:        state.SelectedBranchCreateText,
+					Append:          state.BranchCreateAppendText,
+					Backspace:       state.BranchCreateBackspace,
+					Delete:          state.BranchCreateDelete,
+					MoveLeft:        state.BranchCreateCursorLeft,
+					MoveRight:       state.BranchCreateCursorRight,
+					MoveHome:        state.BranchCreateCursorHome,
+					MoveEnd:         state.BranchCreateCursorEnd,
+					SelectAll:       state.BranchCreateSelectAllText,
+					DeleteSelection: state.DeleteBranchCreateSelection,
+				}) {
+					state.Clamp()
+					return nil
+				}
 			}
 		}
 		state.Clamp()
@@ -79,17 +83,17 @@ func HandleKeyMsg(
 	}
 
 	if state.Focus == app.FocusCommand {
-		switch msg.Type {
-		case tea.KeyEnter:
+		switch {
+		case matchesConfiguredKey(msg, textKeys.Submit):
 			result := state.Apply(app.ActionToggleOne)
 			state.Clamp()
 			return cmds.HandleResult(git, result)
-		case tea.KeyEsc:
+		case matchesConfiguredKey(msg, textKeys.Cancel):
 			state.ExitCommandFocus()
 			state.Clamp()
 			return nil
 		}
-		if handleSharedTextInputKey(state, clipCfg, pasteHintAlreadySeen, msg, textInputKeyOps{
+		if handleSharedTextInputKey(state, clipCfg, textKeys, pasteHintAlreadySeen, msg, textInputKeyOps{
 			Selected:        state.SelectedCommandText,
 			Append:          state.AppendCommandText,
 			Backspace:       state.BackspaceCommandText,
