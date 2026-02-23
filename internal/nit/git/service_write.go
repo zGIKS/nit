@@ -53,6 +53,18 @@ func (s Service) CreateBranch(name, source string) (string, error) {
 	return cmd, err
 }
 
+func (s Service) SwitchBranch(name string) (string, error) {
+	branch := strings.TrimSpace(name)
+	if branch == "" {
+		return "", errors.New("branch name is empty")
+	}
+	if _, cmd, err := s.runner.Run("switch", branch); err == nil {
+		return cmd, nil
+	}
+	_, cmd, err := s.runner.Run("checkout", branch)
+	return cmd, err
+}
+
 func (s Service) PushCurrentBranchUpstream() (string, error) {
 	_, cmd, err := s.runner.Run("push", "-u", "origin", "HEAD")
 	return cmd, err

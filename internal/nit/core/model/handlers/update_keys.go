@@ -115,6 +115,19 @@ func HandleKeyMsg(
 		state.Clamp()
 		return nil
 	}
+	if state.Focus == app.FocusBranches && msg.Type == tea.KeyEnter {
+		branch, ok := state.SelectedBranchName()
+		if !ok {
+			state.Clamp()
+			return nil
+		}
+		if strings.TrimSpace(branch) == strings.TrimSpace(state.BranchName) {
+			state.Clamp()
+			return nil
+		}
+		state.Clamp()
+		return cmds.SwitchBranchCmd(git, branch)
+	}
 
 	action := state.Keys.Match(msg.String())
 	result := state.Apply(action)
