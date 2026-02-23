@@ -32,6 +32,7 @@ func CopyWithMode(cfg config.ClipboardConfig, text string) error {
 			lastErr = err
 		}
 		return lastErr
+	case config.ClipboardOSC52:
 		if err := copyWithOSC52(text); err == nil {
 			return nil
 		} else {

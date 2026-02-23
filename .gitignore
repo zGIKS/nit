@@ -1,5 +1,6 @@
-# compiled binary
-nit
+# compiled binary (root only)
+/nit
+/nit.exe
 
 # Go build/test artifacts
 *.test
