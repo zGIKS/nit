@@ -103,14 +103,26 @@ func ExecOpCmd(svc g.Service, op app.Operation, refreshChanges, refreshGraph boo
 	}
 }
 
-func CreateBranchCmd(svc g.Service, name, source string) tea.Cmd {
+func CreateBranchCmd(svc g.Service, name, source string, pushRemote bool) tea.Cmd {
 	return func() tea.Msg {
-		cmd, err := svc.CreateBranch(name, source)
+		createCmd, err := svc.CreateBranch(name, source)
 		if err != nil {
-			return common.OpDoneMsg{Err: err, Command: cmd}
+			return common.OpDoneMsg{Err: err, Command: createCmd}
+		}
+		commandLog := createCmd
+		if pushRemote {
+			pushCmd, pushErr := svc.PushCurrentBranchUpstream()
+			if commandLog != "" && pushCmd != "" {
+				commandLog += " && " + pushCmd
+			} else if pushCmd != "" {
+				commandLog = pushCmd
+			}
+			if pushErr != nil {
+				return common.OpDoneMsg{Err: pushErr, Command: commandLog}
+			}
 		}
 		return common.OpDoneMsg{
-			Command:            cmd,
+			Command:            commandLog,
 			RefreshChanges:     true,
 			RefreshGraph:       true,
 			RefreshRepoSummary: true,

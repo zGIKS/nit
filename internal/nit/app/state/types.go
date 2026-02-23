@@ -92,6 +92,11 @@ type AppState struct {
 	FetchLabel               string
 	MenuLabel                string
 	BranchSourceSelectedMark string
+	BranchCreateTitle        string
+	BranchCreateEnterHint    string
+	BranchCreatePushHint     string
+	BranchCreateNameLabel    string
+	BranchCreateSourceLabel  string
 	BranchCreateOpen         bool
 	BranchCreateName         string
 	BranchCreateCursor       int
@@ -124,5 +129,10 @@ func New(keys input.Keymap) AppState {
 		FetchLabel:               "[f] fetch",
 		MenuLabel:                "...",
 		BranchSourceSelectedMark: "✓",
+		BranchCreateTitle:        "Create a branch",
+		BranchCreateEnterHint:    "Enter: create branch",
+		BranchCreatePushHint:     "Ctrl+b: create and push to origin",
+		BranchCreateNameLabel:    "New branch name",
+		BranchCreateSourceLabel:  "Source",
 	}
 }

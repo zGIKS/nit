@@ -135,6 +135,11 @@ func (s Service) CreateBranch(name, source string) (string, error) {
 	return cmd, err
 }
 
+func (s Service) PushCurrentBranchUpstream() (string, error) {
+	_, cmd, err := s.runner.Run("push", "-u", "origin", "HEAD")
+	return cmd, err
+}
+
 func (s Service) Pull() (string, error) {
 	_, cmd, err := s.runner.Run("pull")
 	return cmd, err

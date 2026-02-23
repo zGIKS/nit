@@ -243,14 +243,38 @@ func branchCreateModalView(state app.AppState, width, height int) string {
 	lines := make([]string, 0, max(3, height))
 	top := "┌" + strings.Repeat("─", innerW) + "┐"
 	bottom := "└" + strings.Repeat("─", innerW) + "┘"
-	title := fitText(" Create a branch ", innerW, ' ')
+	titleText := strings.TrimSpace(state.BranchCreateTitle)
+	if titleText == "" {
+		titleText = "Create a branch"
+	}
+	title := fitText(" "+titleText+" ", innerW, ' ')
 	lines = append(lines, top)
 	lines = append(lines, "│"+title+"│")
 	lines = append(lines, "├"+strings.Repeat("─", innerW)+"┤")
-	lines = append(lines, "│"+fitText(" New branch name", innerW, ' ')+"│")
+	enterHint := strings.TrimSpace(state.BranchCreateEnterHint)
+	if enterHint == "" {
+		enterHint = "Enter: create branch"
+	}
+	lines = append(lines, "│"+fitText(" "+enterHint, innerW, ' ')+"│")
+	pushHint := strings.TrimSpace(state.BranchCreatePushHint)
+	if pushHint == "" {
+		pushHint = "Ctrl+b: create and push to origin"
+	}
+	lines = append(lines, "│"+fitText(" "+pushHint, innerW, ' ')+"│")
+	lines = append(lines, "├"+strings.Repeat("─", innerW)+"┤")
+	nameLabel := strings.TrimSpace(state.BranchCreateNameLabel)
+	if nameLabel == "" {
+		nameLabel = "New branch name"
+	}
+	lines = append(lines, "│"+fitText(" "+nameLabel, innerW, ' ')+"│")
 	inputViewportW := max(1, innerW-1)
 	lines = append(lines, "│"+fitText(" "+textInputViewport(state.BranchCreateName, state.BranchCreateCursor, state.BranchCreateSelectAll, inputViewportW), innerW, ' ')+"│")
-	lines = append(lines, "│"+fitText(" Source: "+state.BranchCreateSource, innerW, ' ')+"│")
+	lines = append(lines, "├"+strings.Repeat("─", innerW)+"┤")
+	sourceLabel := strings.TrimSpace(state.BranchCreateSourceLabel)
+	if sourceLabel == "" {
+		sourceLabel = "Source"
+	}
+	lines = append(lines, "│"+fitText(" "+sourceLabel+": "+state.BranchCreateSource, innerW, ' ')+"│")
 
 	_, _, _, remaining := state.BranchCreateSourceListRect()
 	start := state.BranchCreateSourceOffset

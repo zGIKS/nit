@@ -46,6 +46,24 @@ func (s *AppState) SetUISymbols(branchSourceSelectedMark string) {
 	}
 }
 
+func (s *AppState) SetUIText(branchCreateTitle, branchCreateEnterHint, branchCreatePushHint, branchCreateNameLabel, branchCreateSourceLabel string) {
+	if strings.TrimSpace(branchCreateTitle) != "" {
+		s.BranchCreateTitle = strings.TrimSpace(branchCreateTitle)
+	}
+	if strings.TrimSpace(branchCreateEnterHint) != "" {
+		s.BranchCreateEnterHint = strings.TrimSpace(branchCreateEnterHint)
+	}
+	if strings.TrimSpace(branchCreatePushHint) != "" {
+		s.BranchCreatePushHint = strings.TrimSpace(branchCreatePushHint)
+	}
+	if strings.TrimSpace(branchCreateNameLabel) != "" {
+		s.BranchCreateNameLabel = strings.TrimSpace(branchCreateNameLabel)
+	}
+	if strings.TrimSpace(branchCreateSourceLabel) != "" {
+		s.BranchCreateSourceLabel = strings.TrimSpace(branchCreateSourceLabel)
+	}
+}
+
 func (s *AppState) SetGraph(lines []string) {
 	if len(lines) == 0 {
 		lines = []string{"No commits to display."}

@@ -107,14 +107,23 @@ func (s AppState) BranchCreatePanelRect() (x, y, w, h int) {
 	if w < 36 {
 		w = 36
 	}
-	listCount := len(s.BranchCreateSourceList)
-	if listCount > 6 {
-		listCount = 6
+	baseRows := 11 // border/title + helpers + separators + name/input + source + bottom
+	maxPanelH := totalH - 2
+	if maxPanelH < baseRows+1 {
+		maxPanelH = baseRows + 1
 	}
-	if listCount < 1 {
-		listCount = 1
+	listRows := len(s.BranchCreateSourceList)
+	if listRows < 1 {
+		listRows = 1
 	}
-	h = 9 + listCount
+	maxListRows := maxPanelH - baseRows
+	if maxListRows < 1 {
+		maxListRows = 1
+	}
+	if listRows > maxListRows {
+		listRows = maxListRows
+	}
+	h = baseRows + listRows
 	x = bx + bw - w
 	if x < 0 {
 		x = 0
@@ -140,9 +149,9 @@ func (s AppState) BranchCreateNameInputRect() (x, y, w, h int) {
 func (s AppState) BranchCreateSourceListRect() (x, y, w, h int) {
 	px, py, pw, ph := s.BranchCreatePanelRect()
 	x = px + 2
-	y = py + 6
+	y = py + 10
 	w = max(10, pw-4)
-	h = ph - 7
+	h = ph - 11
 	if h < 1 {
 		h = 1
 	}
