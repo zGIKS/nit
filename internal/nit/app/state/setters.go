@@ -40,6 +40,12 @@ func (s *AppState) SetTopBarLabels(repo, branch, fetch, menu string) {
 	}
 }
 
+func (s *AppState) SetUISymbols(branchSourceSelectedMark string) {
+	if strings.TrimSpace(branchSourceSelectedMark) != "" {
+		s.BranchSourceSelectedMark = strings.TrimSpace(branchSourceSelectedMark)
+	}
+}
+
 func (s *AppState) SetGraph(lines []string) {
 	if len(lines) == 0 {
 		lines = []string{"No commits to display."}

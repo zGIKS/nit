@@ -33,8 +33,9 @@ type RepoSummaryLoadedMsg struct {
 }
 
 type OpDoneMsg struct {
-	Err            error
-	RefreshChanges bool
-	RefreshGraph   bool
-	Command        string
+	Err                error
+	RefreshChanges     bool
+	RefreshGraph       bool
+	RefreshRepoSummary bool
+	Command            string
 }

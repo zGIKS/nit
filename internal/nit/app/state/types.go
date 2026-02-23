@@ -46,9 +46,9 @@ type GraphState struct {
 }
 
 type BranchesState struct {
-	Lines   []string
-	Cursor  int
-	Offset  int
+	Lines  []string
+	Cursor int
+	Offset int
 }
 
 type CommandState struct {
@@ -70,35 +70,36 @@ type Viewport struct {
 }
 
 type AppState struct {
-	Focus          FocusState
-	Command        CommandState
-	Changes        ChangesState
-	Graph          GraphState
-	Branches       BranchesState
-	CommandLogView CommandLogState
-	CommandLog     []string
-	Viewport       Viewport
-	Keys           input.Keymap
-	LastErr        string
-	MenuOpen       bool
-	MenuHoverIndex int
-	HoverFetch     bool
-	HoverMenu      bool
-	HoverBranch    bool
-	RepoName       string
-	BranchName     string
-	RepoLabel      string
-	BranchLabel    string
-	FetchLabel     string
-	MenuLabel      string
-	BranchCreateOpen       bool
-	BranchCreateName       string
-	BranchCreateCursor     int
-	BranchCreateSelectAll  bool
-	BranchCreateSource     string
-	BranchCreateSourceList []string
+	Focus                    FocusState
+	Command                  CommandState
+	Changes                  ChangesState
+	Graph                    GraphState
+	Branches                 BranchesState
+	CommandLogView           CommandLogState
+	CommandLog               []string
+	Viewport                 Viewport
+	Keys                     input.Keymap
+	LastErr                  string
+	MenuOpen                 bool
+	MenuHoverIndex           int
+	HoverFetch               bool
+	HoverMenu                bool
+	HoverBranch              bool
+	RepoName                 string
+	BranchName               string
+	RepoLabel                string
+	BranchLabel              string
+	FetchLabel               string
+	MenuLabel                string
+	BranchSourceSelectedMark string
+	BranchCreateOpen         bool
+	BranchCreateName         string
+	BranchCreateCursor       int
+	BranchCreateSelectAll    bool
+	BranchCreateSource       string
+	BranchCreateSourceList   []string
 	BranchCreateSourceOffset int
-	BranchCreateHoverIndex int
+	BranchCreateHoverIndex   int
 }
 
 func New(keys input.Keymap) AppState {
@@ -113,14 +114,15 @@ func New(keys input.Keymap) AppState {
 		Branches: BranchesState{
 			Lines: []string{"Loading branches..."},
 		},
-		Keys:           keys,
-		MenuHoverIndex: -1,
-		BranchCreateHoverIndex: -1,
-		RepoName:       "loading...",
-		BranchName:     "loading...",
-		RepoLabel:      "repo",
-		BranchLabel:    "branch",
-		FetchLabel:     "[f] fetch",
-		MenuLabel:      "...",
+		Keys:                     keys,
+		MenuHoverIndex:           -1,
+		BranchCreateHoverIndex:   -1,
+		RepoName:                 "loading...",
+		BranchName:               "loading...",
+		RepoLabel:                "repo",
+		BranchLabel:              "branch",
+		FetchLabel:               "[f] fetch",
+		MenuLabel:                "...",
+		BranchSourceSelectedMark: "✓",
 	}
 }

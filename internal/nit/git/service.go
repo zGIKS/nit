@@ -115,6 +115,26 @@ func (s Service) Commit(message string) (string, error) {
 	return cmd, err
 }
 
+func (s Service) CreateBranch(name, source string) (string, error) {
+	branch := strings.TrimSpace(name)
+	if branch == "" {
+		return "", errors.New("branch name is empty")
+	}
+	src := strings.TrimSpace(source)
+	if src == "" || src == "-" {
+		if _, cmd, err := s.runner.Run("switch", "-c", branch); err == nil {
+			return cmd, nil
+		}
+		_, cmd, err := s.runner.Run("checkout", "-b", branch)
+		return cmd, err
+	}
+	if _, cmd, err := s.runner.Run("switch", "-c", branch, src); err == nil {
+		return cmd, nil
+	}
+	_, cmd, err := s.runner.Run("checkout", "-b", branch, src)
+	return cmd, err
+}
+
 func (s Service) Pull() (string, error) {
 	_, cmd, err := s.runner.Run("pull")
 	return cmd, err

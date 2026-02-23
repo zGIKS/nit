@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"strings"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"nit/internal/nit/app"
 	"nit/internal/nit/config"
@@ -37,8 +39,19 @@ func HandleKeyMsg(
 		case tea.KeyEsc:
 			state.CloseBranchCreate()
 		case tea.KeyEnter:
-			state.SetError("create branch not implemented yet")
+			name := strings.TrimSpace(state.BranchCreateName)
+			if name == "" {
+				state.SetError("branch name is empty")
+				state.Clamp()
+				return nil
+			}
+			source := strings.TrimSpace(state.BranchCreateSource)
 			state.CloseBranchCreate()
+			state.BranchCreateName = ""
+			state.BranchCreateCursor = 0
+			state.BranchCreateSelectAll = false
+			state.Clamp()
+			return cmds.CreateBranchCmd(git, name, source)
 		case tea.KeyUp:
 			state.BranchCreateMoveSource(-1)
 		case tea.KeyDown:

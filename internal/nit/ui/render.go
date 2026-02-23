@@ -261,7 +261,11 @@ func branchCreateModalView(state app.AppState, width, height int) string {
 			name := state.BranchCreateSourceList[idx]
 			prefix := "  "
 			if name == state.BranchCreateSource {
-				prefix = "✓ "
+				mark := state.BranchSourceSelectedMark
+				if strings.TrimSpace(mark) == "" {
+					mark = "✓"
+				}
+				prefix = mark + " "
 			}
 			label := prefix + name
 			if state.BranchCreateHoverIndex == idx {
