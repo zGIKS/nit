@@ -1,16 +1,14 @@
 package handlers
 
 import (
+	"strings"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"nit/internal/nit/app"
 	"nit/internal/nit/config"
 	"nit/internal/nit/core/model/cmds"
-	"nit/internal/nit/core/model/common"
 	g "nit/internal/nit/git"
 )
-
-// We need a way to access Model without circular dependency if possible,
-// but since handlers depends on Model fields, we can pass State/Git/etc.
 
 func HandleKeyMsg(
 	state *app.AppState,
@@ -19,6 +17,67 @@ func HandleKeyMsg(
 	pasteHintAlreadySeen *bool,
 	msg tea.KeyMsg,
 ) tea.Cmd {
+	if state.BranchCreateOpen {
+		switch msg.Type {
+		case tea.KeyEsc:
+			state.CloseBranchCreate()
+		case tea.KeyEnter:
+			name := strings.TrimSpace(state.BranchCreateName)
+			if name == "" {
+				state.SetError("branch name is empty")
+				state.Clamp()
+				return nil
+			}
+			source := strings.TrimSpace(state.BranchCreateSource)
+			state.CloseBranchCreate()
+			state.BranchCreateName = ""
+			state.BranchCreateCursor = 0
+			state.BranchCreateSelectAll = false
+			state.Clamp()
+			return cmds.CreateBranchCmd(git, name, source, false)
+		case tea.KeyCtrlB:
+			name := strings.TrimSpace(state.BranchCreateName)
+			if name == "" {
+				state.SetError("branch name is empty")
+				state.Clamp()
+				return nil
+			}
+			source := strings.TrimSpace(state.BranchCreateSource)
+			state.CloseBranchCreate()
+			state.BranchCreateName = ""
+			state.BranchCreateCursor = 0
+			state.BranchCreateSelectAll = false
+			state.Clamp()
+			return cmds.CreateBranchCmd(git, name, source, true)
+		case tea.KeyUp:
+			state.BranchCreateMoveSource(-1)
+		case tea.KeyDown:
+			state.BranchCreateMoveSource(1)
+		case tea.KeyTab:
+			state.BranchCreateMoveSource(1)
+		case tea.KeyShiftTab:
+			state.BranchCreateMoveSource(-1)
+		default:
+			if handleSharedTextInputKey(state, clipCfg, pasteHintAlreadySeen, msg, textInputKeyOps{
+				Selected:        state.SelectedBranchCreateText,
+				Append:          state.BranchCreateAppendText,
+				Backspace:       state.BranchCreateBackspace,
+				Delete:          state.BranchCreateDelete,
+				MoveLeft:        state.BranchCreateCursorLeft,
+				MoveRight:       state.BranchCreateCursorRight,
+				MoveHome:        state.BranchCreateCursorHome,
+				MoveEnd:         state.BranchCreateCursorEnd,
+				SelectAll:       state.BranchCreateSelectAllText,
+				DeleteSelection: state.DeleteBranchCreateSelection,
+			}) {
+				state.Clamp()
+				return nil
+			}
+		}
+		state.Clamp()
+		return nil
+	}
+
 	if state.Focus == app.FocusCommand {
 		switch msg.Type {
 		case tea.KeyEnter:
@@ -29,88 +88,19 @@ func HandleKeyMsg(
 			state.ExitCommandFocus()
 			state.Clamp()
 			return nil
-		case tea.KeyCtrlC:
-			selected := state.SelectedCommandText()
-			if selected == "" {
-				state.Clamp()
-				return nil
-			}
-			state.SetCommandClipboard(selected)
-			if err := common.CopyWithMode(clipCfg, selected); err != nil {
-				state.SetError(err.Error())
-			} else {
-				state.SetError("")
-			}
-			state.Clamp()
-			return nil
-		case tea.KeyBackspace:
-			state.BackspaceCommandText()
-			state.Clamp()
-			return nil
-		case tea.KeyDelete:
-			state.DeleteCommandText()
-			state.Clamp()
-			return nil
-		case tea.KeyLeft:
-			state.MoveCommandCursorLeft()
-			state.Clamp()
-			return nil
-		case tea.KeyRight:
-			state.MoveCommandCursorRight()
-			state.Clamp()
-			return nil
-		case tea.KeyHome:
-			state.MoveCommandCursorToStart()
-			state.Clamp()
-			return nil
-		case tea.KeyEnd, tea.KeyCtrlE:
-			state.MoveCommandCursorToEnd()
-			state.Clamp()
-			return nil
-		case tea.KeyCtrlA:
-			state.SelectAllCommandText()
-			state.Clamp()
-			return nil
-		case tea.KeyCtrlX:
-			selected := state.SelectedCommandText()
-			if selected == "" {
-				state.Clamp()
-				return nil
-			}
-			state.SetCommandClipboard(selected)
-			if err := common.CopyWithMode(clipCfg, selected); err != nil {
-				state.SetError(err.Error())
-			} else {
-				state.SetError("")
-			}
-			state.DeleteCommandSelection()
-			state.Clamp()
-			return nil
-		case tea.KeyCtrlV:
-			pasted, err := common.PasteWithMode(clipCfg)
-			if err != nil || pasted == "" {
-				pasted = state.CommandClipboard()
-			}
-			if pasted == "" {
-				if !*pasteHintAlreadySeen && clipCfg.Mode == config.ClipboardOnlyCopy {
-					state.SetError("paste from OS disabled in only_copy mode")
-					*pasteHintAlreadySeen = true
-				} else if err != nil {
-					state.SetError(err.Error())
-				}
-				state.Clamp()
-				return nil
-			}
-			state.AppendCommandText(pasted)
-			state.SetError("")
-			state.Clamp()
-			return nil
-		case tea.KeySpace:
-			state.AppendCommandText(" ")
-			state.Clamp()
-			return nil
-		case tea.KeyRunes:
-			state.AppendCommandText(string(msg.Runes))
+		}
+		if handleSharedTextInputKey(state, clipCfg, pasteHintAlreadySeen, msg, textInputKeyOps{
+			Selected:        state.SelectedCommandText,
+			Append:          state.AppendCommandText,
+			Backspace:       state.BackspaceCommandText,
+			Delete:          state.DeleteCommandText,
+			MoveLeft:        state.MoveCommandCursorLeft,
+			MoveRight:       state.MoveCommandCursorRight,
+			MoveHome:        state.MoveCommandCursorToStart,
+			MoveEnd:         state.MoveCommandCursorToEnd,
+			SelectAll:       state.SelectAllCommandText,
+			DeleteSelection: state.DeleteCommandSelection,
+		}) {
 			state.Clamp()
 			return nil
 		}
@@ -124,6 +114,19 @@ func HandleKeyMsg(
 		// Ignore quit in commit input to avoid accidental exit while typing.
 		state.Clamp()
 		return nil
+	}
+	if state.Focus == app.FocusBranches && msg.Type == tea.KeyEnter {
+		branch, ok := state.SelectedBranchName()
+		if !ok {
+			state.Clamp()
+			return nil
+		}
+		if strings.TrimSpace(branch) == strings.TrimSpace(state.BranchName) {
+			state.Clamp()
+			return nil
+		}
+		state.Clamp()
+		return cmds.SwitchBranchCmd(git, branch)
 	}
 
 	action := state.Keys.Match(msg.String())

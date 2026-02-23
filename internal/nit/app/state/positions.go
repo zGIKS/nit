@@ -25,11 +25,18 @@ func (s AppState) ChangesPosition() (int, int) {
 }
 
 func (s AppState) GraphPosition() (int, int) {
-	total := len(s.Graph.Lines)
+	return linearPosition(len(s.Graph.Lines), s.Graph.Cursor)
+}
+
+func (s AppState) BranchesPosition() (int, int) {
+	return linearPosition(len(s.Branches.Lines), s.Branches.Cursor)
+}
+
+func linearPosition(total, cursor int) (int, int) {
 	if total < 1 {
 		return 1, 1
 	}
-	cur := s.Graph.Cursor + 1
+	cur := cursor + 1
 	if cur < 1 {
 		cur = 1
 	}

@@ -1,89 +1,36 @@
 package state
 
+func (s AppState) GraphBranchesPaneWidths() (graphW, branchW int) {
+	totalW := max(40, s.Viewport.Width)
+	branchW = max(24, totalW/3)
+	if branchW > totalW-20 {
+		branchW = max(18, totalW-20)
+	}
+	graphW = totalW - branchW - 1
+	if graphW < 20 {
+		graphW = 20
+		branchW = max(18, totalW-graphW-1)
+	}
+	return graphW, branchW
+}
+
 func (s *AppState) Clamp() {
 	if s.Focus == FocusGraph {
-		if len(s.Graph.Lines) == 0 {
-			s.Graph.Cursor = 0
-			s.Graph.Offset = 0
-			return
-		}
-		if s.Graph.Cursor < 0 {
-			s.Graph.Cursor = 0
-		}
-		if s.Graph.Cursor >= len(s.Graph.Lines) {
-			s.Graph.Cursor = len(s.Graph.Lines) - 1
-		}
-		page := s.graphPageSize()
-		if s.Graph.Cursor < s.Graph.Offset {
-			s.Graph.Offset = s.Graph.Cursor
-		}
-		if s.Graph.Cursor >= s.Graph.Offset+page {
-			s.Graph.Offset = s.Graph.Cursor - page + 1
-		}
-		maxOffset := max(0, len(s.Graph.Lines)-page)
-		if s.Graph.Offset > maxOffset {
-			s.Graph.Offset = maxOffset
-		}
-		if s.Graph.Offset < 0 {
-			s.Graph.Offset = 0
-		}
+		clampScrollView(len(s.Graph.Lines), &s.Graph.Cursor, &s.Graph.Offset, s.graphPageSize())
+		return
+	}
+
+	if s.Focus == FocusBranches {
+		clampScrollView(len(s.Branches.Lines), &s.Branches.Cursor, &s.Branches.Offset, s.branchesPageSize())
 		return
 	}
 
 	if s.Focus == FocusCommandLog {
-		if len(s.CommandLog) == 0 {
-			s.CommandLogView.Cursor = 0
-			s.CommandLogView.Offset = 0
-			return
-		}
-		if s.CommandLogView.Cursor < 0 {
-			s.CommandLogView.Cursor = 0
-		}
-		if s.CommandLogView.Cursor >= len(s.CommandLog) {
-			s.CommandLogView.Cursor = len(s.CommandLog) - 1
-		}
-		page := s.commandLogPageSize()
-		if s.CommandLogView.Cursor < s.CommandLogView.Offset {
-			s.CommandLogView.Offset = s.CommandLogView.Cursor
-		}
-		if s.CommandLogView.Cursor >= s.CommandLogView.Offset+page {
-			s.CommandLogView.Offset = s.CommandLogView.Cursor - page + 1
-		}
-		maxOffset := max(0, len(s.CommandLog)-page)
-		if s.CommandLogView.Offset > maxOffset {
-			s.CommandLogView.Offset = maxOffset
-		}
-		if s.CommandLogView.Offset < 0 {
-			s.CommandLogView.Offset = 0
-		}
+		clampScrollView(len(s.CommandLog), &s.CommandLogView.Cursor, &s.CommandLogView.Offset, s.commandLogPageSize())
 		return
 	}
 
-	if len(s.Changes.Rows) == 0 {
-		s.Changes.Cursor = 0
-		s.Changes.Offset = 0
-		return
-	}
-	if s.Changes.Cursor < 0 {
-		s.Changes.Cursor = 0
-	}
-	if s.Changes.Cursor >= len(s.Changes.Rows) {
-		s.Changes.Cursor = len(s.Changes.Rows) - 1
-	}
-	page := s.changesPageSize()
-	if s.Changes.Cursor < s.Changes.Offset {
-		s.Changes.Offset = s.Changes.Cursor
-	}
-	if s.Changes.Cursor >= s.Changes.Offset+page {
-		s.Changes.Offset = s.Changes.Cursor - page + 1
-	}
-	maxOffset := max(0, len(s.Changes.Rows)-page)
-	if s.Changes.Offset > maxOffset {
-		s.Changes.Offset = maxOffset
-	}
-	if s.Changes.Offset < 0 {
-		s.Changes.Offset = 0
-	}
+	clampScrollView(len(s.Changes.Rows), &s.Changes.Cursor, &s.Changes.Offset, s.changesPageSize())
 }
 
 func (s AppState) bodyHeight() int {
@@ -145,4 +92,45 @@ func (s AppState) commandLogPageSize() int {
 		return 1
 	}
 	return h
+}
+
+func (s AppState) branchesPageSize() int {
+	h := s.GraphPaneHeight() - 2
+	if h < 1 {
+		return 1
+	}
+	return h
+}
+
+func clampScrollView(total int, cursor, offset *int, page int) {
+	if cursor == nil || offset == nil {
+		return
+	}
+	if total <= 0 {
+		*cursor = 0
+		*offset = 0
+		return
+	}
+	if *cursor < 0 {
+		*cursor = 0
+	}
+	if *cursor >= total {
+		*cursor = total - 1
+	}
+	if page < 1 {
+		page = 1
+	}
+	if *cursor < *offset {
+		*offset = *cursor
+	}
+	if *cursor >= *offset+page {
+		*offset = *cursor - page + 1
+	}
+	maxOffset := max(0, total-page)
+	if *offset > maxOffset {
+		*offset = maxOffset
+	}
+	if *offset < 0 {
+		*offset = 0
+	}
 }

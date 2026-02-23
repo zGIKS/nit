@@ -1,7 +1,6 @@
 package git
 
 import (
-	"errors"
 	"path/filepath"
 	"strings"
 )
@@ -22,7 +21,47 @@ func (s Service) LoadGraph() ([]string, error) {
 	if strings.TrimSpace(out) == "" {
 		return []string{"No commits to display."}, nil
 	}
-	return strings.Split(out, "\n"), nil
+	lines := strings.Split(out, "\n")
+	for i := range lines {
+		lines[i] = prettifyGraphLine(lines[i])
+	}
+	return lines, nil
+}
+
+func (s Service) LoadBranches() ([]string, error) {
+	out, _, err := s.runner.Run(
+		"--no-optional-locks",
+		"for-each-ref",
+		"--format=%(HEAD) %(refname:short)",
+		"refs/heads",
+	)
+	if err != nil {
+		return []string{"Not a git repo."}, err
+	}
+	if strings.TrimSpace(out) == "" {
+		return []string{"No local branches."}, nil
+	}
+	raw := strings.Split(out, "\n")
+	lines := make([]string, 0, len(raw))
+	for _, line := range raw {
+		line = strings.TrimRight(line, " \t")
+		if line == "" {
+			continue
+		}
+		if strings.HasPrefix(line, "* ") {
+			lines = append(lines, "● "+strings.TrimSpace(strings.TrimPrefix(line, "* ")))
+			continue
+		}
+		if strings.HasPrefix(line, "  ") {
+			lines = append(lines, "  "+strings.TrimSpace(line[2:]))
+			continue
+		}
+		lines = append(lines, "  "+strings.TrimSpace(line))
+	}
+	if len(lines) == 0 {
+		return []string{"No local branches."}, nil
+	}
+	return lines, nil
 }
 
 func (s Service) LoadChanges() ([]ChangeEntry, error) {
@@ -41,51 +80,6 @@ func (s Service) LoadChanges() ([]ChangeEntry, error) {
 		entries = append(entries, e)
 	}
 	return entries, nil
-}
-
-func (s Service) StagePath(path string) (string, error) {
-	_, cmd, err := s.runner.Run("add", "--", path)
-	return cmd, err
-}
-
-func (s Service) UnstagePath(path string) (string, error) {
-	if _, cmd, err := s.runner.Run("restore", "--staged", "--", path); err == nil {
-		return cmd, nil
-	}
-	_, cmd, err := s.runner.Run("reset", "HEAD", "--", path)
-	return cmd, err
-}
-
-func (s Service) StageAll() (string, error) {
-	_, cmd, err := s.runner.Run("add", "-A")
-	return cmd, err
-}
-
-func (s Service) UnstageAll() (string, error) {
-	if _, cmd, err := s.runner.Run("restore", "--staged", "."); err == nil {
-		return cmd, nil
-	}
-	_, cmd, err := s.runner.Run("reset", "HEAD", "--", ".")
-	return cmd, err
-}
-
-func (s Service) Commit(message string) (string, error) {
-	msg := strings.TrimSpace(message)
-	if msg == "" {
-		return "", errors.New("commit message is empty")
-	}
-	_, cmd, err := s.runner.Run("commit", "-m", msg)
-	return cmd, err
-}
-
-func (s Service) Push() (string, error) {
-	_, cmd, err := s.runner.Run("push")
-	return cmd, err
-}
-
-func (s Service) Fetch() (string, error) {
-	_, cmd, err := s.runner.Run("fetch")
-	return cmd, err
 }
 
 func (s Service) LoadRepoSummary() (string, string, error) {

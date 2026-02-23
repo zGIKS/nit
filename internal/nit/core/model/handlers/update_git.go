@@ -9,27 +9,19 @@ import (
 )
 
 func HandleChangesLoaded(state *app.AppState, msg common.ChangesLoadedMsg) tea.Cmd {
-	if msg.Err != nil {
-		state.SetError(msg.Err.Error())
-	} else {
-		state.SetError("")
+	return handleLoadResult(state, msg.Err, func() {
 		if !common.SameChanges(state.Changes.Entries, msg.Entries) {
 			state.SetChanges(msg.Entries)
 		}
-	}
-	state.Clamp()
-	return nil
+	})
 }
 
 func HandleGraphLoaded(state *app.AppState, msg common.GraphLoadedMsg) tea.Cmd {
-	if msg.Err != nil {
-		state.SetError(msg.Err.Error())
-	} else {
-		state.SetError("")
-		state.SetGraph(msg.Lines)
-	}
-	state.Clamp()
-	return nil
+	return handleLoadResult(state, msg.Err, func() { state.SetGraph(msg.Lines) })
+}
+
+func HandleBranchesLoaded(state *app.AppState, msg common.BranchesLoadedMsg) tea.Cmd {
+	return handleLoadResult(state, msg.Err, func() { state.SetBranches(msg.Lines) })
 }
 
 func HandleRepoSummaryLoaded(state *app.AppState, msg common.RepoSummaryLoadedMsg) tea.Cmd {
@@ -42,6 +34,19 @@ func HandleRepoSummaryLoaded(state *app.AppState, msg common.RepoSummaryLoadedMs
 		state.SetRepoSummary(msg.Repo, msg.Branch)
 		if state.LastErr == "" {
 			state.SetError("")
+		}
+	}
+	state.Clamp()
+	return nil
+}
+
+func handleLoadResult(state *app.AppState, err error, onSuccess func()) tea.Cmd {
+	if err != nil {
+		state.SetError(err.Error())
+	} else {
+		state.SetError("")
+		if onSuccess != nil {
+			onSuccess()
 		}
 	}
 	state.Clamp()
@@ -64,6 +69,10 @@ func HandleOpDone(state *app.AppState, git g.Service, msg common.OpDoneMsg) tea.
 	}
 	if msg.RefreshGraph {
 		cmds_to_run = append(cmds_to_run, cmds.LoadGraphCmd(git))
+		cmds_to_run = append(cmds_to_run, cmds.LoadBranchesCmd(git))
+	}
+	if msg.RefreshRepoSummary {
+		cmds_to_run = append(cmds_to_run, cmds.LoadRepoSummaryCmd(git))
 	}
 	state.Clamp()
 	if len(cmds_to_run) == 0 {

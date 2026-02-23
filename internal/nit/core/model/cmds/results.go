@@ -22,6 +22,7 @@ func HandleResult(git g.Service, result app.ApplyResult) tea.Cmd {
 		}
 		if result.RefreshGraph {
 			cmds = append(cmds, LoadGraphCmd(git))
+			cmds = append(cmds, LoadBranchesCmd(git))
 		}
 	}
 	if len(cmds) == 0 {

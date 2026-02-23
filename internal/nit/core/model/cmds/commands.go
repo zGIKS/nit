@@ -20,7 +20,7 @@ const (
 func pollInterval(envKey string, fallback time.Duration) time.Duration {
 	raw := strings.TrimSpace(os.Getenv(envKey))
 	if raw == "" {
-		if envKey == "NIT_POLL_MS" {
+		if envKey != "NIT_POLL_MS" {
 			raw = strings.TrimSpace(os.Getenv("NIT_POLL_MS"))
 		}
 		if raw == "" {
@@ -60,6 +60,13 @@ func LoadGraphCmd(svc g.Service) tea.Cmd {
 	}
 }
 
+func LoadBranchesCmd(svc g.Service) tea.Cmd {
+	return func() tea.Msg {
+		lines, err := svc.LoadBranches()
+		return common.BranchesLoadedMsg{Lines: lines, Err: err}
+	}
+}
+
 func LoadRepoSummaryCmd(svc g.Service) tea.Cmd {
 	return func() tea.Msg {
 		repo, branch, err := svc.LoadRepoSummary()
@@ -93,5 +100,47 @@ func ExecOpCmd(svc g.Service, op app.Operation, refreshChanges, refreshGraph boo
 			return common.OpDoneMsg{Err: err, Command: cmd}
 		}
 		return common.OpDoneMsg{RefreshChanges: refreshChanges, RefreshGraph: refreshGraph, Command: cmd}
+	}
+}
+
+func CreateBranchCmd(svc g.Service, name, source string, pushRemote bool) tea.Cmd {
+	return func() tea.Msg {
+		createCmd, err := svc.CreateBranch(name, source)
+		if err != nil {
+			return common.OpDoneMsg{Err: err, Command: createCmd}
+		}
+		commandLog := createCmd
+		if pushRemote {
+			pushCmd, pushErr := svc.PushCurrentBranchUpstream()
+			if commandLog != "" && pushCmd != "" {
+				commandLog += " && " + pushCmd
+			} else if pushCmd != "" {
+				commandLog = pushCmd
+			}
+			if pushErr != nil {
+				return common.OpDoneMsg{Err: pushErr, Command: commandLog}
+			}
+		}
+		return common.OpDoneMsg{
+			Command:            commandLog,
+			RefreshChanges:     true,
+			RefreshGraph:       true,
+			RefreshRepoSummary: true,
+		}
+	}
+}
+
+func SwitchBranchCmd(svc g.Service, name string) tea.Cmd {
+	return func() tea.Msg {
+		cmd, err := svc.SwitchBranch(name)
+		if err != nil {
+			return common.OpDoneMsg{Err: err, Command: cmd}
+		}
+		return common.OpDoneMsg{
+			Command:            cmd,
+			RefreshChanges:     true,
+			RefreshGraph:       true,
+			RefreshRepoSummary: true,
+		}
 	}
 }

@@ -21,6 +21,11 @@ type GraphLoadedMsg struct {
 	Err   error
 }
 
+type BranchesLoadedMsg struct {
+	Lines []string
+	Err   error
+}
+
 type RepoSummaryLoadedMsg struct {
 	Repo   string
 	Branch string
@@ -28,8 +33,9 @@ type RepoSummaryLoadedMsg struct {
 }
 
 type OpDoneMsg struct {
-	Err            error
-	RefreshChanges bool
-	RefreshGraph   bool
-	Command        string
+	Err                error
+	RefreshChanges     bool
+	RefreshGraph       bool
+	RefreshRepoSummary bool
+	Command            string
 }

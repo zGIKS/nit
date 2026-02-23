@@ -13,6 +13,7 @@ const (
 	FocusCommand FocusState = iota
 	FocusChanges
 	FocusGraph
+	FocusBranches
 	FocusCommandLog
 )
 
@@ -44,6 +45,12 @@ type GraphState struct {
 	Offset int
 }
 
+type BranchesState struct {
+	Lines  []string
+	Cursor int
+	Offset int
+}
+
 type CommandState struct {
 	Input       string
 	Cursor      int
@@ -63,21 +70,41 @@ type Viewport struct {
 }
 
 type AppState struct {
-	Focus          FocusState
-	Command        CommandState
-	Changes        ChangesState
-	Graph          GraphState
-	CommandLogView CommandLogState
-	CommandLog     []string
-	Viewport       Viewport
-	Keys           input.Keymap
-	LastErr        string
-	RepoName       string
-	BranchName     string
-	RepoLabel      string
-	BranchLabel    string
-	FetchLabel     string
-	MenuLabel      string
+	Focus                    FocusState
+	Command                  CommandState
+	Changes                  ChangesState
+	Graph                    GraphState
+	Branches                 BranchesState
+	CommandLogView           CommandLogState
+	CommandLog               []string
+	Viewport                 Viewport
+	Keys                     input.Keymap
+	LastErr                  string
+	MenuOpen                 bool
+	MenuHoverIndex           int
+	HoverFetch               bool
+	HoverMenu                bool
+	HoverBranch              bool
+	RepoName                 string
+	BranchName               string
+	RepoLabel                string
+	BranchLabel              string
+	FetchLabel               string
+	MenuLabel                string
+	BranchSourceSelectedMark string
+	BranchCreateTitle        string
+	BranchCreateEnterHint    string
+	BranchCreatePushHint     string
+	BranchCreateNameLabel    string
+	BranchCreateSourceLabel  string
+	BranchCreateOpen         bool
+	BranchCreateName         string
+	BranchCreateCursor       int
+	BranchCreateSelectAll    bool
+	BranchCreateSource       string
+	BranchCreateSourceList   []string
+	BranchCreateSourceOffset int
+	BranchCreateHoverIndex   int
 }
 
 func New(keys input.Keymap) AppState {
@@ -89,12 +116,23 @@ func New(keys input.Keymap) AppState {
 		Changes: ChangesState{
 			StickySection: SectionUnstaged,
 		},
-		Keys:        keys,
-		RepoName:    "loading...",
-		BranchName:  "loading...",
-		RepoLabel:   "repo",
-		BranchLabel: "branch",
-		FetchLabel:  "[f] fetch",
-		MenuLabel:   "...",
+		Branches: BranchesState{
+			Lines: []string{"Loading branches..."},
+		},
+		Keys:                     keys,
+		MenuHoverIndex:           -1,
+		BranchCreateHoverIndex:   -1,
+		RepoName:                 "loading...",
+		BranchName:               "loading...",
+		RepoLabel:                "repo",
+		BranchLabel:              "branch",
+		FetchLabel:               "[f] fetch",
+		MenuLabel:                "...",
+		BranchSourceSelectedMark: "✓",
+		BranchCreateTitle:        "Create a branch",
+		BranchCreateEnterHint:    "Enter: create branch",
+		BranchCreatePushHint:     "Ctrl+b: create and push to origin",
+		BranchCreateNameLabel:    "New branch name",
+		BranchCreateSourceLabel:  "Source",
 	}
 }

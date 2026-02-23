@@ -43,10 +43,16 @@ type ClipboardConfig struct {
 }
 
 type UIConfig struct {
-	RepoLabel   string `toml:"repo_label"`
-	BranchLabel string `toml:"branch_label"`
-	FetchLabel  string `toml:"fetch_label"`
-	MenuLabel   string `toml:"menu_label"`
+	RepoLabel                string `toml:"repo_label"`
+	BranchLabel              string `toml:"branch_label"`
+	FetchLabel               string `toml:"fetch_label"`
+	MenuLabel                string `toml:"menu_label"`
+	BranchSourceSelectedMark string `toml:"branch_source_selected_mark"`
+	BranchCreateTitle        string `toml:"branch_create_title"`
+	BranchCreateEnterHint    string `toml:"branch_create_enter_hint"`
+	BranchCreatePushHint     string `toml:"branch_create_push_hint"`
+	BranchCreateNameLabel    string `toml:"branch_create_name_label"`
+	BranchCreateSourceLabel  string `toml:"branch_create_source_label"`
 }
 
 type FileConfig struct {
@@ -69,10 +75,16 @@ func Load() (AppConfig, string) {
 			Mode: ClipboardOnlyCopy,
 		},
 		UI: UIConfig{
-			RepoLabel:   "repo",
-			BranchLabel: "branch",
-			FetchLabel:  "[f] fetch",
-			MenuLabel:   "...",
+			RepoLabel:                "repo",
+			BranchLabel:              "branch",
+			FetchLabel:               "[f] fetch",
+			MenuLabel:                "...",
+			BranchSourceSelectedMark: "✓",
+			BranchCreateTitle:        "Create a branch",
+			BranchCreateEnterHint:    "Enter: create branch",
+			BranchCreatePushHint:     "Ctrl+b: create and push to origin",
+			BranchCreateNameLabel:    "New branch name",
+			BranchCreateSourceLabel:  "Source",
 		},
 	}
 
@@ -125,6 +137,24 @@ func loadFromTOML(cfg *AppConfig) string {
 	}
 	if v := strings.TrimSpace(fileCfg.UI.MenuLabel); v != "" {
 		cfg.UI.MenuLabel = v
+	}
+	if v := strings.TrimSpace(fileCfg.UI.BranchSourceSelectedMark); v != "" {
+		cfg.UI.BranchSourceSelectedMark = v
+	}
+	if v := strings.TrimSpace(fileCfg.UI.BranchCreateTitle); v != "" {
+		cfg.UI.BranchCreateTitle = v
+	}
+	if v := strings.TrimSpace(fileCfg.UI.BranchCreateEnterHint); v != "" {
+		cfg.UI.BranchCreateEnterHint = v
+	}
+	if v := strings.TrimSpace(fileCfg.UI.BranchCreatePushHint); v != "" {
+		cfg.UI.BranchCreatePushHint = v
+	}
+	if v := strings.TrimSpace(fileCfg.UI.BranchCreateNameLabel); v != "" {
+		cfg.UI.BranchCreateNameLabel = v
+	}
+	if v := strings.TrimSpace(fileCfg.UI.BranchCreateSourceLabel); v != "" {
+		cfg.UI.BranchCreateSourceLabel = v
 	}
 	return modeWarn
 }
