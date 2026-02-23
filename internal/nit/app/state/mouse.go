@@ -40,12 +40,6 @@ func (s *AppState) TopBarActionAt(x, y int) (actions.Action, bool) {
 	if y < 0 || y >= 3 || x < 0 {
 		return actions.ActionNone, false
 	}
-
-	fetchX, fetchW, _, _ := s.topBarBoxes()
-
-	if x >= fetchX && x < fetchX+fetchW {
-		return actions.ActionFetch, true
-	}
 	return actions.ActionNone, false
 }
 
@@ -98,6 +92,8 @@ func (s *AppState) MenuClickActionAt(x, y int) (actions.Action, bool) {
 	item := s.MenuItems()[idx]
 	s.CloseMenu()
 	switch item {
+	case "Pull":
+		return actions.ActionPull, true
 	case "Fetch":
 		return actions.ActionFetch, true
 	case "Push":
@@ -189,8 +185,11 @@ func (s *AppState) clickChangesBox(y, top int) bool {
 		return false
 	}
 	s.focusByMouse(FocusChanges)
-	if idx, ok := boxContentLine(y, top, h); ok && idx < len(s.Changes.Rows) && s.Changes.Rows[idx].Selectable {
-		s.Changes.Cursor = idx
+	if idx, ok := boxContentLine(y, top, h); ok {
+		row := s.Changes.Offset + idx
+		if row >= 0 && row < len(s.Changes.Rows) && s.Changes.Rows[row].Selectable {
+			s.Changes.Cursor = row
+		}
 	}
 	return true
 }

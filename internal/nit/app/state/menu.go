@@ -8,8 +8,6 @@ import (
 
 var dropdownMenuItems = []string{
 	"Pull",
-	"Push",
-	"Checkout to...",
 	"Fetch",
 }
 
@@ -42,16 +40,14 @@ func (s AppState) topBarBoxes() (fetchX, fetchW, menuX, menuW int) {
 
 	repoText := strings.TrimSpace(s.RepoLabel + " " + repoName)
 	branchText := strings.TrimSpace(s.BranchLabel + " " + branchName)
-	fetchText := strings.TrimSpace(s.FetchLabel)
 	menuText := strings.TrimSpace(s.MenuLabel)
 
 	repoW := max(16, runewidth.StringWidth(repoText)+4)
 	branchW := max(16, runewidth.StringWidth(branchText)+4)
-	fetchW = max(14, runewidth.StringWidth(fetchText)+4)
 	menuW = max(8, runewidth.StringWidth(menuText)+4)
-	minRepoW, minBranchW, minFetchW, minMenuW := 14, 12, 10, 8
+	minRepoW, minBranchW, minMenuW := 14, 12, 8
 
-	totalNeeded := repoW + branchW + fetchW + menuW + 3
+	totalNeeded := repoW + branchW + menuW + 2
 	overflow := totalNeeded - totalW
 	shrink := func(w *int, minW int) {
 		if overflow <= 0 {
@@ -67,21 +63,20 @@ func (s AppState) topBarBoxes() (fetchX, fetchW, menuX, menuW int) {
 	}
 	shrink(&repoW, minRepoW)
 	shrink(&branchW, minBranchW)
-	shrink(&fetchW, minFetchW)
 	shrink(&menuW, minMenuW)
 	if overflow > 0 {
 		repoW = max(minRepoW, repoW-overflow)
 	}
 
-	rightTopW := branchW + fetchW + menuW + 2
+	rightTopW := branchW + menuW + 1
 	gapW := totalW - repoW - rightTopW - 2
 	if gapW < 1 {
 		gapW = 1
 	}
 
 	branchX := repoW + 1 + gapW + 1
-	fetchX = branchX + branchW + 1
-	menuX = fetchX + fetchW + 1
+	fetchX, fetchW = -1, 0
+	menuX = branchX + branchW + 1
 	return fetchX, fetchW, menuX, menuW
 }
 

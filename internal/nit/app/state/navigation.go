@@ -79,6 +79,10 @@ func (s *AppState) Apply(action actions.Action) actions.ApplyResult {
 			res.Operations = []actions.Operation{{Kind: actions.OpUnstageAll}}
 			res.RefreshChanges = true
 		}
+	case actions.ActionPull:
+		res.Operations = []actions.Operation{{Kind: actions.OpPull}}
+		res.RefreshChanges = true
+		res.RefreshGraph = true
 	case actions.ActionFetch:
 		res.Operations = []actions.Operation{{Kind: actions.OpFetch}}
 		res.RefreshGraph = true

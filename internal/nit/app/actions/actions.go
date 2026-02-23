@@ -12,6 +12,7 @@ const (
 	ActionToggleOne
 	ActionStageAll
 	ActionUnstageAll
+	ActionPull
 	ActionFetch
 	ActionPush
 )
@@ -24,6 +25,7 @@ const (
 	OpStageAll
 	OpUnstageAll
 	OpCommit
+	OpPull
 	OpFetch
 	OpPush
 )

@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/mattn/go-runewidth"
 )
@@ -86,8 +87,8 @@ func TopBarView(width int, left, right string) string {
 	left = strings.TrimSpace(left)
 	right = strings.TrimSpace(right)
 
-	leftLen := runewidth.StringWidth(left)
-	rightLen := runewidth.StringWidth(right)
+	leftLen := displayWidth(left)
+	rightLen := displayWidth(right)
 
 	if rightLen >= w {
 		return fitText(right, w, ' ')
@@ -101,7 +102,7 @@ func TopBarView(width int, left, right string) string {
 		}
 		left = fitText(left, maxLeft, ' ')
 		left = strings.TrimRight(left, " ")
-		space = w - runewidth.StringWidth(left) - rightLen
+		space = w - displayWidth(left) - rightLen
 		if space < 1 {
 			space = 1
 		}
@@ -151,7 +152,7 @@ func fitText(text string, width int, fill rune) string {
 	if width <= 0 {
 		return ""
 	}
-	textW := runewidth.StringWidth(text)
+	textW := displayWidth(text)
 	if textW > width {
 		if width <= 3 {
 			return truncateDisplayWidth(text, width)
@@ -184,10 +185,17 @@ func truncateDisplayWidth(s string, width int) string {
 	}
 	var b strings.Builder
 	cur := 0
-	for _, r := range s {
+	for i := 0; i < len(s); {
+		if end, ok := ansiSeqEnd(s, i); ok {
+			b.WriteString(s[i:end])
+			i = end
+			continue
+		}
+		r, size := utf8.DecodeRuneInString(s[i:])
 		rw := runewidth.RuneWidth(r)
 		if rw == 0 {
 			b.WriteRune(r)
+			i += size
 			continue
 		}
 		if cur+rw > width {
@@ -195,8 +203,39 @@ func truncateDisplayWidth(s string, width int) string {
 		}
 		b.WriteRune(r)
 		cur += rw
+		i += size
 	}
 	return b.String()
+}
+
+func displayWidth(s string) int {
+	width := 0
+	for i := 0; i < len(s); {
+		if end, ok := ansiSeqEnd(s, i); ok {
+			i = end
+			continue
+		}
+		r, size := utf8.DecodeRuneInString(s[i:])
+		width += runewidth.RuneWidth(r)
+		i += size
+	}
+	return width
+}
+
+func ansiSeqEnd(s string, i int) (int, bool) {
+	if i+1 >= len(s) || s[i] != 0x1b || s[i+1] != '[' {
+		return 0, false
+	}
+	j := i + 2
+	for j < len(s) {
+		c := s[j]
+		// CSI final byte range.
+		if c >= 0x40 && c <= 0x7e {
+			return j + 1, true
+		}
+		j++
+	}
+	return 0, false
 }
 
 func ansiUnderline(s string) string {

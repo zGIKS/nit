@@ -20,7 +20,7 @@ const (
 func pollInterval(envKey string, fallback time.Duration) time.Duration {
 	raw := strings.TrimSpace(os.Getenv(envKey))
 	if raw == "" {
-		if envKey == "NIT_POLL_MS" {
+		if envKey != "NIT_POLL_MS" {
 			raw = strings.TrimSpace(os.Getenv("NIT_POLL_MS"))
 		}
 		if raw == "" {

@@ -48,18 +48,15 @@ func Render(state app.AppState) string {
 	}
 	repoText := strings.TrimSpace(state.RepoLabel + " " + repoName)
 	branchText := strings.TrimSpace(state.BranchLabel + " " + branchName)
-	fetchText := strings.TrimSpace(state.FetchLabel)
 	menuText := strings.TrimSpace(state.MenuLabel)
 
 	repoW := max(16, runewidth.StringWidth(repoText)+4)
 	branchW := max(16, runewidth.StringWidth(branchText)+4)
-	fetchW := max(14, runewidth.StringWidth(fetchText)+4)
 	menuW := max(8, runewidth.StringWidth(menuText)+4)
 	minRepoW := 14
 	minBranchW := 12
-	minFetchW := 10
 	minMenuW := 8
-	totalNeeded := repoW + branchW + fetchW + menuW + 3
+	totalNeeded := repoW + branchW + menuW + 2
 	overflow := totalNeeded - totalW
 	shrink := func(w *int, minW int) {
 		if overflow <= 0 {
@@ -75,7 +72,6 @@ func Render(state app.AppState) string {
 	}
 	shrink(&repoW, minRepoW)
 	shrink(&branchW, minBranchW)
-	shrink(&fetchW, minFetchW)
 	shrink(&menuW, minMenuW)
 	if overflow > 0 {
 		// Last resort: give remaining width to repo box and let text truncate.
@@ -83,16 +79,10 @@ func Render(state app.AppState) string {
 	}
 
 	leftTop := MiniBoxView(repoText, repoW)
-	rightTopW := branchW + fetchW + menuW + 2
+	rightTopW := branchW + menuW + 1
 	rightTop := HStackMany(
 		[]string{
 			MiniBoxView(branchText, branchW),
-			func() string {
-				if state.HoverFetch {
-					return MiniBoxViewUnderline(fetchText, fetchW)
-				}
-				return MiniBoxView(fetchText, fetchW)
-			}(),
 			func() string {
 				if state.HoverMenu {
 					return MiniBoxViewUnderline(menuText, menuW)
@@ -100,7 +90,7 @@ func Render(state app.AppState) string {
 				return MiniBoxView(menuText, menuW)
 			}(),
 		},
-		[]int{branchW, fetchW, menuW},
+		[]int{branchW, menuW},
 	)
 	gapW := totalW - repoW - rightTopW - 2
 	if gapW < 1 {
@@ -258,16 +248,29 @@ func commandLineViewport(state app.AppState, width int) string {
 		return state.CommandLineWithCaret()
 	}
 	full := state.CommandLineWithCaret()
+	caret := 0
+	if !state.Command.SelectAll {
+		r := []rune(state.Command.Input)
+		cursor := state.Command.Cursor
+		if cursor < 0 {
+			cursor = 0
+		}
+		if cursor > len(r) {
+			cursor = len(r)
+		}
+		full = string(append(append(append([]rune{}, r[:cursor]...), '|'), r[cursor:]...))
+		caret = cursor
+	}
 	r := []rune(full)
 	if len(r) <= width {
 		return full
 	}
-
-	caret := 0
-	for i, ch := range r {
-		if ch == '|' {
-			caret = i
-			break
+	if state.Command.SelectAll {
+		for i, ch := range r {
+			if ch == '|' {
+				caret = i
+				break
+			}
 		}
 	}
 

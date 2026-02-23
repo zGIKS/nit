@@ -3,6 +3,7 @@ package git
 import (
 	"errors"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -10,6 +11,9 @@ import (
 type Service struct {
 	runner Runner
 }
+
+var graphHashRe = regexp.MustCompile(`[0-9a-f]{7,40}\b`)
+var graphPrefixRe = regexp.MustCompile(`^[|\\/*_. ]+`)
 
 func NewService(r Runner) Service {
 	return Service{runner: r}
@@ -23,7 +27,11 @@ func (s Service) LoadGraph() ([]string, error) {
 	if strings.TrimSpace(out) == "" {
 		return []string{"No commits to display."}, nil
 	}
-	return strings.Split(out, "\n"), nil
+	lines := strings.Split(out, "\n")
+	for i := range lines {
+		lines[i] = prettifyGraphLine(lines[i])
+	}
+	return lines, nil
 }
 
 func (s Service) LoadChanges() ([]ChangeEntry, error) {
@@ -79,6 +87,11 @@ func (s Service) Commit(message string) (string, error) {
 	return cmd, err
 }
 
+func (s Service) Pull() (string, error) {
+	_, cmd, err := s.runner.Run("pull")
+	return cmd, err
+}
+
 func (s Service) Push() (string, error) {
 	if err := s.ensureHasOutgoingCommits(); err != nil {
 		return "", err
@@ -126,4 +139,42 @@ func (s Service) ensureHasOutgoingCommits() error {
 		return errors.New("nothing to push")
 	}
 	return nil
+}
+
+func prettifyGraphLine(line string) string {
+	if line == "" {
+		return line
+	}
+	prefixEnd := 0
+	if loc := graphHashRe.FindStringIndex(line); loc != nil && loc[0] > 0 {
+		prefixEnd = loc[0]
+	} else if loc := graphPrefixRe.FindStringIndex(line); loc != nil {
+		prefixEnd = loc[1]
+	}
+	if prefixEnd <= 0 {
+		return line
+	}
+	return replaceGraphChars(line[:prefixEnd]) + line[prefixEnd:]
+}
+
+func replaceGraphChars(s string) string {
+	var b strings.Builder
+	b.Grow(len(s))
+	for _, r := range s {
+		switch r {
+		case '|':
+			b.WriteRune('│')
+		case '/':
+			b.WriteRune('╱')
+		case '\\':
+			b.WriteRune('╲')
+		case '*':
+			b.WriteRune('●')
+		case '_':
+			b.WriteRune('─')
+		default:
+			b.WriteRune(r)
+		}
+	}
+	return b.String()
 }
