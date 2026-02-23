@@ -10,3 +10,6 @@ dist/
 # environment / local config overrides
 .env
 .env.*
+
+# nix outputs
+/result
