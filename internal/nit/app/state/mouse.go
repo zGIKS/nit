@@ -23,7 +23,7 @@ func (s *AppState) HandleMouseClick(x, y int) {
 	}
 	top += s.ChangesPaneHeight()
 
-	if s.clickGraphBox(y, top) {
+	if s.clickGraphBox(x, y, top) {
 		s.Clamp()
 		return
 	}
@@ -149,7 +149,7 @@ func (s *AppState) HandleMouseWheel(x, y, delta int) {
 	}
 	top += s.ChangesPaneHeight()
 
-	if s.wheelGraphBox(y, top, delta) {
+	if s.wheelGraphBox(x, y, top, delta) {
 		s.Clamp()
 		return
 	}
@@ -209,10 +209,21 @@ func (s *AppState) wheelChangesBox(y, top, delta int) bool {
 	return true
 }
 
-func (s *AppState) clickGraphBox(y, top int) bool {
+func (s *AppState) clickGraphBox(x, y, top int) bool {
 	h := s.GraphPaneHeight()
 	if y < top || y >= top+h {
 		return false
+	}
+	graphW, _ := s.GraphBranchesPaneWidths()
+	if x > graphW {
+		s.focusByMouse(FocusBranches)
+		if idx, ok := boxContentLine(y, top, h); ok {
+			line := s.Branches.Offset + idx
+			if line >= 0 && line < len(s.Branches.Lines) {
+				s.Branches.Cursor = line
+			}
+		}
+		return true
 	}
 	s.focusByMouse(FocusGraph)
 	if idx, ok := boxContentLine(y, top, h); ok {
@@ -224,10 +235,16 @@ func (s *AppState) clickGraphBox(y, top int) bool {
 	return true
 }
 
-func (s *AppState) wheelGraphBox(y, top, delta int) bool {
+func (s *AppState) wheelGraphBox(x, y, top, delta int) bool {
 	h := s.GraphPaneHeight()
 	if y < top || y >= top+h {
 		return false
+	}
+	graphW, _ := s.GraphBranchesPaneWidths()
+	if x > graphW {
+		s.focusByMouse(FocusBranches)
+		s.Branches.Cursor += delta
+		return true
 	}
 	s.focusByMouse(FocusGraph)
 	s.Graph.Cursor += delta

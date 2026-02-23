@@ -20,7 +20,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tea.Batch(cmds.ScheduleChangesPoll(), cmds.LoadChangesCmd(m.Git))
 
 	case common.GraphPollMsg:
-		return m, tea.Batch(cmds.ScheduleGraphPoll(), cmds.LoadGraphCmd(m.Git), cmds.LoadRepoSummaryCmd(m.Git))
+		return m, tea.Batch(cmds.ScheduleGraphPoll(), cmds.LoadGraphCmd(m.Git), cmds.LoadBranchesCmd(m.Git), cmds.LoadRepoSummaryCmd(m.Git))
 
 	case common.WatchReadyMsg:
 		if msg.Err != nil {
@@ -35,6 +35,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tea.Batch(
 			cmds.WaitWatchCmd(m.Watcher),
 			cmds.LoadChangesCmd(m.Git),
+			cmds.LoadBranchesCmd(m.Git),
 			cmds.LoadRepoSummaryCmd(m.Git),
 		)
 
@@ -43,6 +44,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case common.GraphLoadedMsg:
 		return m, handlers.HandleGraphLoaded(&m.State, msg)
+
+	case common.BranchesLoadedMsg:
+		return m, handlers.HandleBranchesLoaded(&m.State, msg)
 
 	case common.RepoSummaryLoadedMsg:
 		return m, handlers.HandleRepoSummaryLoaded(&m.State, msg)

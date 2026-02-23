@@ -34,6 +34,42 @@ func (s Service) LoadGraph() ([]string, error) {
 	return lines, nil
 }
 
+func (s Service) LoadBranches() ([]string, error) {
+	out, _, err := s.runner.Run(
+		"--no-optional-locks",
+		"for-each-ref",
+		"--format=%(HEAD) %(refname:short)",
+		"refs/heads",
+	)
+	if err != nil {
+		return []string{"Not a git repo."}, err
+	}
+	if strings.TrimSpace(out) == "" {
+		return []string{"No local branches."}, nil
+	}
+	raw := strings.Split(out, "\n")
+	lines := make([]string, 0, len(raw))
+	for _, line := range raw {
+		line = strings.TrimRight(line, " \t")
+		if line == "" {
+			continue
+		}
+		if strings.HasPrefix(line, "* ") {
+			lines = append(lines, "● "+strings.TrimSpace(strings.TrimPrefix(line, "* ")))
+			continue
+		}
+		if strings.HasPrefix(line, "  ") {
+			lines = append(lines, "  "+strings.TrimSpace(line[2:]))
+			continue
+		}
+		lines = append(lines, "  "+strings.TrimSpace(line))
+	}
+	if len(lines) == 0 {
+		return []string{"No local branches."}, nil
+	}
+	return lines, nil
+}
+
 func (s Service) LoadChanges() ([]ChangeEntry, error) {
 	out, _, err := s.runner.Run("--no-optional-locks", "status", "--porcelain", "--untracked-files=all")
 	if err != nil {

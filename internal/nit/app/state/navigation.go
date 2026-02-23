@@ -25,9 +25,11 @@ func (s *AppState) Apply(action actions.Action) actions.ApplyResult {
 		case FocusChanges:
 			s.Focus = FocusGraph
 		case FocusGraph:
+			s.Focus = FocusBranches
+		case FocusBranches:
 			s.Focus = FocusCommandLog
 		default:
-			s.Command.ReturnFocus = FocusGraph
+			s.Command.ReturnFocus = FocusBranches
 			s.Focus = FocusCommand
 		}
 	case actions.ActionMoveDown:
@@ -114,6 +116,11 @@ func (s *AppState) canPush() bool {
 func (s *AppState) moveCursor(delta int) {
 	if s.Focus == FocusGraph {
 		s.Graph.Cursor += delta
+		s.Clamp()
+		return
+	}
+	if s.Focus == FocusBranches {
+		s.Branches.Cursor += delta
 		s.Clamp()
 		return
 	}

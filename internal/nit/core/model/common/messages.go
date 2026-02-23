@@ -21,6 +21,11 @@ type GraphLoadedMsg struct {
 	Err   error
 }
 
+type BranchesLoadedMsg struct {
+	Lines []string
+	Err   error
+}
+
 type RepoSummaryLoadedMsg struct {
 	Repo   string
 	Branch string

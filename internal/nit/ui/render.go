@@ -12,9 +12,11 @@ func Render(state app.AppState) string {
 	commandActive := state.Focus == app.FocusCommand
 	changesActive := state.Focus == app.FocusChanges
 	graphActive := state.Focus == app.FocusGraph
+	branchesActive := state.Focus == app.FocusBranches
 	commandLogActive := state.Focus == app.FocusCommandLog
 	changeSel, changeTotal := state.ChangesPosition()
 	graphSel, graphTotal := state.GraphPosition()
+	branchSel, branchTotal := state.BranchesPosition()
 	commandText := state.Command.Input
 	if commandActive {
 		commandText = commandLineViewport(state, max(1, commitContentWidth(state.Viewport.Width)))
@@ -140,9 +142,10 @@ func Render(state app.AppState) string {
 		changesActive,
 		fmt.Sprintf("%d of %d", changeSel, changeTotal),
 	)
-	graph := BoxView(
+	graphPaneW, branchPaneW := state.GraphBranchesPaneWidths()
+	graphBox := BoxView(
 		"Commits - Reflog",
-		totalW,
+		graphPaneW,
 		state.GraphPaneHeight(),
 		state.Graph.Lines,
 		state.Graph.Cursor,
@@ -150,6 +153,17 @@ func Render(state app.AppState) string {
 		graphActive,
 		fmt.Sprintf("%d of %d", graphSel, graphTotal),
 	)
+	branchesBox := BoxView(
+		"Branches",
+		branchPaneW,
+		state.GraphPaneHeight(),
+		state.Branches.Lines,
+		state.Branches.Cursor,
+		state.Branches.Offset,
+		branchesActive,
+		fmt.Sprintf("%d of %d", branchSel, branchTotal),
+	)
+	graph := HStack(graphBox, graphPaneW, branchesBox, branchPaneW)
 	commandLogFooter := ""
 	if state.LastErr != "" {
 		commandLogFooter = "error: " + state.LastErr

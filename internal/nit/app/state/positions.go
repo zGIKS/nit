@@ -38,3 +38,18 @@ func (s AppState) GraphPosition() (int, int) {
 	}
 	return cur, total
 }
+
+func (s AppState) BranchesPosition() (int, int) {
+	total := len(s.Branches.Lines)
+	if total < 1 {
+		return 1, 1
+	}
+	cur := s.Branches.Cursor + 1
+	if cur < 1 {
+		cur = 1
+	}
+	if cur > total {
+		cur = total
+	}
+	return cur, total
+}

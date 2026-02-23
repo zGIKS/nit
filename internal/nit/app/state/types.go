@@ -13,6 +13,7 @@ const (
 	FocusCommand FocusState = iota
 	FocusChanges
 	FocusGraph
+	FocusBranches
 	FocusCommandLog
 )
 
@@ -44,6 +45,12 @@ type GraphState struct {
 	Offset int
 }
 
+type BranchesState struct {
+	Lines   []string
+	Cursor  int
+	Offset  int
+}
+
 type CommandState struct {
 	Input       string
 	Cursor      int
@@ -67,6 +74,7 @@ type AppState struct {
 	Command        CommandState
 	Changes        ChangesState
 	Graph          GraphState
+	Branches       BranchesState
 	CommandLogView CommandLogState
 	CommandLog     []string
 	Viewport       Viewport
@@ -92,6 +100,9 @@ func New(keys input.Keymap) AppState {
 		},
 		Changes: ChangesState{
 			StickySection: SectionUnstaged,
+		},
+		Branches: BranchesState{
+			Lines: []string{"Loading branches..."},
 		},
 		Keys:           keys,
 		MenuHoverIndex: -1,

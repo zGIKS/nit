@@ -60,6 +60,13 @@ func LoadGraphCmd(svc g.Service) tea.Cmd {
 	}
 }
 
+func LoadBranchesCmd(svc g.Service) tea.Cmd {
+	return func() tea.Msg {
+		lines, err := svc.LoadBranches()
+		return common.BranchesLoadedMsg{Lines: lines, Err: err}
+	}
+}
+
 func LoadRepoSummaryCmd(svc g.Service) tea.Cmd {
 	return func() tea.Msg {
 		repo, branch, err := svc.LoadRepoSummary()

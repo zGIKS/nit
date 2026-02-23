@@ -1,5 +1,19 @@
 package state
 
+func (s AppState) GraphBranchesPaneWidths() (graphW, branchW int) {
+	totalW := max(40, s.Viewport.Width)
+	branchW = max(24, totalW/3)
+	if branchW > totalW-20 {
+		branchW = max(18, totalW-20)
+	}
+	graphW = totalW - branchW - 1
+	if graphW < 20 {
+		graphW = 20
+		branchW = max(18, totalW-graphW-1)
+	}
+	return graphW, branchW
+}
+
 func (s *AppState) Clamp() {
 	if s.Focus == FocusGraph {
 		if len(s.Graph.Lines) == 0 {
@@ -26,6 +40,35 @@ func (s *AppState) Clamp() {
 		}
 		if s.Graph.Offset < 0 {
 			s.Graph.Offset = 0
+		}
+		return
+	}
+
+	if s.Focus == FocusBranches {
+		if len(s.Branches.Lines) == 0 {
+			s.Branches.Cursor = 0
+			s.Branches.Offset = 0
+			return
+		}
+		if s.Branches.Cursor < 0 {
+			s.Branches.Cursor = 0
+		}
+		if s.Branches.Cursor >= len(s.Branches.Lines) {
+			s.Branches.Cursor = len(s.Branches.Lines) - 1
+		}
+		page := s.branchesPageSize()
+		if s.Branches.Cursor < s.Branches.Offset {
+			s.Branches.Offset = s.Branches.Cursor
+		}
+		if s.Branches.Cursor >= s.Branches.Offset+page {
+			s.Branches.Offset = s.Branches.Cursor - page + 1
+		}
+		maxOffset := max(0, len(s.Branches.Lines)-page)
+		if s.Branches.Offset > maxOffset {
+			s.Branches.Offset = maxOffset
+		}
+		if s.Branches.Offset < 0 {
+			s.Branches.Offset = 0
 		}
 		return
 	}
@@ -141,6 +184,14 @@ func (s AppState) changesPageSize() int {
 
 func (s AppState) commandLogPageSize() int {
 	h := s.CommandLogPaneHeight() - 2
+	if h < 1 {
+		return 1
+	}
+	return h
+}
+
+func (s AppState) branchesPageSize() int {
+	h := s.GraphPaneHeight() - 2
 	if h < 1 {
 		return 1
 	}

@@ -32,6 +32,17 @@ func HandleGraphLoaded(state *app.AppState, msg common.GraphLoadedMsg) tea.Cmd {
 	return nil
 }
 
+func HandleBranchesLoaded(state *app.AppState, msg common.BranchesLoadedMsg) tea.Cmd {
+	if msg.Err != nil {
+		state.SetError(msg.Err.Error())
+	} else {
+		state.SetError("")
+		state.SetBranches(msg.Lines)
+	}
+	state.Clamp()
+	return nil
+}
+
 func HandleRepoSummaryLoaded(state *app.AppState, msg common.RepoSummaryLoadedMsg) tea.Cmd {
 	if msg.Err != nil {
 		if state.RepoName == "" {
@@ -64,6 +75,7 @@ func HandleOpDone(state *app.AppState, git g.Service, msg common.OpDoneMsg) tea.
 	}
 	if msg.RefreshGraph {
 		cmds_to_run = append(cmds_to_run, cmds.LoadGraphCmd(git))
+		cmds_to_run = append(cmds_to_run, cmds.LoadBranchesCmd(git))
 	}
 	state.Clamp()
 	if len(cmds_to_run) == 0 {

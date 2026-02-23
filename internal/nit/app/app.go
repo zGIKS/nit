@@ -45,6 +45,7 @@ const (
 	FocusCommand    = statepkg.FocusCommand
 	FocusChanges    = statepkg.FocusChanges
 	FocusGraph      = statepkg.FocusGraph
+	FocusBranches   = statepkg.FocusBranches
 	FocusCommandLog = statepkg.FocusCommandLog
 )
 
