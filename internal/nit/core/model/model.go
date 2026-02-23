@@ -23,6 +23,7 @@ func New() Model {
 	keys, keyErr := app.LoadKeymap(cfg.Keys)
 	state := app.New(keys)
 	state.SetTopBarLabels(cfg.UI.RepoLabel, cfg.UI.BranchLabel, cfg.UI.FetchLabel, cfg.UI.MenuLabel)
+	state.SetUISymbols(cfg.UI.BranchSourceSelectedMark)
 	state.SetGraph([]string{"Loading graph..."})
 	state.SetBranches([]string{"Loading branches..."})
 	state.SetChanges(nil)

@@ -71,6 +71,9 @@ func HandleOpDone(state *app.AppState, git g.Service, msg common.OpDoneMsg) tea.
 		cmds_to_run = append(cmds_to_run, cmds.LoadGraphCmd(git))
 		cmds_to_run = append(cmds_to_run, cmds.LoadBranchesCmd(git))
 	}
+	if msg.RefreshRepoSummary {
+		cmds_to_run = append(cmds_to_run, cmds.LoadRepoSummaryCmd(git))
+	}
 	state.Clamp()
 	if len(cmds_to_run) == 0 {
 		return nil

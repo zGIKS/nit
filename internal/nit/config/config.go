@@ -43,10 +43,11 @@ type ClipboardConfig struct {
 }
 
 type UIConfig struct {
-	RepoLabel   string `toml:"repo_label"`
-	BranchLabel string `toml:"branch_label"`
-	FetchLabel  string `toml:"fetch_label"`
-	MenuLabel   string `toml:"menu_label"`
+	RepoLabel                string `toml:"repo_label"`
+	BranchLabel              string `toml:"branch_label"`
+	FetchLabel               string `toml:"fetch_label"`
+	MenuLabel                string `toml:"menu_label"`
+	BranchSourceSelectedMark string `toml:"branch_source_selected_mark"`
 }
 
 type FileConfig struct {
@@ -69,10 +70,11 @@ func Load() (AppConfig, string) {
 			Mode: ClipboardOnlyCopy,
 		},
 		UI: UIConfig{
-			RepoLabel:   "repo",
-			BranchLabel: "branch",
-			FetchLabel:  "[f] fetch",
-			MenuLabel:   "...",
+			RepoLabel:                "repo",
+			BranchLabel:              "branch",
+			FetchLabel:               "[f] fetch",
+			MenuLabel:                "...",
+			BranchSourceSelectedMark: "✓",
 		},
 	}
 
@@ -125,6 +127,9 @@ func loadFromTOML(cfg *AppConfig) string {
 	}
 	if v := strings.TrimSpace(fileCfg.UI.MenuLabel); v != "" {
 		cfg.UI.MenuLabel = v
+	}
+	if v := strings.TrimSpace(fileCfg.UI.BranchSourceSelectedMark); v != "" {
+		cfg.UI.BranchSourceSelectedMark = v
 	}
 	return modeWarn
 }
