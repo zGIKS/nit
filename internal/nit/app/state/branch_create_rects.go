@@ -3,7 +3,6 @@ package state
 func (s AppState) BranchCreatePanelRect() (x, y, w, h int) {
 	totalW := max(40, s.Viewport.Width)
 	totalH := max(12, s.Viewport.Height)
-	_, _, bx, bw, _, _ := s.topBarBoxRects()
 	w = 56
 	if w > totalW {
 		w = totalW
@@ -28,21 +27,26 @@ func (s AppState) BranchCreatePanelRect() (x, y, w, h int) {
 		listRows = maxListRows
 	}
 	h = baseRows + listRows
-	x = bx + bw - w
+	x = (totalW - w) / 2
 	if x < 0 {
 		x = 0
 	}
-	if x+w > totalW {
-		x = totalW - w
-		if x < 0 {
-			x = 0
-		}
+	y = (totalH - h) / 2
+	if y < 0 {
+		y = 0
 	}
-	y = 2
 	if y+h > totalH {
 		y = max(0, totalH-h)
 	}
 	return x, y, w, h
+}
+
+func (s AppState) BranchesCreateButtonLabel() string {
+	return "+ branch"
+}
+
+func (s AppState) BranchesCreateButtonRect() (x, y, w, h int) {
+	return s.BranchButtonRect()
 }
 
 func (s AppState) BranchCreateNameInputRect() (x, y, w, h int) {

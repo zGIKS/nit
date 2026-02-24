@@ -20,6 +20,15 @@ func HandleMouseMsg(state *app.AppState, git g.Service, msg tea.MouseMsg) tea.Cm
 				return nil
 			}
 		}
+		if action, ok, consumed := state.MenuSubmenuClickActionAt(msg.X, msg.Y); consumed {
+			if ok {
+				result := state.Apply(action)
+				state.Clamp()
+				return cmds.HandleResult(git, result)
+			}
+			state.Clamp()
+			return nil
+		}
 		if _, ok := state.MenuItemIndexAt(msg.X, msg.Y); ok {
 			if action, ok := state.MenuClickActionAt(msg.X, msg.Y); ok {
 				result := state.Apply(action)

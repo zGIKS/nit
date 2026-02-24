@@ -1,6 +1,40 @@
 package ui
 
-import "github.com/zGIKS/nit/internal/nit/app"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/zGIKS/nit/internal/nit/app"
+)
+
+func resolvePushKeys(state app.AppState) (normal, inCommand string) {
+	normal = state.Keys.DisplayBindingMatching(app.ActionPush, func(k string) bool { return !strings.HasPrefix(k, "ctrl+") })
+	if normal == "" {
+		normal = state.Keys.DisplayBinding(app.ActionPush)
+	}
+	if normal == "" {
+		normal = "p"
+	}
+	inCommand = state.Keys.DisplayBindingMatching(app.ActionPush, func(k string) bool { return strings.HasPrefix(k, "ctrl+") })
+	if inCommand == "" {
+		inCommand = normal
+	}
+	return normal, inCommand
+}
+
+func resolveCommandText(state app.AppState, commandActive bool, pushKeyNormal string) string {
+	focusKey := state.Keys.DisplayBinding(app.ActionFocusCommand)
+	if focusKey == "" {
+		focusKey = "c"
+	}
+	if commandActive {
+		return commandLineViewport(state, max(1, commitContentWidth(state.Viewport.Width)))
+	}
+	if state.Command.Input != "" {
+		return state.Command.Input
+	}
+	return fmt.Sprintf("Message (%s focus, Enter commit)", focusKey)
+}
 
 func commitContentWidth(totalWidth int) int {
 	totalW := max(40, totalWidth)

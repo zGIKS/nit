@@ -7,19 +7,24 @@ mode = "only_copy" # only_copy | auto | osc52 | system | internal
 # Top bar labels/icons (emoji style)
 repo_label   = "📂"
 branch_label = "🌱"
-fetch_label  = "⇅ Fetch"
+repo_branch_separator = "→"
+fetch_label  = "⟳" # sync changes icon/button in top bar (next to menu)
 menu_label   = "≡"
+menu_chevron = "›"
+menu_selection_indicator = ">"
 
 # Monospace/ASCII examples (if emoji width looks misaligned)
 # repo_label = "repo"
 # branch_label = "branch"
-# fetch_label = "[f] fetch"
+# repo_branch_separator = "->"
+# fetch_label = "[f]"
 # menu_label = "..."
 
 # Nerd Font examples (if your terminal font supports them)
 # repo_label = "󰉋"
 # branch_label = ""
-# fetch_label = "󰓦 fetch"
+# repo_branch_separator = "󰘬"
+# fetch_label = "󰓦"
 # menu_label = "⋯"
 
 [keys.quit]
@@ -51,6 +56,12 @@ keys = ["f"]
 
 [keys.push]
 keys = ["p", "ctrl+p"] # ctrl+p funciona incluso mientras escribes en Commit
+
+[keys.menu_right]
+keys = ["right", "l"]
+
+[keys.menu_left]
+keys = ["left", "h"]
 
 [keys.commit_editor.submit]
 keys = ["enter"]

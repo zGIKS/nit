@@ -52,11 +52,14 @@ type BranchesState struct {
 }
 
 type CommandState struct {
-	Input       string
-	Cursor      int
-	SelectAll   bool
-	Clipboard   string
-	ReturnFocus FocusState
+	Input         string
+	Cursor        int
+	SelectAll     bool
+	Clipboard     string
+	ReturnFocus   FocusState
+	CommitAll     bool
+	CommitAmend   bool
+	CommitSignoff bool
 }
 
 type CommandLogState struct {
@@ -82,6 +85,11 @@ type AppState struct {
 	LastErr                  string
 	MenuOpen                 bool
 	MenuHoverIndex           int
+	MenuOffset               int
+	MenuSubActive            bool
+	MenuSubmenuKind          string
+	MenuSubHoverIndex        int
+	MenuSubOffset            int
 	HoverFetch               bool
 	HoverMenu                bool
 	HoverBranch              bool
@@ -89,8 +97,11 @@ type AppState struct {
 	BranchName               string
 	RepoLabel                string
 	BranchLabel              string
+	RepoBranchSeparator      string
 	FetchLabel               string
 	MenuLabel                string
+	MenuChevron              string
+	MenuSelectionIndicator   string
 	BranchSourceSelectedMark string
 	BranchCreateTitle        string
 	BranchCreateEnterHint    string
@@ -105,34 +116,4 @@ type AppState struct {
 	BranchCreateSourceList   []string
 	BranchCreateSourceOffset int
 	BranchCreateHoverIndex   int
-}
-
-func New(keys input.Keymap) AppState {
-	return AppState{
-		Focus: FocusChanges,
-		Command: CommandState{
-			ReturnFocus: FocusChanges,
-		},
-		Changes: ChangesState{
-			StickySection: SectionUnstaged,
-		},
-		Branches: BranchesState{
-			Lines: []string{"Loading branches..."},
-		},
-		Keys:                     keys,
-		MenuHoverIndex:           -1,
-		BranchCreateHoverIndex:   -1,
-		RepoName:                 "loading...",
-		BranchName:               "loading...",
-		RepoLabel:                "repo",
-		BranchLabel:              "branch",
-		FetchLabel:               "[f] fetch",
-		MenuLabel:                "...",
-		BranchSourceSelectedMark: "✓",
-		BranchCreateTitle:        "Create a branch",
-		BranchCreateEnterHint:    "Enter: create branch",
-		BranchCreatePushHint:     "Ctrl+b: create and push to origin",
-		BranchCreateNameLabel:    "New branch name",
-		BranchCreateSourceLabel:  "Source",
-	}
 }

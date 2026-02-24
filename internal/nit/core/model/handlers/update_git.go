@@ -63,20 +63,20 @@ func HandleOpDone(state *app.AppState, git g.Service, msg common.OpDoneMsg) tea.
 		return nil
 	}
 	state.SetError("")
-	cmds_to_run := make([]tea.Cmd, 0, 2)
+	cmdsToRun := make([]tea.Cmd, 0, 2)
 	if msg.RefreshChanges {
-		cmds_to_run = append(cmds_to_run, cmds.LoadChangesCmd(git))
+		cmdsToRun = append(cmdsToRun, cmds.LoadChangesCmd(git))
 	}
 	if msg.RefreshGraph {
-		cmds_to_run = append(cmds_to_run, cmds.LoadGraphCmd(git))
-		cmds_to_run = append(cmds_to_run, cmds.LoadBranchesCmd(git))
+		cmdsToRun = append(cmdsToRun, cmds.LoadGraphCmd(git))
+		cmdsToRun = append(cmdsToRun, cmds.LoadBranchesCmd(git))
 	}
 	if msg.RefreshRepoSummary {
-		cmds_to_run = append(cmds_to_run, cmds.LoadRepoSummaryCmd(git))
+		cmdsToRun = append(cmdsToRun, cmds.LoadRepoSummaryCmd(git))
 	}
 	state.Clamp()
-	if len(cmds_to_run) == 0 {
+	if len(cmdsToRun) == 0 {
 		return nil
 	}
-	return tea.Batch(cmds_to_run...)
+	return tea.Batch(cmdsToRun...)
 }

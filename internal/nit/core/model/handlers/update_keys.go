@@ -19,67 +19,74 @@ func HandleKeyMsg(
 	msg tea.KeyMsg,
 ) tea.Cmd {
 	if state.BranchCreateOpen {
-		switch msg.Type {
-		case tea.KeyCtrlB:
-			name := strings.TrimSpace(state.BranchCreateName)
-			if name == "" {
-				state.SetError("branch name is empty")
-				state.Clamp()
-				return nil
+		return handleBranchCreateKey(state, git, clipCfg, textKeys, pasteHintAlreadySeen, msg)
+	}
+
+	if state.MenuOpen {
+		action := state.Keys.Match(msg.String())
+		switch action {
+		case app.ActionMoveUp:
+			if state.MenuSubActive && state.MenuSubmenuKind != "" {
+				state.MoveMenuSubmenuSelection(-1)
+			} else {
+				state.MoveMenuSelection(-1)
 			}
-			source := strings.TrimSpace(state.BranchCreateSource)
-			state.CloseBranchCreate()
-			state.BranchCreateName = ""
-			state.BranchCreateCursor = 0
-			state.BranchCreateSelectAll = false
 			state.Clamp()
-			return cmds.CreateBranchCmd(git, name, source, true)
-		case tea.KeyUp:
-			state.BranchCreateMoveSource(-1)
-		case tea.KeyDown:
-			state.BranchCreateMoveSource(1)
-		case tea.KeyTab:
-			state.BranchCreateMoveSource(1)
-		case tea.KeyShiftTab:
-			state.BranchCreateMoveSource(-1)
-		default:
-			switch {
-			case matchesConfiguredKey(msg, textKeys.Cancel):
-				state.CloseBranchCreate()
-			case matchesConfiguredKey(msg, textKeys.Submit):
-				name := strings.TrimSpace(state.BranchCreateName)
-				if name == "" {
-					state.SetError("branch name is empty")
+			return nil
+		case app.ActionMoveDown:
+			if state.MenuSubActive && state.MenuSubmenuKind != "" {
+				state.MoveMenuSubmenuSelection(1)
+			} else {
+				state.MoveMenuSelection(1)
+			}
+			state.Clamp()
+			return nil
+		case app.ActionMenuRight:
+			if !state.MenuSubActive && state.MenuHoverHasSubmenu() {
+				state.OpenHoveredSubmenu()
+			}
+			state.Clamp()
+			return nil
+		case app.ActionMenuLeft:
+			if state.MenuSubActive {
+				state.MenuSubActive = false
+				state.MenuSubHoverIndex = -1
+			}
+			state.Clamp()
+			return nil
+		case app.ActionToggleOne:
+			if state.MenuSubActive && state.MenuSubmenuKind != "" {
+				if action, ok, consumed := state.MenuSubmenuActivateIndex(state.MenuSubHoverIndex); consumed {
+					if ok {
+						result := state.Apply(action)
+						state.Clamp()
+						return cmds.HandleResult(git, result)
+					}
 					state.Clamp()
 					return nil
 				}
-				source := strings.TrimSpace(state.BranchCreateSource)
-				state.CloseBranchCreate()
-				state.BranchCreateName = ""
-				state.BranchCreateCursor = 0
-				state.BranchCreateSelectAll = false
-				state.Clamp()
-				return cmds.CreateBranchCmd(git, name, source, false)
-			default:
-				if handleSharedTextInputKey(state, clipCfg, textKeys, pasteHintAlreadySeen, msg, textInputKeyOps{
-					Selected:        state.SelectedBranchCreateText,
-					Append:          state.BranchCreateAppendText,
-					Backspace:       state.BranchCreateBackspace,
-					Delete:          state.BranchCreateDelete,
-					MoveLeft:        state.BranchCreateCursorLeft,
-					MoveRight:       state.BranchCreateCursorRight,
-					MoveHome:        state.BranchCreateCursorHome,
-					MoveEnd:         state.BranchCreateCursorEnd,
-					SelectAll:       state.BranchCreateSelectAllText,
-					DeleteSelection: state.DeleteBranchCreateSelection,
-				}) {
+			} else {
+				if action, ok := state.MenuActivateIndex(state.MenuHoverIndex); ok {
+					result := state.Apply(action)
 					state.Clamp()
-					return nil
+					return cmds.HandleResult(git, result)
 				}
 			}
+			state.Clamp()
+			return nil
 		}
-		state.Clamp()
-		return nil
+
+		switch msg.Type {
+		case tea.KeyEsc:
+			if state.MenuSubActive {
+				state.MenuSubActive = false
+				state.MenuSubHoverIndex = -1
+			} else {
+				state.CloseMenu()
+			}
+			state.Clamp()
+			return nil
+		}
 	}
 
 	if state.Focus == app.FocusCommand {
