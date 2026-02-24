@@ -6,7 +6,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/mattn/go-runewidth"
-	"github.com/zGIKS/nit/internal/nit/util"
 )
 
 func fitText(text string, width int, fill rune) string {
@@ -24,14 +23,6 @@ func fitText(text string, width int, fill rune) string {
 		return text
 	}
 	return text + strings.Repeat(string(fill), width-textW)
-}
-
-func min(a, b int) int {
-	return util.Min(a, b)
-}
-
-func max(a, b int) int {
-	return util.Max(a, b)
 }
 
 func truncateDisplayWidth(s string, width int) string {

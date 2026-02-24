@@ -19,67 +19,7 @@ func HandleKeyMsg(
 	msg tea.KeyMsg,
 ) tea.Cmd {
 	if state.BranchCreateOpen {
-		switch msg.Type {
-		case tea.KeyCtrlB:
-			name := strings.TrimSpace(state.BranchCreateName)
-			if name == "" {
-				state.SetError("branch name is empty")
-				state.Clamp()
-				return nil
-			}
-			source := strings.TrimSpace(state.BranchCreateSource)
-			state.CloseBranchCreate()
-			state.BranchCreateName = ""
-			state.BranchCreateCursor = 0
-			state.BranchCreateSelectAll = false
-			state.Clamp()
-			return cmds.CreateBranchCmd(git, name, source, true)
-		case tea.KeyUp:
-			state.BranchCreateMoveSource(-1)
-		case tea.KeyDown:
-			state.BranchCreateMoveSource(1)
-		case tea.KeyTab:
-			state.BranchCreateMoveSource(1)
-		case tea.KeyShiftTab:
-			state.BranchCreateMoveSource(-1)
-		default:
-			switch {
-			case matchesConfiguredKey(msg, textKeys.Cancel):
-				state.CloseBranchCreate()
-			case matchesConfiguredKey(msg, textKeys.Submit):
-				name := strings.TrimSpace(state.BranchCreateName)
-				if name == "" {
-					state.SetError("branch name is empty")
-					state.Clamp()
-					return nil
-				}
-				source := strings.TrimSpace(state.BranchCreateSource)
-				state.CloseBranchCreate()
-				state.BranchCreateName = ""
-				state.BranchCreateCursor = 0
-				state.BranchCreateSelectAll = false
-				state.Clamp()
-				return cmds.CreateBranchCmd(git, name, source, false)
-			default:
-				if handleSharedTextInputKey(state, clipCfg, textKeys, pasteHintAlreadySeen, msg, textInputKeyOps{
-					Selected:        state.SelectedBranchCreateText,
-					Append:          state.BranchCreateAppendText,
-					Backspace:       state.BranchCreateBackspace,
-					Delete:          state.BranchCreateDelete,
-					MoveLeft:        state.BranchCreateCursorLeft,
-					MoveRight:       state.BranchCreateCursorRight,
-					MoveHome:        state.BranchCreateCursorHome,
-					MoveEnd:         state.BranchCreateCursorEnd,
-					SelectAll:       state.BranchCreateSelectAllText,
-					DeleteSelection: state.DeleteBranchCreateSelection,
-				}) {
-					state.Clamp()
-					return nil
-				}
-			}
-		}
-		state.Clamp()
-		return nil
+		return handleBranchCreateKey(state, git, clipCfg, textKeys, pasteHintAlreadySeen, msg)
 	}
 
 	if state.MenuOpen {

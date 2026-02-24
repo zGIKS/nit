@@ -13,10 +13,11 @@ type (
 	ApplyResult = actionspkg.ApplyResult
 	OpKind      = actionspkg.OpKind
 
-	AppState   = statepkg.AppState
-	FocusState = statepkg.FocusState
-	Section    = statepkg.Section
-	Keymap     = inputpkg.Keymap
+	AppState         = statepkg.AppState
+	FocusState       = statepkg.FocusState
+	Section          = statepkg.Section
+	DropdownMenuItem = statepkg.DropdownMenuItem
+	Keymap           = inputpkg.Keymap
 )
 
 const (
