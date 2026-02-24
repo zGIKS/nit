@@ -41,16 +41,24 @@ func (s *AppState) Apply(action actions.Action) actions.ApplyResult {
 			if msg == "" {
 				break
 			}
-			if len(s.Changes.Staged) == 0 {
+			needsStaged := !s.Command.CommitAll && !s.Command.CommitAmend
+			if needsStaged && len(s.Changes.Staged) == 0 {
 				s.SetError("nothing staged to commit")
 				break
 			}
-			res.Operations = []actions.Operation{{Kind: actions.OpCommit, Message: msg}}
+			res.Operations = []actions.Operation{{
+				Kind:          actions.OpCommit,
+				Message:       msg,
+				CommitAll:     s.Command.CommitAll,
+				CommitAmend:   s.Command.CommitAmend,
+				CommitSignoff: s.Command.CommitSignoff,
+			}}
 			res.RefreshChanges = true
 			res.RefreshGraph = true
 			s.Command.Input = ""
 			s.Command.Cursor = 0
 			s.Command.SelectAll = false
+			s.clearCommandCommitOptions()
 			break
 		}
 		if s.Focus != FocusChanges {
@@ -80,6 +88,10 @@ func (s *AppState) Apply(action actions.Action) actions.ApplyResult {
 			res.Operations = []actions.Operation{{Kind: actions.OpUnstageAll}}
 			res.RefreshChanges = true
 		}
+	case actions.ActionDiscardAll:
+		res.Operations = []actions.Operation{{Kind: actions.OpDiscardAll}}
+		res.RefreshChanges = true
+		res.RefreshGraph = true
 	case actions.ActionPull:
 		res.Operations = []actions.Operation{{Kind: actions.OpPull}}
 		res.RefreshChanges = true
@@ -94,6 +106,22 @@ func (s *AppState) Apply(action actions.Action) actions.ApplyResult {
 		}
 		res.Operations = []actions.Operation{{Kind: actions.OpPush}}
 		res.RefreshGraph = true
+	case actions.ActionUndoLastCommit:
+		res.Operations = []actions.Operation{{Kind: actions.OpUndoLastCommit}}
+		res.RefreshChanges = true
+		res.RefreshGraph = true
+	case actions.ActionAbortRebase:
+		res.Operations = []actions.Operation{{Kind: actions.OpAbortRebase}}
+		res.RefreshChanges = true
+		res.RefreshGraph = true
+	case actions.ActionMenuRight:
+		if s.MenuOpen && s.MenuSubmenuKind == "" {
+			s.OpenHoveredSubmenu()
+		}
+	case actions.ActionMenuLeft:
+		if s.MenuOpen && s.MenuSubmenuKind != "" {
+			s.CloseSubmenu()
+		}
 	}
 	s.Clamp()
 	return res

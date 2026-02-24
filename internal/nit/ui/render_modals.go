@@ -38,14 +38,23 @@ func menuDropdownView(state app.AppState, width int) string {
 			lines = append(lines, "├"+strings.Repeat("─", innerW)+"┤")
 			continue
 		}
-		text := fitText(" "+item.Label+" ", innerW, ' ')
+		text := fitText("  "+item.Label+" ", innerW, ' ')
 		if item.HasChevron && innerW >= 2 {
 			target := max(0, innerW-2)
-			pad := max(0, target-runewidth.StringWidth(" "+item.Label))
-			text = fitText(" "+item.Label+strings.Repeat(" ", pad)+" ›", innerW, ' ')
+			pad := max(0, target-runewidth.StringWidth("  "+item.Label))
+			text = fitText("  "+item.Label+strings.Repeat(" ", pad)+" "+state.MenuChevron, innerW, ' ')
 		}
 		if state.MenuHoverIndex == i {
-			text = ansiUnderline(text)
+			indicator := state.MenuSelectionIndicator
+			if len(indicator) > 1 {
+				indicator = indicator[:1]
+			}
+			text = fitText(indicator+" "+item.Label+" ", innerW, ' ')
+			if item.HasChevron && innerW >= 2 {
+				target := max(0, innerW-2)
+				pad := max(0, target-runewidth.StringWidth(indicator+" "+item.Label))
+				text = fitText(indicator+" "+item.Label+strings.Repeat(" ", pad)+" "+state.MenuChevron, innerW, ' ')
+			}
 		}
 		lines = append(lines, "│"+text+"│")
 	}
@@ -84,14 +93,23 @@ func menuSubmenuView(state app.AppState, width int) string {
 			lines = append(lines, "├"+strings.Repeat("─", innerW)+"┤")
 			continue
 		}
-		text := fitText(" "+item.Label+" ", innerW, ' ')
+		text := fitText("  "+item.Label+" ", innerW, ' ')
 		if item.HasChevron && innerW >= 2 {
 			target := max(0, innerW-2)
-			pad := max(0, target-runewidth.StringWidth(" "+item.Label))
-			text = fitText(" "+item.Label+strings.Repeat(" ", pad)+" ›", innerW, ' ')
+			pad := max(0, target-runewidth.StringWidth("  "+item.Label))
+			text = fitText("  "+item.Label+strings.Repeat(" ", pad)+" "+state.MenuChevron, innerW, ' ')
 		}
 		if state.MenuSubHoverIndex == i {
-			text = ansiUnderline(text)
+			indicator := state.MenuSelectionIndicator
+			if len(indicator) > 1 {
+				indicator = indicator[:1]
+			}
+			text = fitText(indicator+" "+item.Label+" ", innerW, ' ')
+			if item.HasChevron && innerW >= 2 {
+				target := max(0, innerW-2)
+				pad := max(0, target-runewidth.StringWidth(indicator+" "+item.Label))
+				text = fitText(indicator+" "+item.Label+strings.Repeat(" ", pad)+" "+state.MenuChevron, innerW, ' ')
+			}
 		}
 		lines = append(lines, "│"+text+"│")
 	}

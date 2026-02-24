@@ -24,6 +24,8 @@ func DefaultKeymap() Keymap {
 		actions.ActionUnstageAll:   {"u"},
 		actions.ActionFetch:        {"f"},
 		actions.ActionPush:         {"p", "ctrl+p"},
+		actions.ActionMenuRight:    {"right", "l"},
+		actions.ActionMenuLeft:     {"left", "h"},
 	}}
 }
 
@@ -44,6 +46,8 @@ func LoadKeymap(cfg config.KeyConfig) (Keymap, string) {
 	merge(actions.ActionUnstageAll, cfg.UnstageAll)
 	merge(actions.ActionFetch, cfg.Fetch)
 	merge(actions.ActionPush, cfg.Push)
+	merge(actions.ActionMenuRight, cfg.MenuRight)
+	merge(actions.ActionMenuLeft, cfg.MenuLeft)
 
 	if err := validateKeyConflicts(km); err != nil {
 		return DefaultKeymap(), "invalid key config: " + err.Error()

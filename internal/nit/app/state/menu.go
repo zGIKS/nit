@@ -110,6 +110,7 @@ func (s *AppState) CloseMenu() {
 	s.MenuOpen = false
 	s.MenuHoverIndex = -1
 	s.MenuOffset = 0
+	s.MenuSubActive = false
 	s.MenuSubmenuKind = ""
 	s.MenuSubHoverIndex = -1
 	s.MenuSubOffset = 0
@@ -123,7 +124,9 @@ func (s *AppState) ToggleMenu() {
 	s.MenuOpen = true
 	s.MenuHoverIndex = s.firstSelectableMenuIndex()
 	s.MenuOffset = 0
+	s.MenuSubActive = false
 	s.MenuSubmenuKind = ""
+	s.OpenSubmenuForMenuIndex(s.MenuHoverIndex)
 	s.MenuSubHoverIndex = -1
 	s.MenuSubOffset = 0
 }
@@ -579,13 +582,21 @@ func (s *AppState) OpenSubmenuForMenuIndex(idx int) bool {
 }
 
 func (s *AppState) OpenHoveredSubmenu() bool {
-	return s.OpenSubmenuForMenuIndex(s.MenuHoverIndex)
+	if s.OpenSubmenuForMenuIndex(s.MenuHoverIndex) {
+		s.MenuSubActive = true
+		if s.MenuSubHoverIndex < 0 {
+			s.MenuSubHoverIndex = s.firstSelectableSubmenuIndex()
+		}
+		return true
+	}
+	return false
 }
 
 func (s *AppState) CloseSubmenu() {
 	s.MenuSubmenuKind = ""
 	s.MenuSubHoverIndex = -1
 	s.MenuSubOffset = 0
+	s.MenuSubActive = false
 }
 
 func (s *AppState) MoveMenuSelection(delta int) {
@@ -595,6 +606,9 @@ func (s *AppState) MoveMenuSelection(delta int) {
 	s.MenuHoverIndex = nextSelectableIndex(dropdownMenuItems, s.MenuHoverIndex, delta)
 	if s.MenuHoverIndex >= 0 && s.MenuHoverIndex < len(dropdownMenuItems) {
 		s.OpenSubmenuForMenuIndex(s.MenuHoverIndex)
+		// Reset sub-selection when moving in main menu
+		s.MenuSubHoverIndex = -1
+		s.MenuSubOffset = 0
 	}
 	s.ensureMenuScrollVisible()
 }

@@ -38,9 +38,15 @@ func (s *AppState) SetTopBarLabels(repo, branch, fetch, menu string) {
 	}
 }
 
-func (s *AppState) SetUISymbols(branchSourceSelectedMark string) {
+func (s *AppState) SetUISymbols(branchSourceSelectedMark, menuChevron, menuSelectionIndicator string) {
 	if strings.TrimSpace(branchSourceSelectedMark) != "" {
 		s.BranchSourceSelectedMark = strings.TrimSpace(branchSourceSelectedMark)
+	}
+	if strings.TrimSpace(menuChevron) != "" {
+		s.MenuChevron = strings.TrimSpace(menuChevron)
+	}
+	if strings.TrimSpace(menuSelectionIndicator) != "" {
+		s.MenuSelectionIndicator = strings.TrimSpace(menuSelectionIndicator)
 	}
 }
 

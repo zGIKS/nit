@@ -35,6 +35,7 @@ func (s *AppState) ExitCommandFocus() {
 	}
 	s.Focus = target
 	s.Command.SelectAll = false
+	s.clearCommandCommitOptions()
 	if s.Focus == FocusChanges {
 		s.snapChangesCursor(1)
 	}
@@ -77,4 +78,22 @@ func (s *AppState) AddCommandLog(cmd string) {
 
 func (s *AppState) DeleteCommandSelection() {
 	clearSelectedText(&s.Command.Input, &s.Command.Cursor, &s.Command.SelectAll)
+}
+
+func (s *AppState) PrepareCommandCommit(all, amend, signoff bool) {
+	if s.Focus != FocusCommand {
+		s.Command.ReturnFocus = s.Focus
+	}
+	s.Focus = FocusCommand
+	s.Command.SelectAll = false
+	s.Command.CommitAll = all
+	s.Command.CommitAmend = amend
+	s.Command.CommitSignoff = signoff
+	s.MoveCommandCursorToEnd()
+}
+
+func (s *AppState) clearCommandCommitOptions() {
+	s.Command.CommitAll = false
+	s.Command.CommitAmend = false
+	s.Command.CommitSignoff = false
 }

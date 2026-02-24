@@ -98,6 +98,39 @@ func (s *AppState) MenuSubmenuActivateIndex(idx int) (actions.Action, bool, bool
 	}
 	item := items[idx]
 	switch s.MenuSubmenuKind {
+	case "commit":
+		switch item.Label {
+		case "Commit", "Commit Staged":
+			s.CloseMenu()
+			s.PrepareCommandCommit(false, false, false)
+			return actions.ActionNone, false, true
+		case "Commit All":
+			s.CloseMenu()
+			s.PrepareCommandCommit(true, false, false)
+			return actions.ActionNone, false, true
+		case "Undo Last Commit":
+			s.CloseMenu()
+			return actions.ActionUndoLastCommit, true, true
+		case "Abort Rebase":
+			s.CloseMenu()
+			return actions.ActionAbortRebase, true, true
+		case "Commit (Amend)", "Commit Staged (Amend)":
+			s.CloseMenu()
+			s.PrepareCommandCommit(false, true, false)
+			return actions.ActionNone, false, true
+		case "Commit All (Amend)":
+			s.CloseMenu()
+			s.PrepareCommandCommit(true, true, false)
+			return actions.ActionNone, false, true
+		case "Commit (Signed Off)", "Commit Staged (Signed Off)":
+			s.CloseMenu()
+			s.PrepareCommandCommit(false, false, true)
+			return actions.ActionNone, false, true
+		case "Commit All (Signed Off)":
+			s.CloseMenu()
+			s.PrepareCommandCommit(true, false, true)
+			return actions.ActionNone, false, true
+		}
 	case "changes":
 		switch item.Label {
 		case "Stage All Changes":
@@ -108,7 +141,7 @@ func (s *AppState) MenuSubmenuActivateIndex(idx int) (actions.Action, bool, bool
 			return actions.ActionUnstageAll, true, true
 		case "Discard All Changes":
 			s.CloseMenu()
-			return actions.ActionNone, false, true // placeholder
+			return actions.ActionDiscardAll, true, true
 		}
 	case "pull_push":
 		switch item.Label {
@@ -162,7 +195,6 @@ func (s *AppState) MenuSubmenuActivateIndex(idx int) (actions.Action, bool, bool
 		}
 	}
 	s.CloseMenu()
-	// Placeholder until commit submenu actions are implemented.
 	return actions.ActionNone, false, true
 }
 

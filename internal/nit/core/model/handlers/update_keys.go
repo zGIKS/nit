@@ -83,45 +83,39 @@ func HandleKeyMsg(
 	}
 
 	if state.MenuOpen {
-		switch msg.Type {
-		case tea.KeyEsc:
-			if state.MenuSubmenuKind != "" {
-				state.CloseSubmenu()
-			} else {
-				state.CloseMenu()
-			}
-			state.Clamp()
-			return nil
-		case tea.KeyUp:
-			if state.MenuSubmenuKind != "" {
+		action := state.Keys.Match(msg.String())
+		switch action {
+		case app.ActionMoveUp:
+			if state.MenuSubActive && state.MenuSubmenuKind != "" {
 				state.MoveMenuSubmenuSelection(-1)
 			} else {
 				state.MoveMenuSelection(-1)
 			}
 			state.Clamp()
 			return nil
-		case tea.KeyDown:
-			if state.MenuSubmenuKind != "" {
+		case app.ActionMoveDown:
+			if state.MenuSubActive && state.MenuSubmenuKind != "" {
 				state.MoveMenuSubmenuSelection(1)
 			} else {
 				state.MoveMenuSelection(1)
 			}
 			state.Clamp()
 			return nil
-		case tea.KeyRight:
-			if state.MenuSubmenuKind == "" {
+		case app.ActionMenuRight:
+			if !state.MenuSubActive && state.MenuHoverHasSubmenu() {
 				state.OpenHoveredSubmenu()
 			}
 			state.Clamp()
 			return nil
-		case tea.KeyLeft:
-			if state.MenuSubmenuKind != "" {
-				state.CloseSubmenu()
+		case app.ActionMenuLeft:
+			if state.MenuSubActive {
+				state.MenuSubActive = false
+				state.MenuSubHoverIndex = -1
 			}
 			state.Clamp()
 			return nil
-		case tea.KeyEnter:
-			if state.MenuSubmenuKind != "" {
+		case app.ActionToggleOne:
+			if state.MenuSubActive && state.MenuSubmenuKind != "" {
 				if action, ok, consumed := state.MenuSubmenuActivateIndex(state.MenuSubHoverIndex); consumed {
 					if ok {
 						result := state.Apply(action)
@@ -137,6 +131,18 @@ func HandleKeyMsg(
 					state.Clamp()
 					return cmds.HandleResult(git, result)
 				}
+			}
+			state.Clamp()
+			return nil
+		}
+
+		switch msg.Type {
+		case tea.KeyEsc:
+			if state.MenuSubActive {
+				state.MenuSubActive = false
+				state.MenuSubHoverIndex = -1
+			} else {
+				state.CloseMenu()
 			}
 			state.Clamp()
 			return nil

@@ -52,11 +52,14 @@ type BranchesState struct {
 }
 
 type CommandState struct {
-	Input       string
-	Cursor      int
-	SelectAll   bool
-	Clipboard   string
-	ReturnFocus FocusState
+	Input         string
+	Cursor        int
+	SelectAll     bool
+	Clipboard     string
+	ReturnFocus   FocusState
+	CommitAll     bool
+	CommitAmend   bool
+	CommitSignoff bool
 }
 
 type CommandLogState struct {
@@ -83,6 +86,7 @@ type AppState struct {
 	MenuOpen                 bool
 	MenuHoverIndex           int
 	MenuOffset               int
+	MenuSubActive            bool
 	MenuSubmenuKind          string
 	MenuSubHoverIndex        int
 	MenuSubOffset            int
@@ -95,6 +99,8 @@ type AppState struct {
 	BranchLabel              string
 	FetchLabel               string
 	MenuLabel                string
+	MenuChevron              string
+	MenuSelectionIndicator   string
 	BranchSourceSelectedMark string
 	BranchCreateTitle        string
 	BranchCreateEnterHint    string
@@ -135,6 +141,8 @@ func New(keys input.Keymap) AppState {
 		BranchLabel:              "branch",
 		FetchLabel:               "[f] fetch",
 		MenuLabel:                "...",
+		MenuChevron:              "›",
+		MenuSelectionIndicator:   ">",
 		BranchSourceSelectedMark: "✓",
 		BranchCreateTitle:        "Create a branch",
 		BranchCreateEnterHint:    "Enter: create branch",

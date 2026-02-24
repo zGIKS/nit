@@ -9,6 +9,8 @@ repo_label   = "📂"
 branch_label = "🌱"
 fetch_label  = "⇅ Fetch"
 menu_label   = "≡"
+menu_chevron = "›"
+menu_selection_indicator = ">"
 
 # Monospace/ASCII examples (if emoji width looks misaligned)
 # repo_label = "repo"
@@ -51,6 +53,12 @@ keys = ["f"]
 
 [keys.push]
 keys = ["p", "ctrl+p"] # ctrl+p funciona incluso mientras escribes en Commit
+
+[keys.menu_right]
+keys = ["right", "l"]
+
+[keys.menu_left]
+keys = ["left", "h"]
 
 [keys.commit_editor.submit]
 keys = ["enter"]

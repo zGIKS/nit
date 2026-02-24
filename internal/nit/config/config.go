@@ -36,6 +36,8 @@ type KeyConfig struct {
 	UnstageAll   KeyBinding            `toml:"unstage_all"`
 	Fetch        KeyBinding            `toml:"fetch"`
 	Push         KeyBinding            `toml:"push"`
+	MenuRight    KeyBinding            `toml:"menu_right"`
+	MenuLeft     KeyBinding            `toml:"menu_left"`
 	CommitEditor CommitEditorKeyConfig `toml:"commit_editor"`
 }
 
@@ -65,6 +67,8 @@ type UIConfig struct {
 	BranchLabel              string `toml:"branch_label"`
 	FetchLabel               string `toml:"fetch_label"`
 	MenuLabel                string `toml:"menu_label"`
+	MenuChevron              string `toml:"menu_chevron"`
+	MenuSelectionIndicator   string `toml:"menu_selection_indicator"`
 	BranchSourceSelectedMark string `toml:"branch_source_selected_mark"`
 	BranchCreateTitle        string `toml:"branch_create_title"`
 	BranchCreateEnterHint    string `toml:"branch_create_enter_hint"`
@@ -110,6 +114,10 @@ func Load() (AppConfig, string) {
 		Clipboard: ClipboardConfig{
 			Mode: ClipboardOnlyCopy,
 		},
+		Keys: KeyConfig{
+			MenuRight: KeyBinding{Keys: []string{"right", "l"}},
+			MenuLeft:  KeyBinding{Keys: []string{"left", "h"}},
+		},
 		CommitEditorKeys: CommitEditorKeyConfig{
 			Submit:    KeyBinding{Keys: []string{"enter"}},
 			Cancel:    KeyBinding{Keys: []string{"esc"}},
@@ -129,6 +137,8 @@ func Load() (AppConfig, string) {
 			BranchLabel:              "branch",
 			FetchLabel:               "[f] fetch",
 			MenuLabel:                "...",
+			MenuChevron:              "›",
+			MenuSelectionIndicator:   ">",
 			BranchSourceSelectedMark: "✓",
 			BranchCreateTitle:        "Create a branch",
 			BranchCreateEnterHint:    "Enter: create branch",
@@ -181,6 +191,12 @@ func loadFromTOML(cfg *AppConfig) string {
 		cfg.Clipboard.PasteCmd = strings.TrimSpace(fileCfg.Clipboard.PasteCmd)
 	}
 	cfg.Keys = fileCfg.Keys
+	if len(fileCfg.Keys.MenuRight.Keys) == 0 {
+		cfg.Keys.MenuRight = KeyBinding{Keys: []string{"right", "l"}}
+	}
+	if len(fileCfg.Keys.MenuLeft.Keys) == 0 {
+		cfg.Keys.MenuLeft = KeyBinding{Keys: []string{"left", "h"}}
+	}
 	mergeCommitEditorKeys(&cfg.CommitEditorKeys, fileCfg.Keys.CommitEditor)
 	if v := strings.TrimSpace(fileCfg.UI.RepoLabel); v != "" {
 		cfg.UI.RepoLabel = v
@@ -193,6 +209,12 @@ func loadFromTOML(cfg *AppConfig) string {
 	}
 	if v := strings.TrimSpace(fileCfg.UI.MenuLabel); v != "" {
 		cfg.UI.MenuLabel = v
+	}
+	if v := strings.TrimSpace(fileCfg.UI.MenuChevron); v != "" {
+		cfg.UI.MenuChevron = v
+	}
+	if v := strings.TrimSpace(fileCfg.UI.MenuSelectionIndicator); v != "" {
+		cfg.UI.MenuSelectionIndicator = v
 	}
 	if v := strings.TrimSpace(fileCfg.UI.BranchSourceSelectedMark); v != "" {
 		cfg.UI.BranchSourceSelectedMark = v
