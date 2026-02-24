@@ -80,6 +80,16 @@ func (s *AppState) HandleMouseMove(x, y int) {
 				s.MenuSubmenuKind = "commit"
 			case "Changes":
 				s.MenuSubmenuKind = "changes"
+			case "Pull, Push":
+				s.MenuSubmenuKind = "pull_push"
+			case "Branch":
+				s.MenuSubmenuKind = "branch"
+			case "Remote":
+				s.MenuSubmenuKind = "remote"
+			case "Stash":
+				s.MenuSubmenuKind = "stash"
+			case "Tags":
+				s.MenuSubmenuKind = "tags"
 			}
 		}
 	}

@@ -23,7 +23,6 @@ var dropdownMenuItems = []dropdownMenuItem{
 	{Label: "Remote", HasChevron: true},
 	{Label: "Stash", HasChevron: true},
 	{Label: "Tags", HasChevron: true},
-	{Label: "Worktrees", HasChevron: true},
 }
 
 var commitDropdownMenuItems = []dropdownMenuItem{
@@ -46,6 +45,65 @@ var changesDropdownMenuItems = []dropdownMenuItem{
 	{Label: "Stage All Changes"},
 	{Label: "Unstage All Changes"},
 	{Label: "Discard All Changes"},
+}
+
+var pullPushDropdownMenuItems = []dropdownMenuItem{
+	{Label: "Sync"},
+	{Separator: true},
+	{Label: "Pull"},
+	{Label: "Pull (Rebase)"},
+	{Label: "Pull from..."},
+	{Separator: true},
+	{Label: "Push"},
+	{Label: "Push to..."},
+	{Separator: true},
+	{Label: "Fetch"},
+	{Label: "Fetch (Prune)"},
+	{Label: "Fetch From All Remotes"},
+}
+
+var branchDropdownMenuItems = []dropdownMenuItem{
+	{Label: "Merge..."},
+	{Label: "Rebase Branch..."},
+	{Separator: true},
+	{Label: "Create Branch..."},
+	{Label: "Create Branch From..."},
+	{Separator: true},
+	{Label: "Rename Branch..."},
+	{Label: "Delete Branch..."},
+	{Label: "Delete Remote Branch..."},
+	{Separator: true},
+	{Label: "Publish Branch..."},
+}
+
+var remoteDropdownMenuItems = []dropdownMenuItem{
+	{Label: "Add Remote..."},
+	{Label: "Remove Remote"},
+}
+
+var stashDropdownMenuItems = []dropdownMenuItem{
+	{Label: "Stash"},
+	{Label: "Stash (Include Untracked)"},
+	{Label: "Stash Staged"},
+	{Separator: true},
+	{Label: "Apply Latest Stash"},
+	{Label: "Apply Stash..."},
+	{Separator: true},
+	{Label: "Pop Latest Stash"},
+	{Label: "Pop Stash..."},
+	{Separator: true},
+	{Label: "Drop Stash..."},
+	{Label: "Drop All Stashes..."},
+	{Separator: true},
+	{Label: "View Stash..."},
+}
+
+var tagsDropdownMenuItems = []dropdownMenuItem{
+	{Label: "Create Tag..."},
+	{Label: "Delete Tag..."},
+	{Label: "Delete Remote Tag..."},
+	{Separator: true},
+	{Label: "Push Tags"},
 }
 
 func (s *AppState) CloseMenu() {
@@ -97,6 +155,16 @@ func (s AppState) MenuSubmenuItems() []dropdownMenuItem {
 		return commitDropdownMenuItems
 	case "changes":
 		return changesDropdownMenuItems
+	case "pull_push":
+		return pullPushDropdownMenuItems
+	case "branch":
+		return branchDropdownMenuItems
+	case "remote":
+		return remoteDropdownMenuItems
+	case "stash":
+		return stashDropdownMenuItems
+	case "tags":
+		return tagsDropdownMenuItems
 	default:
 		return nil
 	}
@@ -229,6 +297,16 @@ func (s AppState) submenuAnchorIndex() int {
 		return s.commitMenuIndex()
 	case "changes":
 		return s.changesMenuIndex()
+	case "pull_push":
+		return s.menuIndexByLabel("Pull, Push")
+	case "branch":
+		return s.menuIndexByLabel("Branch")
+	case "remote":
+		return s.menuIndexByLabel("Remote")
+	case "stash":
+		return s.menuIndexByLabel("Stash")
+	case "tags":
+		return s.menuIndexByLabel("Tags")
 	default:
 		return -1
 	}
@@ -425,6 +503,46 @@ func (s *AppState) OpenChangesSubmenu() {
 	s.ensureMenuScrollVisible()
 }
 
+func (s *AppState) OpenPullPushSubmenu() {
+	s.MenuSubmenuKind = "pull_push"
+	if s.MenuSubHoverIndex < 0 {
+		s.MenuSubHoverIndex = s.firstSelectableSubmenuIndex()
+	}
+	s.ensureMenuScrollVisible()
+}
+
+func (s *AppState) OpenBranchSubmenu() {
+	s.MenuSubmenuKind = "branch"
+	if s.MenuSubHoverIndex < 0 {
+		s.MenuSubHoverIndex = s.firstSelectableSubmenuIndex()
+	}
+	s.ensureMenuScrollVisible()
+}
+
+func (s *AppState) OpenRemoteSubmenu() {
+	s.MenuSubmenuKind = "remote"
+	if s.MenuSubHoverIndex < 0 {
+		s.MenuSubHoverIndex = s.firstSelectableSubmenuIndex()
+	}
+	s.ensureMenuScrollVisible()
+}
+
+func (s *AppState) OpenStashSubmenu() {
+	s.MenuSubmenuKind = "stash"
+	if s.MenuSubHoverIndex < 0 {
+		s.MenuSubHoverIndex = s.firstSelectableSubmenuIndex()
+	}
+	s.ensureMenuScrollVisible()
+}
+
+func (s *AppState) OpenTagsSubmenu() {
+	s.MenuSubmenuKind = "tags"
+	if s.MenuSubHoverIndex < 0 {
+		s.MenuSubHoverIndex = s.firstSelectableSubmenuIndex()
+	}
+	s.ensureMenuScrollVisible()
+}
+
 func (s *AppState) OpenSubmenuForMenuIndex(idx int) bool {
 	if idx < 0 || idx >= len(dropdownMenuItems) {
 		return false
@@ -438,6 +556,21 @@ func (s *AppState) OpenSubmenuForMenuIndex(idx int) bool {
 		return true
 	case "Changes":
 		s.OpenChangesSubmenu()
+		return true
+	case "Pull, Push":
+		s.OpenPullPushSubmenu()
+		return true
+	case "Branch":
+		s.OpenBranchSubmenu()
+		return true
+	case "Remote":
+		s.OpenRemoteSubmenu()
+		return true
+	case "Stash":
+		s.OpenStashSubmenu()
+		return true
+	case "Tags":
+		s.OpenTagsSubmenu()
 		return true
 	default:
 		s.CloseSubmenu()
