@@ -3,6 +3,7 @@ package ui
 import (
 	"strings"
 
+	"github.com/mattn/go-runewidth"
 	"github.com/zGIKS/nit/internal/nit/app"
 )
 
@@ -15,11 +16,81 @@ func menuDropdownView(state app.AppState, width int) string {
 	}
 	top := "┌" + strings.Repeat("─", innerW) + "┐"
 	bottom := "└" + strings.Repeat("─", innerW) + "┘"
-	lines := make([]string, 0, len(items)+2)
+	_, _, _, panelH := state.MenuPanelRect()
+	page := max(1, panelH-2)
+	start := state.MenuOffset
+	if start < 0 {
+		start = 0
+	}
+	if start > max(0, len(items)-page) {
+		start = max(0, len(items)-page)
+	}
+	lines := make([]string, 0, page+2)
 	lines = append(lines, top)
-	for i, item := range items {
-		text := fitText(" "+item+" ", innerW, ' ')
+	for row := 0; row < page; row++ {
+		i := start + row
+		if i >= len(items) {
+			lines = append(lines, "│"+fitText("", innerW, ' ')+"│")
+			continue
+		}
+		item := items[i]
+		if item.Separator {
+			lines = append(lines, "├"+strings.Repeat("─", innerW)+"┤")
+			continue
+		}
+		text := fitText(" "+item.Label+" ", innerW, ' ')
+		if item.HasChevron && innerW >= 2 {
+			target := max(0, innerW-2)
+			pad := max(0, target-runewidth.StringWidth(" "+item.Label))
+			text = fitText(" "+item.Label+strings.Repeat(" ", pad)+" ›", innerW, ' ')
+		}
 		if state.MenuHoverIndex == i {
+			text = ansiUnderline(text)
+		}
+		lines = append(lines, "│"+text+"│")
+	}
+	lines = append(lines, bottom)
+	return strings.Join(lines, "\n")
+}
+
+func menuSubmenuView(state app.AppState, width int) string {
+	items := state.MenuSubmenuItems()
+	w := max(18, width)
+	innerW := w - 2
+	if innerW < 1 {
+		innerW = 1
+	}
+	top := "┌" + strings.Repeat("─", innerW) + "┐"
+	bottom := "└" + strings.Repeat("─", innerW) + "┘"
+	_, _, _, panelH := state.MenuSubmenuRect()
+	page := max(1, panelH-2)
+	start := state.MenuSubOffset
+	if start < 0 {
+		start = 0
+	}
+	if start > max(0, len(items)-page) {
+		start = max(0, len(items)-page)
+	}
+	lines := make([]string, 0, page+2)
+	lines = append(lines, top)
+	for row := 0; row < page; row++ {
+		i := start + row
+		if i >= len(items) {
+			lines = append(lines, "│"+fitText("", innerW, ' ')+"│")
+			continue
+		}
+		item := items[i]
+		if item.Separator {
+			lines = append(lines, "├"+strings.Repeat("─", innerW)+"┤")
+			continue
+		}
+		text := fitText(" "+item.Label+" ", innerW, ' ')
+		if item.HasChevron && innerW >= 2 {
+			target := max(0, innerW-2)
+			pad := max(0, target-runewidth.StringWidth(" "+item.Label))
+			text = fitText(" "+item.Label+strings.Repeat(" ", pad)+" ›", innerW, ' ')
+		}
+		if state.MenuSubHoverIndex == i {
 			text = ansiUnderline(text)
 		}
 		lines = append(lines, "│"+text+"│")

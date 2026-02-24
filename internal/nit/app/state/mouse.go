@@ -49,6 +49,8 @@ func (s *AppState) HandleMouseMove(x, y int) {
 	s.HoverBranch = false
 	if y < 0 || x < 0 {
 		s.MenuHoverIndex = -1
+		s.MenuSubmenuKind = ""
+		s.MenuSubHoverIndex = -1
 		s.BranchCreateHoverIndex = -1
 		return
 	}
@@ -62,18 +64,54 @@ func (s *AppState) HandleMouseMove(x, y int) {
 	if bx, by, bw, bh := s.BranchButtonRect(); x >= bx && x < bx+bw && y >= by && y < by+bh {
 		s.HoverBranch = true
 	}
-	if idx, ok := s.MenuItemIndexAt(x, y); ok {
-		s.MenuHoverIndex = idx
-		s.BranchCreateHoverAt(x, y)
-		return
+	menuIdx, menuOK := s.MenuItemIndexAt(x, y)
+	if menuOK {
+		s.MenuHoverIndex = menuIdx
+	} else {
+		s.MenuHoverIndex = -1
 	}
-	s.MenuHoverIndex = -1
+	prevSubmenuKind := s.MenuSubmenuKind
+	s.MenuSubmenuKind = ""
+	s.MenuSubHoverIndex = -1
+	if s.MenuOpen && menuOK {
+		if item := s.MenuItems()[menuIdx]; item.HasChevron {
+			switch item.Label {
+			case "Commit":
+				s.MenuSubmenuKind = "commit"
+			case "Changes":
+				s.MenuSubmenuKind = "changes"
+			}
+		}
+	}
+	if s.MenuOpen && s.MenuSubmenuKind == "" && prevSubmenuKind != "" {
+		s.MenuSubmenuKind = prevSubmenuKind
+		if idx, ok := s.MenuSubmenuItemIndexAt(x, y); ok {
+			s.MenuSubHoverIndex = idx
+		} else if sx, sy, sw, sh := s.MenuSubmenuRect(); sw > 0 && sh > 0 && x >= sx && x < sx+sw && y >= sy && y < sy+sh {
+			// Keep submenu open while hovering over separators/empty rows.
+			if anchorIdx := s.submenuAnchorIndex(); anchorIdx >= 0 {
+				s.MenuHoverIndex = anchorIdx
+			}
+		} else {
+			s.MenuSubmenuKind = ""
+		}
+	} else if s.MenuOpen && s.MenuSubmenuKind != "" {
+		if idx, ok := s.MenuSubmenuItemIndexAt(x, y); ok {
+			s.MenuSubHoverIndex = idx
+		} else if sx, sy, sw, sh := s.MenuSubmenuRect(); sw > 0 && sh > 0 && x >= sx && x < sx+sw && y >= sy && y < sy+sh {
+			if anchorIdx := s.submenuAnchorIndex(); anchorIdx >= 0 {
+				s.MenuHoverIndex = anchorIdx
+			}
+		}
+	}
 	s.BranchCreateHoverAt(x, y)
 }
 
 func (s *AppState) HandleMouseWheel(x, y, delta int) {
-	_ = x // boxes span full width for now
 	if y < 0 || delta == 0 {
+		return
+	}
+	if s.MenuWheelAt(x, y, delta) {
 		return
 	}
 

@@ -82,6 +82,67 @@ func HandleKeyMsg(
 		return nil
 	}
 
+	if state.MenuOpen {
+		switch msg.Type {
+		case tea.KeyEsc:
+			if state.MenuSubmenuKind != "" {
+				state.CloseSubmenu()
+			} else {
+				state.CloseMenu()
+			}
+			state.Clamp()
+			return nil
+		case tea.KeyUp:
+			if state.MenuSubmenuKind != "" {
+				state.MoveMenuSubmenuSelection(-1)
+			} else {
+				state.MoveMenuSelection(-1)
+			}
+			state.Clamp()
+			return nil
+		case tea.KeyDown:
+			if state.MenuSubmenuKind != "" {
+				state.MoveMenuSubmenuSelection(1)
+			} else {
+				state.MoveMenuSelection(1)
+			}
+			state.Clamp()
+			return nil
+		case tea.KeyRight:
+			if state.MenuSubmenuKind == "" {
+				state.OpenHoveredSubmenu()
+			}
+			state.Clamp()
+			return nil
+		case tea.KeyLeft:
+			if state.MenuSubmenuKind != "" {
+				state.CloseSubmenu()
+			}
+			state.Clamp()
+			return nil
+		case tea.KeyEnter:
+			if state.MenuSubmenuKind != "" {
+				if action, ok, consumed := state.MenuSubmenuActivateIndex(state.MenuSubHoverIndex); consumed {
+					if ok {
+						result := state.Apply(action)
+						state.Clamp()
+						return cmds.HandleResult(git, result)
+					}
+					state.Clamp()
+					return nil
+				}
+			} else {
+				if action, ok := state.MenuActivateIndex(state.MenuHoverIndex); ok {
+					result := state.Apply(action)
+					state.Clamp()
+					return cmds.HandleResult(git, result)
+				}
+			}
+			state.Clamp()
+			return nil
+		}
+	}
+
 	if state.Focus == app.FocusCommand {
 		switch {
 		case matchesConfiguredKey(msg, textKeys.Submit):

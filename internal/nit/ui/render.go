@@ -143,6 +143,9 @@ func Render(state app.AppState) string {
 	if state.MenuOpen {
 		menuPanelX, menuPanelY, menuPanelW, _ := state.MenuPanelRect()
 		out = overlayBlock(out, menuDropdownView(state, menuPanelW), menuPanelX, menuPanelY, menuPanelW)
+		if subX, subY, subW, subH := state.MenuSubmenuRect(); subW > 0 && subH > 0 {
+			out = overlayBlock(out, menuSubmenuView(state, subW), subX, subY, subW)
+		}
 	}
 	if state.BranchCreateOpen {
 		panelX, panelY, panelW, panelH := state.BranchCreatePanelRect()

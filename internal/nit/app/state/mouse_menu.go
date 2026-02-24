@@ -27,19 +27,73 @@ func (s *AppState) MenuClickActionAt(x, y int) (actions.Action, bool) {
 	if !ok {
 		return actions.ActionNone, false
 	}
-	item := s.MenuItems()[idx]
-	s.CloseMenu()
-	switch item {
-	case "Pull":
-		return actions.ActionPull, true
-	case "Fetch":
-		return actions.ActionFetch, true
-	case "Push":
-		return actions.ActionPush, true
-	default:
-		s.SetError("menu action not implemented yet")
+	return s.MenuActivateIndex(idx)
+}
+
+func (s *AppState) MenuActivateIndex(idx int) (actions.Action, bool) {
+	items := s.MenuItems()
+	if idx < 0 || idx >= len(items) || items[idx].Separator {
 		return actions.ActionNone, false
 	}
+	item := items[idx]
+	switch item.Label {
+	case "Pull":
+		s.CloseMenu()
+		return actions.ActionPull, true
+	case "Fetch":
+		s.CloseMenu()
+		return actions.ActionFetch, true
+	case "Push":
+		s.CloseMenu()
+		return actions.ActionPush, true
+	case "Commit":
+		s.OpenSubmenuForMenuIndex(idx)
+		s.MenuHoverIndex = idx
+		return actions.ActionNone, false
+	case "Changes":
+		s.OpenSubmenuForMenuIndex(idx)
+		s.MenuHoverIndex = idx
+		return actions.ActionNone, false
+	default:
+		// Keep menu open for category rows until their submenus are implemented.
+		s.MenuSubmenuKind = ""
+		s.MenuSubHoverIndex = -1
+		s.MenuHoverIndex = idx
+		return actions.ActionNone, false
+	}
+}
+
+func (s *AppState) MenuSubmenuClickActionAt(x, y int) (actions.Action, bool, bool) {
+	idx, ok := s.MenuSubmenuItemIndexAt(x, y)
+	if !ok {
+		return actions.ActionNone, false, false
+	}
+	return s.MenuSubmenuActivateIndex(idx)
+}
+
+func (s *AppState) MenuSubmenuActivateIndex(idx int) (actions.Action, bool, bool) {
+	items := s.MenuSubmenuItems()
+	if idx < 0 || idx >= len(items) || items[idx].Separator {
+		return actions.ActionNone, false, false
+	}
+	item := items[idx]
+	switch s.MenuSubmenuKind {
+	case "changes":
+		switch item.Label {
+		case "Stage All Changes":
+			s.CloseMenu()
+			return actions.ActionStageAll, true, true
+		case "Unstage All Changes":
+			s.CloseMenu()
+			return actions.ActionUnstageAll, true, true
+		case "Discard All Changes":
+			s.CloseMenu()
+			return actions.ActionNone, false, true // placeholder
+		}
+	}
+	s.CloseMenu()
+	// Placeholder until commit submenu actions are implemented.
+	return actions.ActionNone, false, true
 }
 
 func (s *AppState) ToggleMenuClick(x, y int) bool {
@@ -72,6 +126,9 @@ func (s *AppState) CloseMenuOnOutsideClick(x, y int) {
 	}
 	px, py, pw, ph := s.MenuPanelRect()
 	if x >= px && x < px+pw && y >= py && y < py+ph {
+		return
+	}
+	if sx, sy, sw, sh := s.MenuSubmenuRect(); sw > 0 && sh > 0 && x >= sx && x < sx+sw && y >= sy && y < sy+sh {
 		return
 	}
 	s.CloseMenu()

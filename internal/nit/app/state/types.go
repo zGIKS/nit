@@ -82,6 +82,10 @@ type AppState struct {
 	LastErr                  string
 	MenuOpen                 bool
 	MenuHoverIndex           int
+	MenuOffset               int
+	MenuSubmenuKind          string
+	MenuSubHoverIndex        int
+	MenuSubOffset            int
 	HoverFetch               bool
 	HoverMenu                bool
 	HoverBranch              bool
@@ -121,6 +125,9 @@ func New(keys input.Keymap) AppState {
 		},
 		Keys:                     keys,
 		MenuHoverIndex:           -1,
+		MenuOffset:               0,
+		MenuSubHoverIndex:        -1,
+		MenuSubOffset:            0,
 		BranchCreateHoverIndex:   -1,
 		RepoName:                 "loading...",
 		BranchName:               "loading...",
