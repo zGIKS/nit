@@ -97,6 +97,7 @@ type AppState struct {
 	BranchName               string
 	RepoLabel                string
 	BranchLabel              string
+	RepoBranchSeparator      string
 	FetchLabel               string
 	MenuLabel                string
 	MenuChevron              string
@@ -116,5 +117,3 @@ type AppState struct {
 	BranchCreateSourceOffset int
 	BranchCreateHoverIndex   int
 }
-
-

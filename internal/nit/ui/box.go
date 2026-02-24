@@ -3,6 +3,14 @@ package ui
 import "strings"
 
 func BoxView(title string, width, boxHeight int, lines []string, cursor, offset int, active bool, footer string) string {
+	return boxViewWithTitles(title, "", width, boxHeight, lines, cursor, offset, active, footer)
+}
+
+func BoxViewTitleRight(title, titleRight string, width, boxHeight int, lines []string, cursor, offset int, active bool, footer string) string {
+	return boxViewWithTitles(title, titleRight, width, boxHeight, lines, cursor, offset, active, footer)
+}
+
+func BoxViewPinnedTop(title string, width, boxHeight int, pinned []string, lines []string, cursor, offset int, active bool, footer string) string {
 	w := max(8, width)
 	innerW := w - 2
 	if innerW < 1 {
@@ -18,6 +26,72 @@ func BoxView(title string, width, boxHeight int, lines []string, cursor, offset 
 		head = "● " + head
 	}
 	top := "┌" + fitText(" "+head+" ", innerW, '─') + "┐"
+
+	var b strings.Builder
+	b.WriteString(top + "\n")
+
+	pinnedRows := min(len(pinned), contentHeight)
+	scrollRows := contentHeight - pinnedRows
+	if scrollRows < 0 {
+		scrollRows = 0
+	}
+
+	for i := 0; i < pinnedRows; i++ {
+		text := fitText("  "+pinned[i], innerW-2, ' ')
+		b.WriteString("│ " + text + " │\n")
+	}
+
+	maxOffset := max(0, len(lines)-scrollRows)
+	if offset < 0 {
+		offset = 0
+	}
+	if offset > maxOffset {
+		offset = maxOffset
+	}
+	end := min(len(lines), offset+scrollRows)
+	for i := 0; i < scrollRows; i++ {
+		idx := offset + i
+		text := ""
+		if idx < end {
+			prefix := "  "
+			if idx == cursor {
+				prefix = "▌ "
+			}
+			text = prefix + lines[idx]
+		}
+		text = fitText(text, innerW-2, ' ')
+		b.WriteString("│ " + text + " │\n")
+	}
+
+	bottom := "└" + fitText(" "+footer+" ", innerW, '─') + "┘"
+	b.WriteString(bottom)
+	return b.String()
+}
+
+func boxViewWithTitles(title, titleRight string, width, boxHeight int, lines []string, cursor, offset int, active bool, footer string) string {
+	w := max(8, width)
+	innerW := w - 2
+	if innerW < 1 {
+		innerW = 1
+	}
+	contentHeight := boxHeight - 2
+	if contentHeight < 1 {
+		contentHeight = 1
+	}
+
+	head := title
+	if active {
+		head = "● " + head
+	}
+	headerText := " " + head + " "
+	if r := strings.TrimSpace(titleRight); r != "" {
+		rightText := " " + r + " "
+		spaces := innerW - displayWidth(headerText) - displayWidth(rightText)
+		if spaces >= 1 {
+			headerText = headerText + strings.Repeat(" ", spaces) + rightText
+		}
+	}
+	top := "┌" + fitText(headerText, innerW, '─') + "┐"
 
 	var b strings.Builder
 	b.WriteString(top + "\n")

@@ -46,9 +46,6 @@ func (s *AppState) CloseBranchCreateOnOutsideClick(x, y int) {
 	if !s.BranchCreateOpen {
 		return
 	}
-	if bx, by, bw, bh := s.BranchButtonRect(); x >= bx && x < bx+bw && y >= by && y < by+bh {
-		return
-	}
 	px, py, pw, ph := s.BranchCreatePanelRect()
 	if x >= px && x < px+pw && y >= py && y < py+ph {
 		return

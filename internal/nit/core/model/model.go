@@ -24,6 +24,7 @@ func New() Model {
 	keys, keyErr := app.LoadKeymap(cfg.Keys)
 	state := app.New(keys)
 	state.SetTopBarLabels(cfg.UI.RepoLabel, cfg.UI.BranchLabel, cfg.UI.FetchLabel, cfg.UI.MenuLabel)
+	state.SetRepoBranchSeparator(cfg.UI.RepoBranchSeparator)
 	state.SetUISymbols(cfg.UI.BranchSourceSelectedMark, cfg.UI.MenuChevron, cfg.UI.MenuSelectionIndicator)
 	state.SetUIText(
 		cfg.UI.BranchCreateTitle,

@@ -32,6 +32,10 @@ func (s *AppState) SetTopBarLabels(repo, branch, fetch, menu string) {
 	setIfNotBlank(&s.MenuLabel, menu)
 }
 
+func (s *AppState) SetRepoBranchSeparator(label string) {
+	setIfNotBlank(&s.RepoBranchSeparator, label)
+}
+
 func (s *AppState) SetUISymbols(branchSourceSelectedMark, menuChevron, menuSelectionIndicator string) {
 	setIfNotBlank(&s.BranchSourceSelectedMark, branchSourceSelectedMark)
 	setIfNotBlank(&s.MenuChevron, menuChevron)

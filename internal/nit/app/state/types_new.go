@@ -24,6 +24,7 @@ func New(keys input.Keymap) AppState {
 		BranchName:               "loading...",
 		RepoLabel:                "repo",
 		BranchLabel:              "branch",
+		RepoBranchSeparator:      "->",
 		FetchLabel:               "[f] fetch",
 		MenuLabel:                "...",
 		MenuChevron:              "›",

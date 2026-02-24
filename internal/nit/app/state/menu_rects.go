@@ -7,11 +7,6 @@ import (
 )
 
 func (s AppState) topBarBoxes() (fetchX, fetchW, menuX, menuW int) {
-	_, _, _, _, menuX, menuW = s.topBarBoxRects()
-	return -1, 0, menuX, menuW
-}
-
-func (s AppState) topBarBoxRects() (repoX, repoW, branchX, branchW, menuX, menuW int) {
 	totalW := max(40, s.Viewport.Width)
 	repoName := s.RepoName
 	if repoName == "" {
@@ -22,16 +17,26 @@ func (s AppState) topBarBoxRects() (repoX, repoW, branchX, branchW, menuX, menuW
 		branchName = "-"
 	}
 
-	repoText := strings.TrimSpace(s.RepoLabel + " " + repoName)
-	branchText := strings.TrimSpace(s.BranchLabel + " " + branchName)
+	sep := strings.TrimSpace(s.RepoBranchSeparator)
+	if sep == "" {
+		sep = "->"
+	}
+	repoText := strings.TrimSpace(
+		strings.TrimSpace(s.RepoLabel+" "+repoName) +
+			" " + sep + " " +
+			strings.TrimSpace(s.BranchLabel+" "+branchName),
+	)
+	createText := strings.TrimSpace(s.BranchesCreateButtonLabel())
+	fetchText := strings.TrimSpace(s.FetchLabel)
 	menuText := strings.TrimSpace(s.MenuLabel)
 
-	repoW = max(16, runewidth.StringWidth(repoText)+4)
-	branchW = max(16, runewidth.StringWidth(branchText)+4)
+	repoW := max(16, runewidth.StringWidth(repoText)+4)
+	createW := max(12, runewidth.StringWidth(createText)+4)
+	fetchW = max(8, runewidth.StringWidth(fetchText)+4)
 	menuW = max(8, runewidth.StringWidth(menuText)+4)
-	minRepoW, minBranchW, minMenuW := 14, 12, 8
+	minRepoW, minCreateW, minFetchW, minMenuW := 14, 12, 8, 8
 
-	totalNeeded := repoW + branchW + menuW + 2
+	totalNeeded := repoW + createW + fetchW + menuW + 3
 	overflow := totalNeeded - totalW
 	shrink := func(w *int, minW int) {
 		if overflow <= 0 {
@@ -46,13 +51,78 @@ func (s AppState) topBarBoxRects() (repoX, repoW, branchX, branchW, menuX, menuW
 		overflow -= d
 	}
 	shrink(&repoW, minRepoW)
-	shrink(&branchW, minBranchW)
+	shrink(&createW, minCreateW)
+	shrink(&fetchW, minFetchW)
 	shrink(&menuW, minMenuW)
 	if overflow > 0 {
 		repoW = max(minRepoW, repoW-overflow)
 	}
 
-	rightTopW := branchW + menuW + 1
+	rightTopW := createW + fetchW + menuW + 2
+	gapW := totalW - repoW - rightTopW - 2
+	if gapW < 1 {
+		gapW = 1
+	}
+
+	createX := repoW + 1 + gapW + 1
+	fetchX = createX + createW + 1
+	menuX = fetchX + fetchW + 1
+	return fetchX, fetchW, menuX, menuW
+}
+
+func (s AppState) topBarBoxRects() (repoX, repoW, branchX, branchW, menuX, menuW int) {
+	totalW := max(40, s.Viewport.Width)
+	repoName := s.RepoName
+	if repoName == "" {
+		repoName = "unknown"
+	}
+	branchName := s.BranchName
+	if branchName == "" {
+		branchName = "-"
+	}
+
+	sep := strings.TrimSpace(s.RepoBranchSeparator)
+	if sep == "" {
+		sep = "->"
+	}
+	repoText := strings.TrimSpace(
+		strings.TrimSpace(s.RepoLabel+" "+repoName) +
+			" " + sep + " " +
+			strings.TrimSpace(s.BranchLabel+" "+branchName),
+	)
+	createText := strings.TrimSpace(s.BranchesCreateButtonLabel())
+	fetchText := strings.TrimSpace(s.FetchLabel)
+	menuText := strings.TrimSpace(s.MenuLabel)
+
+	repoW = max(16, runewidth.StringWidth(repoText)+4)
+	createW := max(12, runewidth.StringWidth(createText)+4)
+	fetchW := max(8, runewidth.StringWidth(fetchText)+4)
+	menuW = max(8, runewidth.StringWidth(menuText)+4)
+	minRepoW, minCreateW, minFetchW, minMenuW := 14, 12, 8, 8
+
+	totalNeeded := repoW + createW + fetchW + menuW + 3
+	overflow := totalNeeded - totalW
+	shrink := func(w *int, minW int) {
+		if overflow <= 0 {
+			return
+		}
+		can := *w - minW
+		if can <= 0 {
+			return
+		}
+		d := min(can, overflow)
+		*w -= d
+		overflow -= d
+	}
+	shrink(&repoW, minRepoW)
+	shrink(&createW, minCreateW)
+	shrink(&fetchW, minFetchW)
+	shrink(&menuW, minMenuW)
+	if overflow > 0 {
+		repoW = max(minRepoW, repoW-overflow)
+	}
+
+	rightTopW := createW + fetchW + menuW + 2
 	gapW := totalW - repoW - rightTopW - 2
 	if gapW < 1 {
 		gapW = 1
@@ -60,7 +130,8 @@ func (s AppState) topBarBoxRects() (repoX, repoW, branchX, branchW, menuX, menuW
 
 	repoX = 0
 	branchX = repoW + 1 + gapW + 1
-	menuX = branchX + branchW + 1
+	branchW = createW
+	menuX = branchX + branchW + 1 + fetchW + 1
 	return repoX, repoW, branchX, branchW, menuX, menuW
 }
 

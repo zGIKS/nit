@@ -54,6 +54,7 @@ type ClipboardConfig struct {
 type UIConfig struct {
 	RepoLabel                string `toml:"repo_label"`
 	BranchLabel              string `toml:"branch_label"`
+	RepoBranchSeparator      string `toml:"repo_branch_separator"`
 	FetchLabel               string `toml:"fetch_label"`
 	MenuLabel                string `toml:"menu_label"`
 	MenuChevron              string `toml:"menu_chevron"`
