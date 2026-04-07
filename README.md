@@ -103,8 +103,7 @@ nit
 
 | Key | Action |
 |-----|--------|
-| `Enter` | Create branch |
-| `Ctrl+B` | Create branch and push to origin |
+| `Enter` | Create branch and push to origin |
 | `Esc` | Cancel |
 
 ---

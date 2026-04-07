@@ -19,20 +19,6 @@ func handleBranchCreateKey(
 	msg tea.KeyMsg,
 ) tea.Cmd {
 	switch msg.Type {
-	case tea.KeyCtrlB:
-		name := strings.TrimSpace(state.BranchCreateName)
-		if name == "" {
-			state.SetError("branch name is empty")
-			state.Clamp()
-			return nil
-		}
-		source := strings.TrimSpace(state.BranchCreateSource)
-		state.CloseBranchCreate()
-		state.BranchCreateName = ""
-		state.BranchCreateCursor = 0
-		state.BranchCreateSelectAll = false
-		state.Clamp()
-		return cmds.CreateBranchCmd(git, name, source, true)
 	case tea.KeyUp:
 		state.BranchCreateMoveSource(-1)
 	case tea.KeyDown:
@@ -58,7 +44,7 @@ func handleBranchCreateKey(
 			state.BranchCreateCursor = 0
 			state.BranchCreateSelectAll = false
 			state.Clamp()
-			return cmds.CreateBranchCmd(git, name, source, false)
+			return cmds.CreateBranchCmd(git, name, source, true)
 		default:
 			if handleSharedTextInputKey(state, clipCfg, textKeys, pasteHintAlreadySeen, msg, textInputKeyOps{
 				Selected:        state.SelectedBranchCreateText,
