@@ -31,8 +31,8 @@ func New(keys input.Keymap) AppState {
 		MenuSelectionIndicator:   ">",
 		BranchSourceSelectedMark: "✓",
 		BranchCreateTitle:        "Create a branch",
-		BranchCreateEnterHint:    "Enter: create branch",
-		BranchCreatePushHint:     "Ctrl+b: create and push to origin",
+		BranchCreateEnterHint:    "Enter: create and push to origin",
+		BranchCreatePushHint:     "",
 		BranchCreateNameLabel:    "New branch name",
 		BranchCreateSourceLabel:  "Source",
 	}

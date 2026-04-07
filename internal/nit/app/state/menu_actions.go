@@ -33,14 +33,6 @@ func (s *AppState) openSubmenu(kind string) {
 	s.ensureMenuScrollVisible()
 }
 
-func (s *AppState) OpenCommitSubmenu()   { s.openSubmenu("commit") }
-func (s *AppState) OpenChangesSubmenu()  { s.openSubmenu("changes") }
-func (s *AppState) OpenPullPushSubmenu() { s.openSubmenu("pull_push") }
-func (s *AppState) OpenBranchSubmenu()   { s.openSubmenu("branch") }
-func (s *AppState) OpenRemoteSubmenu()   { s.openSubmenu("remote") }
-func (s *AppState) OpenStashSubmenu()    { s.openSubmenu("stash") }
-func (s *AppState) OpenTagsSubmenu()     { s.openSubmenu("tags") }
-
 func (s *AppState) OpenSubmenuForMenuIndex(idx int) bool {
 	if idx < 0 || idx >= len(dropdownMenuItems) {
 		return false
