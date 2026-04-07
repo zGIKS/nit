@@ -2,7 +2,7 @@ package state
 
 func (s *AppState) OpenBranchCreate() {
 	s.BranchCreateOpen = true
-	s.MenuOpen = false
+	s.CloseMenu()
 	s.BranchCreateHoverIndex = -1
 	s.BranchCreateSelectAll = false
 	s.syncBranchCreateSources()

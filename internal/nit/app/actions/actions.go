@@ -12,9 +12,14 @@ const (
 	ActionToggleOne
 	ActionStageAll
 	ActionUnstageAll
+	ActionDiscardAll
 	ActionPull
 	ActionFetch
 	ActionPush
+	ActionMenuRight
+	ActionMenuLeft
+	ActionUndoLastCommit
+	ActionAbortRebase
 )
 
 type OpKind int
@@ -24,16 +29,22 @@ const (
 	OpUnstagePath
 	OpStageAll
 	OpUnstageAll
+	OpDiscardAll
 	OpCommit
 	OpPull
 	OpFetch
 	OpPush
+	OpUndoLastCommit
+	OpAbortRebase
 )
 
 type Operation struct {
-	Kind    OpKind
-	Path    string
-	Message string
+	Kind          OpKind
+	Path          string
+	Message       string
+	CommitAll     bool
+	CommitAmend   bool
+	CommitSignoff bool
 }
 
 type ApplyResult struct {

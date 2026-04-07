@@ -15,14 +15,24 @@ func ExecOperation(svc g.Service, op app.Operation) (string, error) {
 		return svc.StageAll()
 	case app.OpUnstageAll:
 		return svc.UnstageAll()
+	case app.OpDiscardAll:
+		return svc.DiscardAll()
 	case app.OpCommit:
-		return svc.Commit(op.Message)
+		return svc.CommitWithOptions(op.Message, g.CommitOptions{
+			All:     op.CommitAll,
+			Amend:   op.CommitAmend,
+			Signoff: op.CommitSignoff,
+		})
 	case app.OpPull:
 		return svc.Pull()
 	case app.OpFetch:
 		return svc.Fetch()
 	case app.OpPush:
 		return svc.Push()
+	case app.OpUndoLastCommit:
+		return svc.UndoLastCommit()
+	case app.OpAbortRebase:
+		return svc.AbortRebase()
 	default:
 		return "", nil
 	}

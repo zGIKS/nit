@@ -6,28 +6,6 @@ import (
 	"github.com/zGIKS/nit/internal/nit/app"
 )
 
-func menuDropdownView(state app.AppState, width int) string {
-	items := state.MenuItems()
-	w := max(18, width)
-	innerW := w - 2
-	if innerW < 1 {
-		innerW = 1
-	}
-	top := "┌" + strings.Repeat("─", innerW) + "┐"
-	bottom := "└" + strings.Repeat("─", innerW) + "┘"
-	lines := make([]string, 0, len(items)+2)
-	lines = append(lines, top)
-	for i, item := range items {
-		text := fitText(" "+item+" ", innerW, ' ')
-		if state.MenuHoverIndex == i {
-			text = ansiUnderline(text)
-		}
-		lines = append(lines, "│"+text+"│")
-	}
-	lines = append(lines, bottom)
-	return strings.Join(lines, "\n")
-}
-
 func branchCreateModalView(state app.AppState, width, height int) string {
 	w := max(36, width)
 	if width > 0 {
@@ -57,9 +35,6 @@ func branchCreateModalView(state app.AppState, width, height int) string {
 	}
 	lines = append(lines, "│"+fitText(" "+enterHint, innerW, ' ')+"│")
 	pushHint := strings.TrimSpace(state.BranchCreatePushHint)
-	if pushHint == "" {
-		pushHint = "Ctrl+b: create and push to origin"
-	}
 	lines = append(lines, "│"+fitText(" "+pushHint, innerW, ' ')+"│")
 	lines = append(lines, "├"+strings.Repeat("─", innerW)+"┤")
 	nameLabel := strings.TrimSpace(state.BranchCreateNameLabel)

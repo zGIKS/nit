@@ -44,13 +44,13 @@ func (r Runner) Run(args ...string) (string, string, error) {
 		return stdout, cmdStr, nil
 	}
 	if ctx.Err() == context.DeadlineExceeded {
-		return stdout, cmdStr, fmt.Errorf("git %s timeout after %s", strings.Join(args, " "), r.Timeout)
+		return stdout, cmdStr, fmt.Errorf("%s timeout after %s", cmdStr, r.Timeout)
 	}
 	if stderr != "" {
-		return stdout, cmdStr, fmt.Errorf("git %s failed: %s", strings.Join(args, " "), stderr)
+		return stdout, cmdStr, fmt.Errorf("%s failed: %s", cmdStr, stderr)
 	}
 	if ee, ok := err.(*exec.Error); ok && ee.Err == exec.ErrNotFound {
 		return stdout, cmdStr, fmt.Errorf("git executable not found in PATH")
 	}
-	return stdout, cmdStr, fmt.Errorf("git %s failed: %w", strings.Join(args, " "), err)
+	return stdout, cmdStr, fmt.Errorf("%s failed: %w", cmdStr, err)
 }

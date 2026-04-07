@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/zGIKS/nit/internal/nit/app"
 )
@@ -16,27 +15,9 @@ func Render(state app.AppState) string {
 	changeSel, changeTotal := state.ChangesPosition()
 	graphSel, graphTotal := state.GraphPosition()
 	branchSel, branchTotal := state.BranchesPosition()
-	commandText := state.Command.Input
-	focusCommandKey := state.Keys.DisplayBinding(app.ActionFocusCommand)
-	if focusCommandKey == "" {
-		focusCommandKey = "c"
-	}
-	pushKeyNormal := state.Keys.DisplayBindingMatching(app.ActionPush, func(k string) bool { return !strings.HasPrefix(k, "ctrl+") })
-	if pushKeyNormal == "" {
-		pushKeyNormal = state.Keys.DisplayBinding(app.ActionPush)
-	}
-	if pushKeyNormal == "" {
-		pushKeyNormal = "p"
-	}
-	pushKeyInCommand := state.Keys.DisplayBindingMatching(app.ActionPush, func(k string) bool { return strings.HasPrefix(k, "ctrl+") })
-	if pushKeyInCommand == "" {
-		pushKeyInCommand = pushKeyNormal
-	}
-	if commandActive {
-		commandText = commandLineViewport(state, max(1, commitContentWidth(state.Viewport.Width)))
-	} else if commandText == "" {
-		commandText = fmt.Sprintf("Message (%s focus, Enter commit)", focusCommandKey)
-	}
+
+	pushKeyNormal, pushKeyInCommand := resolvePushKeys(state)
+	commandText := resolveCommandText(state, commandActive, pushKeyNormal)
 
 	changeLines := make([]string, 0, len(state.Changes.Rows))
 	for _, r := range state.Changes.Rows {
@@ -55,98 +36,44 @@ func Render(state app.AppState) string {
 	}
 
 	topBar := buildTopBar(state, totalW)
-	commandBox := BoxView(
-		"Commit",
-		commitW,
-		3,
-		[]string{commandText},
-		0,
-		0,
-		commandActive,
-		"",
-	)
-	pushBox := BoxView(
-		"Push",
-		pushW,
-		3,
-		[]string{func() string {
-			if commandActive {
-				return pushKeyInCommand
-			}
-			return pushKeyNormal
-		}()},
-		0,
-		0,
-		false,
-		"",
-	)
+	commandBox := BoxView("Commit", commitW, 3, []string{commandText}, 0, 0, commandActive, "")
+	pushLabel := pushKeyNormal
+	if commandActive {
+		pushLabel = pushKeyInCommand
+	}
+	pushBox := BoxView("Push", pushW, 3, []string{pushLabel}, 0, 0, false, "")
 	commandRow := HStack(commandBox, commitW, pushBox, pushW)
 	command := topBar + "\n" + commandRow
-	changes := BoxView(
-		"Changes",
-		totalW,
-		state.ChangesPaneHeight(),
-		changeLines,
-		state.Changes.Cursor,
-		state.Changes.Offset,
-		changesActive,
-		fmt.Sprintf("%d of %d", changeSel, changeTotal),
-	)
+	changes := BoxView("Changes", totalW, state.ChangesPaneHeight(), changeLines, state.Changes.Cursor, state.Changes.Offset, changesActive, fmt.Sprintf("%d of %d", changeSel, changeTotal))
 	graphPaneW, branchPaneW := state.GraphBranchesPaneWidths()
-	graphBox := BoxView(
-		"Commits - Reflog",
-		graphPaneW,
-		state.GraphPaneHeight(),
-		state.Graph.Lines,
-		state.Graph.Cursor,
-		state.Graph.Offset,
-		graphActive,
-		fmt.Sprintf("%d of %d", graphSel, graphTotal),
-	)
-	branchesBox := BoxView(
-		"Branches",
-		branchPaneW,
-		state.GraphPaneHeight(),
-		state.Branches.Lines,
-		state.Branches.Cursor,
-		state.Branches.Offset,
-		branchesActive,
-		fmt.Sprintf("%d of %d", branchSel, branchTotal),
-	)
+	graphBox := BoxView("Commits - Reflog", graphPaneW, state.GraphPaneHeight(), state.Graph.Lines, state.Graph.Cursor, state.Graph.Offset, graphActive, fmt.Sprintf("%d of %d", graphSel, graphTotal))
+	branchesBox := BoxView("Branches", branchPaneW, state.GraphPaneHeight(), state.Branches.Lines, state.Branches.Cursor, state.Branches.Offset, branchesActive, fmt.Sprintf("%d of %d", branchSel, branchTotal))
 	graph := HStack(graphBox, graphPaneW, branchesBox, branchPaneW)
 	commandLogFooter := ""
 	if state.LastErr != "" {
 		commandLogFooter = "error: " + state.LastErr
 	}
-	commandLog := BoxView(
-		"Command Log",
-		totalW,
-		state.CommandLogPaneHeight(),
-		state.CommandLog,
-		func() int {
-			if commandLogActive {
-				return state.CommandLogView.Cursor
-			}
-			return len(state.CommandLog) - 1
-		}(),
-		func() int {
-			if commandLogActive {
-				return state.CommandLogView.Offset
-			}
-			return max(0, len(state.CommandLog)-(state.CommandLogPaneHeight()-2))
-		}(),
-		commandLogActive,
-		commandLogFooter,
-	)
+	clCursor, clOffset := resolveCommandLogView(state, commandLogActive)
+	commandLog := BoxView("Command Log", totalW, state.CommandLogPaneHeight(), state.CommandLog, clCursor, clOffset, commandLogActive, commandLogFooter)
 
 	out := command + "\n" + changes + "\n" + graph + "\n" + commandLog
 	if state.MenuOpen {
 		menuPanelX, menuPanelY, menuPanelW, _ := state.MenuPanelRect()
 		out = overlayBlock(out, menuDropdownView(state, menuPanelW), menuPanelX, menuPanelY, menuPanelW)
+		if subX, subY, subW, subH := state.MenuSubmenuRect(); subW > 0 && subH > 0 {
+			out = overlayBlock(out, menuSubmenuView(state, subW), subX, subY, subW)
+		}
 	}
 	if state.BranchCreateOpen {
 		panelX, panelY, panelW, panelH := state.BranchCreatePanelRect()
 		out = overlayBlock(out, branchCreateModalView(state, panelW, panelH), panelX, panelY, panelW)
 	}
 	return out
+}
+
+func resolveCommandLogView(state app.AppState, active bool) (cursor, offset int) {
+	if active {
+		return state.CommandLogView.Cursor, state.CommandLogView.Offset
+	}
+	return len(state.CommandLog) - 1, max(0, len(state.CommandLog)-(state.CommandLogPaneHeight()-2))
 }

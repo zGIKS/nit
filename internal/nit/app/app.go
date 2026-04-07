@@ -13,34 +13,43 @@ type (
 	ApplyResult = actionspkg.ApplyResult
 	OpKind      = actionspkg.OpKind
 
-	AppState   = statepkg.AppState
-	FocusState = statepkg.FocusState
-	Section    = statepkg.Section
-	Keymap     = inputpkg.Keymap
+	AppState         = statepkg.AppState
+	FocusState       = statepkg.FocusState
+	Section          = statepkg.Section
+	DropdownMenuItem = statepkg.DropdownMenuItem
+	Keymap           = inputpkg.Keymap
 )
 
 const (
-	ActionNone         = actionspkg.ActionNone
-	ActionQuit         = actionspkg.ActionQuit
-	ActionTogglePanel  = actionspkg.ActionTogglePanel
-	ActionFocusCommand = actionspkg.ActionFocusCommand
-	ActionMoveUp       = actionspkg.ActionMoveUp
-	ActionMoveDown     = actionspkg.ActionMoveDown
-	ActionToggleOne    = actionspkg.ActionToggleOne
-	ActionStageAll     = actionspkg.ActionStageAll
-	ActionUnstageAll   = actionspkg.ActionUnstageAll
-	ActionPull         = actionspkg.ActionPull
-	ActionFetch        = actionspkg.ActionFetch
-	ActionPush         = actionspkg.ActionPush
+	ActionNone           = actionspkg.ActionNone
+	ActionQuit           = actionspkg.ActionQuit
+	ActionTogglePanel    = actionspkg.ActionTogglePanel
+	ActionFocusCommand   = actionspkg.ActionFocusCommand
+	ActionMoveUp         = actionspkg.ActionMoveUp
+	ActionMoveDown       = actionspkg.ActionMoveDown
+	ActionToggleOne      = actionspkg.ActionToggleOne
+	ActionStageAll       = actionspkg.ActionStageAll
+	ActionUnstageAll     = actionspkg.ActionUnstageAll
+	ActionDiscardAll     = actionspkg.ActionDiscardAll
+	ActionPull           = actionspkg.ActionPull
+	ActionFetch          = actionspkg.ActionFetch
+	ActionPush           = actionspkg.ActionPush
+	ActionMenuRight      = actionspkg.ActionMenuRight
+	ActionMenuLeft       = actionspkg.ActionMenuLeft
+	ActionUndoLastCommit = actionspkg.ActionUndoLastCommit
+	ActionAbortRebase    = actionspkg.ActionAbortRebase
 
-	OpStagePath   = actionspkg.OpStagePath
-	OpUnstagePath = actionspkg.OpUnstagePath
-	OpStageAll    = actionspkg.OpStageAll
-	OpUnstageAll  = actionspkg.OpUnstageAll
-	OpCommit      = actionspkg.OpCommit
-	OpPull        = actionspkg.OpPull
-	OpFetch       = actionspkg.OpFetch
-	OpPush        = actionspkg.OpPush
+	OpStagePath      = actionspkg.OpStagePath
+	OpUnstagePath    = actionspkg.OpUnstagePath
+	OpStageAll       = actionspkg.OpStageAll
+	OpUnstageAll     = actionspkg.OpUnstageAll
+	OpDiscardAll     = actionspkg.OpDiscardAll
+	OpCommit         = actionspkg.OpCommit
+	OpPull           = actionspkg.OpPull
+	OpFetch          = actionspkg.OpFetch
+	OpPush           = actionspkg.OpPush
+	OpUndoLastCommit = actionspkg.OpUndoLastCommit
+	OpAbortRebase    = actionspkg.OpAbortRebase
 
 	FocusCommand    = statepkg.FocusCommand
 	FocusChanges    = statepkg.FocusChanges

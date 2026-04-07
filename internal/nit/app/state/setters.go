@@ -4,6 +4,12 @@ import (
 	"strings"
 )
 
+func setIfNotBlank(dst *string, src string) {
+	if v := strings.TrimSpace(src); v != "" {
+		*dst = v
+	}
+}
+
 func (s *AppState) SetViewport(width, height int) {
 	s.Viewport.Width = width
 	s.Viewport.Height = height
@@ -15,49 +21,31 @@ func (s *AppState) SetError(errMsg string) {
 }
 
 func (s *AppState) SetRepoSummary(repo, branch string) {
-	if strings.TrimSpace(repo) != "" {
-		s.RepoName = strings.TrimSpace(repo)
-	}
-	if strings.TrimSpace(branch) != "" {
-		s.BranchName = strings.TrimSpace(branch)
-	}
+	setIfNotBlank(&s.RepoName, repo)
+	setIfNotBlank(&s.BranchName, branch)
 }
 
 func (s *AppState) SetTopBarLabels(repo, branch, fetch, menu string) {
-	if strings.TrimSpace(repo) != "" {
-		s.RepoLabel = strings.TrimSpace(repo)
-	}
-	if strings.TrimSpace(branch) != "" {
-		s.BranchLabel = strings.TrimSpace(branch)
-	}
-	if strings.TrimSpace(fetch) != "" {
-		s.FetchLabel = strings.TrimSpace(fetch)
-	}
-	if strings.TrimSpace(menu) != "" {
-		s.MenuLabel = strings.TrimSpace(menu)
-	}
+	setIfNotBlank(&s.RepoLabel, repo)
+	setIfNotBlank(&s.BranchLabel, branch)
+	setIfNotBlank(&s.FetchLabel, fetch)
+	setIfNotBlank(&s.MenuLabel, menu)
 }
 
-func (s *AppState) SetUISymbols(branchSourceSelectedMark string) {
-	if strings.TrimSpace(branchSourceSelectedMark) != "" {
-		s.BranchSourceSelectedMark = strings.TrimSpace(branchSourceSelectedMark)
-	}
+func (s *AppState) SetRepoBranchSeparator(label string) {
+	setIfNotBlank(&s.RepoBranchSeparator, label)
+}
+
+func (s *AppState) SetUISymbols(branchSourceSelectedMark, menuChevron, menuSelectionIndicator string) {
+	setIfNotBlank(&s.BranchSourceSelectedMark, branchSourceSelectedMark)
+	setIfNotBlank(&s.MenuChevron, menuChevron)
+	setIfNotBlank(&s.MenuSelectionIndicator, menuSelectionIndicator)
 }
 
 func (s *AppState) SetUIText(branchCreateTitle, branchCreateEnterHint, branchCreatePushHint, branchCreateNameLabel, branchCreateSourceLabel string) {
-	if strings.TrimSpace(branchCreateTitle) != "" {
-		s.BranchCreateTitle = strings.TrimSpace(branchCreateTitle)
-	}
-	if strings.TrimSpace(branchCreateEnterHint) != "" {
-		s.BranchCreateEnterHint = strings.TrimSpace(branchCreateEnterHint)
-	}
-	if strings.TrimSpace(branchCreatePushHint) != "" {
-		s.BranchCreatePushHint = strings.TrimSpace(branchCreatePushHint)
-	}
-	if strings.TrimSpace(branchCreateNameLabel) != "" {
-		s.BranchCreateNameLabel = strings.TrimSpace(branchCreateNameLabel)
-	}
-	if strings.TrimSpace(branchCreateSourceLabel) != "" {
-		s.BranchCreateSourceLabel = strings.TrimSpace(branchCreateSourceLabel)
-	}
+	setIfNotBlank(&s.BranchCreateTitle, branchCreateTitle)
+	setIfNotBlank(&s.BranchCreateEnterHint, branchCreateEnterHint)
+	setIfNotBlank(&s.BranchCreatePushHint, branchCreatePushHint)
+	setIfNotBlank(&s.BranchCreateNameLabel, branchCreateNameLabel)
+	setIfNotBlank(&s.BranchCreateSourceLabel, branchCreateSourceLabel)
 }
