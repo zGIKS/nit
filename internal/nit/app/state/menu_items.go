@@ -30,35 +30,6 @@ var changesDropdownMenuItems = []DropdownMenuItem{
 	{Label: "Discard All Changes"},
 }
 
-var pullPushDropdownMenuItems = []DropdownMenuItem{
-	{Label: "Sync"},
-	{Separator: true},
-	{Label: "Pull"},
-	{Label: "Pull (Rebase)"},
-	{Label: "Pull from..."},
-	{Separator: true},
-	{Label: "Push"},
-	{Label: "Push to..."},
-	{Separator: true},
-	{Label: "Fetch"},
-	{Label: "Fetch (Prune)"},
-	{Label: "Fetch From All Remotes"},
-}
-
-var branchDropdownMenuItems = []DropdownMenuItem{
-	{Label: "Merge..."},
-	{Label: "Rebase Branch..."},
-	{Separator: true},
-	{Label: "Create Branch..."},
-	{Label: "Create Branch From..."},
-	{Separator: true},
-	{Label: "Rename Branch..."},
-	{Label: "Delete Branch..."},
-	{Label: "Delete Remote Branch..."},
-	{Separator: true},
-	{Label: "Publish Branch..."},
-}
-
 // submenuItemsByKind maps a submenu kind to its menu items.
 var submenuItemsByKind = map[string][]DropdownMenuItem{
 	"commit":  commitDropdownMenuItems,

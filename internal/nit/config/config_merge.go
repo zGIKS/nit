@@ -49,6 +49,7 @@ func mergeStr(dst *string, src string) {
 func mergeUIConfig(dst *UIConfig, src UIConfig) {
 	mergeStr(&dst.RepoLabel, src.RepoLabel)
 	mergeStr(&dst.BranchLabel, src.BranchLabel)
+	mergeStr(&dst.RepoBranchSeparator, src.RepoBranchSeparator)
 	mergeStr(&dst.FetchLabel, src.FetchLabel)
 	mergeStr(&dst.MenuLabel, src.MenuLabel)
 	mergeStr(&dst.MenuChevron, src.MenuChevron)

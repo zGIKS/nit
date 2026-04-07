@@ -1,15 +1,5 @@
 package state
 
-var menuIndexByLabelMap = func() map[string]int {
-	m := make(map[string]int, len(dropdownMenuItems))
-	for i, item := range dropdownMenuItems {
-		if item.Label != "" {
-			m[item.Label] = i
-		}
-	}
-	return m
-}()
-
 func (s AppState) MenuItems() []DropdownMenuItem {
 	return dropdownMenuItems
 }
@@ -24,25 +14,6 @@ func (s AppState) firstSelectableMenuIndex() int {
 
 func (s AppState) firstSelectableSubmenuIndex() int {
 	return firstSelectableIndex(s.MenuSubmenuItems())
-}
-
-func (s AppState) menuIndexByLabel(label string) int {
-	if idx, ok := menuIndexByLabelMap[label]; ok {
-		return idx
-	}
-	return -1
-}
-
-func (s AppState) commitMenuIndex() int {
-	return s.menuIndexByLabel("Commit")
-}
-
-func (s AppState) changesMenuIndex() int {
-	return s.menuIndexByLabel("Changes")
-}
-
-func (s AppState) MenuHoverIsCommit() bool {
-	return s.MenuHoverIndex == s.commitMenuIndex()
 }
 
 func (s AppState) MenuHoverHasSubmenu() bool {

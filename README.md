@@ -11,7 +11,7 @@ Built with [Bubbletea](https://github.com/charmbracelet/bubbletea).
 - **Staging area** — stage or unstage individual files, or stage/unstage everything at once
 - **Commit** — write and submit a commit message from inside the TUI
 - **Branch management** — switch branches and create new ones from any source
-- **Push / Pull / Fetch** — run common remote operations with a single key
+- **Push / Pull / Fetch** — run common remote operations quickly from keys and menu
 - **Commit graph** — visual branch graph rendered with Unicode box-drawing characters
 - **Clipboard support** — copy text via OSC 52 (works over SSH/tmux), system clipboard (`pbcopy`, `wl-copy`, `xclip`, `xsel`), or both
 - **Fully configurable** — key bindings, clipboard mode, and UI labels via a TOML file or environment variables

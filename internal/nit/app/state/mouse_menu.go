@@ -2,26 +2,6 @@ package state
 
 import "github.com/zGIKS/nit/internal/nit/app/actions"
 
-func (s *AppState) handleMenuClick(x, y int) bool {
-	if idx, ok := s.MenuItemIndexAt(x, y); ok {
-		s.CloseMenu()
-		_ = idx
-		return true
-	}
-	if mx, my, mw, mh := s.MenuButtonRect(); x >= mx && x < mx+mw && y >= my && y < my+mh {
-		s.ToggleMenu()
-		if s.MenuOpen {
-			s.MenuHoverIndex = -1
-		}
-		return true
-	}
-	if s.MenuOpen {
-		s.CloseMenu()
-		return false
-	}
-	return false
-}
-
 func (s *AppState) MenuClickActionAt(x, y int) (actions.Action, bool) {
 	idx, ok := s.MenuItemIndexAt(x, y)
 	if !ok {
