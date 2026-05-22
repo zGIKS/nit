@@ -41,7 +41,7 @@ func (s Service) PushCurrentBranchUpstream() (string, error) {
 }
 
 func (s Service) Pull() (string, error) {
-	_, cmd, err := s.runner.Run("pull")
+	_, cmd, err := s.runner.Run("pull", "--all")
 	return cmd, err
 }
 
@@ -54,7 +54,7 @@ func (s Service) Push() (string, error) {
 }
 
 func (s Service) Fetch() (string, error) {
-	_, cmd, err := s.runner.Run("fetch")
+	_, cmd, err := s.runner.Run("fetch", "--all", "--prune")
 	return cmd, err
 }
 
