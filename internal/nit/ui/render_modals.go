@@ -87,28 +87,3 @@ func branchCreateModalView(state app.AppState, width, height int) string {
 	return strings.Join(lines, "\n")
 }
 
-func overlayBlock(base, overlay string, x, y, width int) string {
-	if base == "" || overlay == "" || x < 0 || y < 0 || width <= 0 {
-		return base
-	}
-	baseLines := strings.Split(base, "\n")
-	overLines := strings.Split(overlay, "\n")
-	for i, ol := range overLines {
-		row := y + i
-		if row < 0 || row >= len(baseLines) {
-			continue
-		}
-		bl := []rune(baseLines[row])
-		if len(bl) < x {
-			bl = append(bl, []rune(strings.Repeat(" ", x-len(bl)))...)
-		}
-		end := x + width
-		if len(bl) < end {
-			bl = append(bl, []rune(strings.Repeat(" ", end-len(bl)))...)
-		}
-		left := string(bl[:x])
-		right := string(bl[end:])
-		baseLines[row] = left + ol + right
-	}
-	return strings.Join(baseLines, "\n")
-}

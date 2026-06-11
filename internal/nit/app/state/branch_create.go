@@ -30,6 +30,10 @@ func (s *AppState) BranchCreateBackspace() {
 	backspaceTextInput(&s.BranchCreateName, &s.BranchCreateCursor, &s.BranchCreateSelectAll)
 }
 
+func (s *AppState) BranchCreateBackspaceWord() {
+	backspaceWordTextInput(&s.BranchCreateName, &s.BranchCreateCursor, &s.BranchCreateSelectAll)
+}
+
 func (s *AppState) BranchCreateDelete() {
 	deleteTextInput(&s.BranchCreateName, &s.BranchCreateCursor, &s.BranchCreateSelectAll)
 }

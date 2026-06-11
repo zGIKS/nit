@@ -37,8 +37,9 @@ type CommitEditorKeyConfig struct {
 	Cut       KeyBinding `toml:"cut"`
 	Paste     KeyBinding `toml:"paste"`
 	SelectAll KeyBinding `toml:"select_all"`
-	Backspace KeyBinding `toml:"backspace"`
-	Delete    KeyBinding `toml:"delete"`
+	Backspace     KeyBinding `toml:"backspace"`
+	BackspaceWord KeyBinding `toml:"backspace_word"`
+	Delete        KeyBinding `toml:"delete"`
 	Left      KeyBinding `toml:"left"`
 	Right     KeyBinding `toml:"right"`
 	Home      KeyBinding `toml:"home"`

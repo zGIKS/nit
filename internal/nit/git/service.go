@@ -62,7 +62,7 @@ func (s Service) LoadBranches() ([]string, error) {
 	remoteOut, _, _ := s.runner.Run(
 		"--no-optional-locks",
 		"for-each-ref",
-		"--format=%(refname:short)",
+		"--format=%(refname)",
 		"refs/remotes",
 	)
 	if strings.TrimSpace(remoteOut) != "" {
@@ -73,10 +73,11 @@ func (s Service) LoadBranches() ([]string, error) {
 		}
 		for _, line := range remoteLines {
 			line = strings.TrimSpace(line)
-			if line == "" {
+			if line == "" || strings.HasSuffix(line, "/HEAD") {
 				continue
 			}
-			truncated := strings.TrimPrefix(line, "origin/")
+			ref := strings.TrimPrefix(line, "refs/remotes/")
+			truncated := strings.TrimPrefix(ref, "origin/")
 			if !seen[truncated] {
 				seen[truncated] = true
 				lines = append(lines, "  "+truncated)
