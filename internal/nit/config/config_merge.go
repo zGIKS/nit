@@ -75,6 +75,7 @@ func mergeCommitEditorKeys(dst *CommitEditorKeyConfig, src CommitEditorKeyConfig
 	mergeKey(&dst.Paste, src.Paste)
 	mergeKey(&dst.SelectAll, src.SelectAll)
 	mergeKey(&dst.Backspace, src.Backspace)
+	mergeKey(&dst.BackspaceWord, src.BackspaceWord)
 	mergeKey(&dst.Delete, src.Delete)
 	mergeKey(&dst.Left, src.Left)
 	mergeKey(&dst.Right, src.Right)

@@ -58,6 +58,33 @@ func (s Service) LoadBranches() ([]string, error) {
 		}
 		lines = append(lines, "  "+strings.TrimSpace(line))
 	}
+
+	remoteOut, _, _ := s.runner.Run(
+		"--no-optional-locks",
+		"for-each-ref",
+		"--format=%(refname)",
+		"refs/remotes",
+	)
+	if strings.TrimSpace(remoteOut) != "" {
+		remoteLines := strings.Split(remoteOut, "\n")
+		seen := make(map[string]bool)
+		for _, raw := range lines {
+			seen[strings.TrimSpace(strings.TrimPrefix(raw, "● "))] = true
+		}
+		for _, line := range remoteLines {
+			line = strings.TrimSpace(line)
+			if line == "" || strings.HasSuffix(line, "/HEAD") {
+				continue
+			}
+			ref := strings.TrimPrefix(line, "refs/remotes/")
+			truncated := strings.TrimPrefix(ref, "origin/")
+			if !seen[truncated] {
+				seen[truncated] = true
+				lines = append(lines, "  "+truncated)
+			}
+		}
+	}
+
 	if len(lines) == 0 {
 		return []string{"No local branches."}, nil
 	}

@@ -18,7 +18,6 @@ var dropdownMenuItems = []DropdownMenuItem{
 }
 
 var commitDropdownMenuItems = []DropdownMenuItem{
-	{Label: "Commit"},
 	{Label: "Commit Staged"},
 	{Label: "Commit All"},
 	{Label: "Undo Last Commit"},

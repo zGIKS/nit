@@ -19,7 +19,7 @@ func (s *AppState) MenuSubmenuActivateIndex(idx int) (actions.Action, bool, bool
 	switch s.MenuSubmenuKind {
 	case "commit":
 		switch item.Label {
-		case "Commit", "Commit Staged":
+		case "Commit Staged":
 			s.CloseMenu()
 			s.PrepareCommandCommit(false, false, false)
 			return actions.ActionNone, false, true
@@ -35,12 +35,18 @@ func (s *AppState) MenuSubmenuActivateIndex(idx int) (actions.Action, bool, bool
 		switch item.Label {
 		case "Stage All Changes":
 			s.CloseMenu()
+			s.Focus = FocusChanges
+			s.snapChangesCursor(1)
 			return actions.ActionStageAll, true, true
 		case "Unstage All Changes":
 			s.CloseMenu()
+			s.Focus = FocusChanges
+			s.snapChangesCursor(1)
 			return actions.ActionUnstageAll, true, true
 		case "Discard All Changes":
 			s.CloseMenu()
+			s.Focus = FocusChanges
+			s.snapChangesCursor(1)
 			return actions.ActionDiscardAll, true, true
 		}
 	}

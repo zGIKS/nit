@@ -50,6 +50,7 @@ func handleBranchCreateKey(
 				Selected:        state.SelectedBranchCreateText,
 				Append:          state.BranchCreateAppendText,
 				Backspace:       state.BranchCreateBackspace,
+				BackspaceWord:   state.BranchCreateBackspaceWord,
 				Delete:          state.BranchCreateDelete,
 				MoveLeft:        state.BranchCreateCursorLeft,
 				MoveRight:       state.BranchCreateCursorRight,
