@@ -1,6 +1,10 @@
 package ui
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/charmbracelet/lipgloss"
+)
 
 func BoxView(title string, width, boxHeight int, lines []string, cursor, offset int, active bool, footer string) string {
 	return boxViewWithTitles(title, "", width, boxHeight, lines, cursor, offset, active, footer)
@@ -21,11 +25,14 @@ func BoxViewPinnedTop(title string, width, boxHeight int, pinned []string, lines
 		contentHeight = 1
 	}
 
-	head := title
+	var borderStyle lipgloss.Style
 	if active {
-		head = "● " + head
+		borderStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(DefaultTheme.ActiveBorderColor))
+	} else {
+		borderStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(DefaultTheme.InactiveBorderColor))
 	}
-	top := "┌" + fitText(" "+head+" ", innerW, '─') + "┐"
+
+	top := renderTopBorder(title, "", innerW, active)
 
 	var b strings.Builder
 	b.WriteString(top + "\n")
@@ -36,9 +43,12 @@ func BoxViewPinnedTop(title string, width, boxHeight int, pinned []string, lines
 		scrollRows = 0
 	}
 
+	leftB := borderStyle.Render("│")
+	rightB := borderStyle.Render("│")
+
 	for i := 0; i < pinnedRows; i++ {
 		text := fitText("  "+pinned[i], innerW-2, ' ')
-		b.WriteString("│ " + text + " │\n")
+		b.WriteString(leftB + " " + text + " " + rightB + "\n")
 	}
 
 	maxOffset := max(0, len(lines)-scrollRows)
@@ -56,14 +66,20 @@ func BoxViewPinnedTop(title string, width, boxHeight int, pinned []string, lines
 			prefix := "  "
 			if idx == cursor {
 				prefix = "▌ "
+				rawText := prefix + lines[idx]
+				paddedText := fitText(rawText, innerW-2, ' ')
+				text = CursorStyle.Render(paddedText)
+			} else {
+				rawText := prefix + lines[idx]
+				text = fitText(rawText, innerW-2, ' ')
 			}
-			text = prefix + lines[idx]
+		} else {
+			text = strings.Repeat(" ", innerW-2)
 		}
-		text = fitText(text, innerW-2, ' ')
-		b.WriteString("│ " + text + " │\n")
+		b.WriteString(leftB + " " + text + " " + rightB + "\n")
 	}
 
-	bottom := "└" + fitText(" "+footer+" ", innerW, '─') + "┘"
+	bottom := renderBottomBorder(footer, innerW, active)
 	b.WriteString(bottom)
 	return b.String()
 }
@@ -79,19 +95,14 @@ func boxViewWithTitles(title, titleRight string, width, boxHeight int, lines []s
 		contentHeight = 1
 	}
 
-	head := title
+	var borderStyle lipgloss.Style
 	if active {
-		head = "● " + head
+		borderStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(DefaultTheme.ActiveBorderColor))
+	} else {
+		borderStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(DefaultTheme.InactiveBorderColor))
 	}
-	headerText := " " + head + " "
-	if r := strings.TrimSpace(titleRight); r != "" {
-		rightText := " " + r + " "
-		spaces := innerW - displayWidth(headerText) - displayWidth(rightText)
-		if spaces >= 1 {
-			headerText = headerText + strings.Repeat(" ", spaces) + rightText
-		}
-	}
-	top := "┌" + fitText(headerText, innerW, '─') + "┐"
+
+	top := renderTopBorder(title, titleRight, innerW, active)
 
 	var b strings.Builder
 	b.WriteString(top + "\n")
@@ -104,6 +115,10 @@ func boxViewWithTitles(title, titleRight string, width, boxHeight int, lines []s
 		offset = maxOffset
 	}
 	end := min(len(lines), offset+contentHeight)
+
+	leftB := borderStyle.Render("│")
+	rightB := borderStyle.Render("│")
+
 	for i := 0; i < contentHeight; i++ {
 		idx := offset + i
 		text := ""
@@ -111,16 +126,84 @@ func boxViewWithTitles(title, titleRight string, width, boxHeight int, lines []s
 			prefix := "  "
 			if idx == cursor {
 				prefix = "▌ "
+				rawText := prefix + lines[idx]
+				paddedText := fitText(rawText, innerW-2, ' ')
+				text = CursorStyle.Render(paddedText)
+			} else {
+				rawText := prefix + lines[idx]
+				text = fitText(rawText, innerW-2, ' ')
 			}
-			text = prefix + lines[idx]
+		} else {
+			text = strings.Repeat(" ", innerW-2)
 		}
-		text = fitText(text, innerW-2, ' ')
-		b.WriteString("│ " + text + " │\n")
+		b.WriteString(leftB + " " + text + " " + rightB + "\n")
 	}
 
-	bottom := "└" + fitText(" "+footer+" ", innerW, '─') + "┘"
+	bottom := renderBottomBorder(footer, innerW, active)
 	b.WriteString(bottom)
 	return b.String()
+}
+
+func renderTopBorder(title, titleRight string, innerW int, active bool) string {
+	var borderStyle lipgloss.Style
+	var titleStyle lipgloss.Style
+	if active {
+		borderStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(DefaultTheme.ActiveBorderColor))
+		titleStyle = TitleActiveStyle
+	} else {
+		borderStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(DefaultTheme.InactiveBorderColor))
+		titleStyle = TitleInactiveStyle
+	}
+
+	head := title
+	if active {
+		head = "● " + head
+	}
+	headerText := titleStyle.Render(" " + head + " ")
+
+	if r := strings.TrimSpace(titleRight); r != "" {
+		rightText := TitleInactiveStyle.Render(" " + r + " ")
+		spaces := innerW - displayWidth(headerText) - displayWidth(rightText)
+		if spaces >= 1 {
+			headerText = headerText + strings.Repeat(" ", spaces) + rightText
+		}
+	}
+
+	textW := displayWidth(headerText)
+	if textW > innerW {
+		return borderStyle.Render("┌") + truncateDisplayWidth(headerText, innerW) + borderStyle.Render("┐")
+	}
+
+	filler := borderStyle.Render("─")
+	leftLen := 1
+	leftBorder := strings.Repeat(filler, leftLen)
+	rightBorder := strings.Repeat(filler, innerW-textW-leftLen)
+
+	return borderStyle.Render("┌") + leftBorder + headerText + rightBorder + borderStyle.Render("┐")
+}
+
+func renderBottomBorder(footer string, innerW int, active bool) string {
+	var borderStyle lipgloss.Style
+	if active {
+		borderStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(DefaultTheme.ActiveBorderColor))
+	} else {
+		borderStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(DefaultTheme.InactiveBorderColor))
+	}
+
+	if footer == "" {
+		return borderStyle.Render("└" + strings.Repeat("─", innerW) + "┘")
+	}
+
+	footerText := " " + footer + " "
+	textW := displayWidth(footerText)
+	if textW > innerW {
+		return borderStyle.Render("└") + truncateDisplayWidth(footerText, innerW) + borderStyle.Render("┘")
+	}
+
+	filler := borderStyle.Render("─")
+	leftBorder := borderStyle.Render("─")
+	rightBorder := strings.Repeat(filler, innerW-textW-1)
+	return borderStyle.Render("└") + leftBorder + footerText + rightBorder + borderStyle.Render("┘")
 }
 
 func HStack(left string, leftWidth int, right string, rightWidth int) string {
