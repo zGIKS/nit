@@ -84,3 +84,34 @@ func moveCursorEnd(value string, cursor *int) {
 		*cursor = len([]rune(value))
 	}
 }
+
+func backspaceWordAtCursor(value *string, cursor *int) {
+	if value == nil || cursor == nil {
+		return
+	}
+	r := []rune(*value)
+	if len(r) == 0 || *cursor <= 0 {
+		return
+	}
+	if *cursor > len(r) {
+		*cursor = len(r)
+	}
+
+	i := *cursor - 1
+	for i >= 0 && (r[i] == ' ' || r[i] == '\t' || r[i] == '\n') {
+		i--
+	}
+	for i >= 0 && r[i] != ' ' && r[i] != '\t' && r[i] != '\n' {
+		i--
+	}
+	startIdx := i + 1
+	if startIdx < 0 {
+		startIdx = 0
+	}
+
+	out := make([]rune, 0, len(r)-(*cursor-startIdx))
+	out = append(out, r[:startIdx]...)
+	out = append(out, r[*cursor:]...)
+	*value = string(out)
+	*cursor = startIdx
+}

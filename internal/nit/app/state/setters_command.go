@@ -8,6 +8,10 @@ func (s *AppState) BackspaceCommandText() {
 	backspaceTextInput(&s.Command.Input, &s.Command.Cursor, &s.Command.SelectAll)
 }
 
+func (s *AppState) BackspaceWordCommandText() {
+	backspaceWordTextInput(&s.Command.Input, &s.Command.Cursor, &s.Command.SelectAll)
+}
+
 func (s *AppState) DeleteCommandText() {
 	deleteTextInput(&s.Command.Input, &s.Command.Cursor, &s.Command.SelectAll)
 }

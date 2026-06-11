@@ -104,6 +104,7 @@ func HandleKeyMsg(
 			Selected:        state.SelectedCommandText,
 			Append:          state.AppendCommandText,
 			Backspace:       state.BackspaceCommandText,
+			BackspaceWord:   state.BackspaceWordCommandText,
 			Delete:          state.DeleteCommandText,
 			MoveLeft:        state.MoveCommandCursorLeft,
 			MoveRight:       state.MoveCommandCursorRight,

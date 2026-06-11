@@ -14,6 +14,7 @@ type textInputKeyOps struct {
 	Selected        func() string
 	Append          func(string)
 	Backspace       func()
+	BackspaceWord   func()
 	Delete          func()
 	MoveLeft        func()
 	MoveRight       func()
@@ -76,6 +77,9 @@ func handleSharedTextInputKey(
 		return true
 	case matchesConfiguredKey(msg, keys.Backspace):
 		ops.Backspace()
+		return true
+	case matchesConfiguredKey(msg, keys.BackspaceWord):
+		ops.BackspaceWord()
 		return true
 	case matchesConfiguredKey(msg, keys.Delete):
 		ops.Delete()

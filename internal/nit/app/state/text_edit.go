@@ -25,6 +25,13 @@ return
 backspaceAtCursor(value, cursor)
 }
 
+func backspaceWordTextInput(value *string, cursor *int, selectAll *bool) {
+if clearSelectedText(value, cursor, selectAll) {
+return
+}
+backspaceWordAtCursor(value, cursor)
+}
+
 func deleteTextInput(value *string, cursor *int, selectAll *bool) {
 if clearSelectedText(value, cursor, selectAll) {
 return
