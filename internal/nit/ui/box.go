@@ -170,14 +170,14 @@ func renderTopBorder(title, titleRight string, innerW int, active bool) string {
 	}
 
 	textW := displayWidth(headerText)
-	if textW > innerW {
+	if textW >= innerW {
 		return borderStyle.Render("┌") + truncateDisplayWidth(headerText, innerW) + borderStyle.Render("┐")
 	}
 
 	filler := borderStyle.Render("─")
 	leftLen := 1
 	leftBorder := strings.Repeat(filler, leftLen)
-	rightBorder := strings.Repeat(filler, innerW-textW-leftLen)
+	rightBorder := strings.Repeat(filler, max(0, innerW-textW-leftLen))
 
 	return borderStyle.Render("┌") + leftBorder + headerText + rightBorder + borderStyle.Render("┐")
 }
@@ -196,13 +196,12 @@ func renderBottomBorder(footer string, innerW int, active bool) string {
 
 	footerText := " " + footer + " "
 	textW := displayWidth(footerText)
-	if textW > innerW {
+	if textW >= innerW {
 		return borderStyle.Render("└") + truncateDisplayWidth(footerText, innerW) + borderStyle.Render("┘")
 	}
 
 	filler := borderStyle.Render("─")
 	leftBorder := borderStyle.Render("─")
-	rightBorder := strings.Repeat(filler, innerW-textW-1)
+	rightBorder := strings.Repeat(filler, max(0, innerW-textW-1))
 	return borderStyle.Render("└") + leftBorder + footerText + rightBorder + borderStyle.Render("┘")
 }
-

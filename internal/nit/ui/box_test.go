@@ -17,3 +17,19 @@ func TestFitTextKeepsVisibleWidthWithANSI(t *testing.T) {
 	}
 }
 
+func TestBordersDoNotPanicWhenContentFillsWidth(t *testing.T) {
+	for _, innerW := range []int{1, 2, 3, 10} {
+		t.Run("top", func(t *testing.T) {
+			got := renderTopBorder("Commit", "", innerW, true)
+			if displayWidth(got) != innerW+2 {
+				t.Fatalf("top border width = %d, want %d; got %q", displayWidth(got), innerW+2, got)
+			}
+		})
+		t.Run("bottom", func(t *testing.T) {
+			got := renderBottomBorder("error: something went wrong", innerW, true)
+			if displayWidth(got) != innerW+2 {
+				t.Fatalf("bottom border width = %d, want %d; got %q", displayWidth(got), innerW+2, got)
+			}
+		})
+	}
+}
