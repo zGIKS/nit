@@ -17,57 +17,30 @@ func (s AppState) topBarBoxes() (fetchX, fetchW, menuX, menuW int) {
 		branchName = "-"
 	}
 
-	sep := strings.TrimSpace(s.RepoBranchSeparator)
-	if sep == "" {
-		sep = "->"
-	}
-	repoText := strings.TrimSpace(
-		strings.TrimSpace(s.RepoLabel+" "+repoName) +
-			" " + sep + " " +
-			strings.TrimSpace(s.BranchLabel+" "+branchName),
-	)
-	createText := strings.TrimSpace(s.BranchesCreateButtonLabel())
-	fetchText := strings.TrimSpace(s.FetchLabel)
-	menuText := strings.TrimSpace(s.MenuLabel)
+	repoW := max(12, runewidth.StringWidth(strings.TrimSpace(s.RepoLabel+" "+repoName))+4)
+	branchW := max(12, runewidth.StringWidth(strings.TrimSpace(s.BranchLabel+" "+branchName))+4)
+	menuW = max(8, runewidth.StringWidth(strings.TrimSpace(s.MenuLabel))+4)
+	minRepoW, minBranchW, minMenuW := 10, 10, 8
 
-	repoW := max(16, runewidth.StringWidth(repoText)+4)
-	createW := max(12, runewidth.StringWidth(createText)+4)
-	fetchW = max(8, runewidth.StringWidth(fetchText)+4)
-	menuW = max(8, runewidth.StringWidth(menuText)+4)
-	minRepoW, minCreateW, minFetchW, minMenuW := 14, 12, 8, 8
-
-	totalNeeded := repoW + createW + fetchW + menuW + 3
-	overflow := totalNeeded - totalW
+	overflow := repoW + branchW + menuW + 2 - totalW
 	shrink := func(w *int, minW int) {
 		if overflow <= 0 {
 			return
 		}
-		can := *w - minW
-		if can <= 0 {
-			return
+		d := min(*w-minW, overflow)
+		if d > 0 {
+			*w -= d
+			overflow -= d
 		}
-		d := min(can, overflow)
-		*w -= d
-		overflow -= d
 	}
 	shrink(&repoW, minRepoW)
-	shrink(&createW, minCreateW)
-	shrink(&fetchW, minFetchW)
+	shrink(&branchW, minBranchW)
 	shrink(&menuW, minMenuW)
-	if overflow > 0 {
-		repoW = max(minRepoW, repoW-overflow)
-	}
 
-	rightTopW := createW + fetchW + menuW + 2
-	gapW := totalW - repoW - rightTopW - 2
-	if gapW < 1 {
-		gapW = 1
-	}
-
-	createX := repoW + 1 + gapW + 1
-	fetchX = createX + createW + 1
-	menuX = fetchX + fetchW + 1
-	return fetchX, fetchW, menuX, menuW
+	leftW := repoW + branchW + 1
+	gapW := max(1, totalW-leftW-menuW-2)
+	menuX = leftW + gapW + 1
+	return 0, 0, menuX, menuW
 }
 
 func (s AppState) topBarBoxRects() (repoX, repoW, branchX, branchW, menuX, menuW int) {
@@ -141,13 +114,11 @@ func (s AppState) MenuButtonRect() (x, y, w, h int) {
 }
 
 func (s AppState) BranchButtonRect() (x, y, w, h int) {
-	_, _, x, w, _, _ = s.topBarBoxRects()
-	return x, 0, w, 3
+	return 0, 0, 0, 0
 }
 
 func (s AppState) FetchButtonRect() (x, y, w, h int) {
-	fetchX, fetchW, _, _ := s.topBarBoxes()
-	return fetchX, 0, fetchW, 3
+	return 0, 0, 0, 0
 }
 
 func (s AppState) menuMaxPanelHeight(y int) int {

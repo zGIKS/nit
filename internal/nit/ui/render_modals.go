@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/zGIKS/nit/internal/nit/app"
@@ -87,3 +88,19 @@ func branchCreateModalView(state app.AppState, width, height int) string {
 	return strings.Join(lines, "\n")
 }
 
+func branchDeleteConfirmView(state app.AppState, width int) string {
+	w := max(42, width)
+	innerW := w - 2
+	choice := "[Yes]    No"
+	if state.BranchDeleteChoice == 1 {
+		choice = "Yes    [No]"
+	}
+	lines := []string{
+		"┌" + strings.Repeat("─", innerW) + "┐",
+		"│" + fitText(" Delete branch?", innerW, ' ') + "│",
+		"│" + fitText(fmt.Sprintf(" Are you sure you want to delete branch %q?", state.BranchDeleteBranch), innerW, ' ') + "│",
+		"│" + fitText(strings.Repeat(" ", max(0, (innerW-displayWidth(choice))/2))+choice, innerW, ' ') + "│",
+		"└" + strings.Repeat("─", innerW) + "┘",
+	}
+	return strings.Join(lines, "\n")
+}

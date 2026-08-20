@@ -116,6 +116,9 @@ type AppState struct {
 	BranchCreateSourceList   []string
 	BranchCreateSourceOffset int
 	BranchCreateHoverIndex   int
+	BranchDeleteConfirmOpen  bool
+	BranchDeleteBranch       string
+	BranchDeleteChoice       int // 0 = Yes, 1 = No
 }
 
 func New(keys input.Keymap) AppState {
@@ -136,6 +139,7 @@ func New(keys input.Keymap) AppState {
 		MenuSubHoverIndex:        -1,
 		MenuSubOffset:            0,
 		BranchCreateHoverIndex:   -1,
+		BranchDeleteChoice:       1,
 		RepoName:                 "loading...",
 		BranchName:               "loading...",
 		RepoLabel:                "repo",

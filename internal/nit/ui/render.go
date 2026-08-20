@@ -68,6 +68,12 @@ func Render(state app.AppState) string {
 		panelX, panelY, panelW, panelH := state.BranchCreatePanelRect()
 		out = overlayBlock(out, branchCreateModalView(state, panelW, panelH), panelX, panelY, panelW)
 	}
+	if state.BranchDeleteConfirmOpen {
+		panelW := min(64, max(42, totalW-4))
+		panelX := max(0, (totalW-panelW)/2)
+		panelY := max(0, state.Viewport.Height/2-3)
+		out = overlayBlock(out, branchDeleteConfirmView(state, panelW), panelX, panelY, panelW)
+	}
 	return out
 }
 

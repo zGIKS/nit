@@ -28,6 +28,9 @@ func (s *AppState) MenuActivateIndex(idx int) (actions.Action, bool) {
 	case "Fetch":
 		s.CloseMenu()
 		return actions.ActionFetch, true
+	case "Create branch":
+		s.OpenBranchCreate()
+		return actions.ActionNone, false
 	default:
 		s.MenuSubmenuKind = ""
 		s.MenuSubHoverIndex = -1

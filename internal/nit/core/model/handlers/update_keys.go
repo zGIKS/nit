@@ -51,6 +51,8 @@ func HandleKeyMsg(
 			if state.MenuSubActive {
 				state.MenuSubActive = false
 				state.MenuSubHoverIndex = -1
+			} else if state.MenuHoverHasSubmenu() {
+				state.OpenHoveredSubmenu()
 			}
 			state.Clamp()
 			return nil
@@ -127,6 +129,53 @@ func HandleKeyMsg(
 		state.Clamp()
 		return nil
 	}
+	if state.BranchDeleteConfirmOpen {
+		action := state.Keys.Match(msg.String())
+		switch {
+		case msg.String() == "y":
+			branch := state.BranchDeleteBranch
+			state.CloseBranchDeleteConfirm()
+			return cmds.DeleteBranchCmd(git, branch)
+		case msg.String() == "n":
+			state.CloseBranchDeleteConfirm()
+			return nil
+		case msg.Type == tea.KeyEsc:
+			state.CloseBranchDeleteConfirm()
+			return nil
+		case action == app.ActionMoveUp || action == app.ActionMenuLeft:
+			state.MoveBranchDeleteChoice(-1)
+		case action == app.ActionMoveDown || action == app.ActionMenuRight:
+			state.MoveBranchDeleteChoice(1)
+		case action == app.ActionToggleOne:
+			if !state.BranchDeleteConfirmed() {
+				state.CloseBranchDeleteConfirm()
+				return nil
+			}
+			branch := state.BranchDeleteBranch
+			state.CloseBranchDeleteConfirm()
+			return cmds.DeleteBranchCmd(git, branch)
+		}
+		if msg.Type == tea.KeyEnter {
+			if !state.BranchDeleteConfirmed() {
+				state.CloseBranchDeleteConfirm()
+				return nil
+			}
+			branch := state.BranchDeleteBranch
+			state.CloseBranchDeleteConfirm()
+			return cmds.DeleteBranchCmd(git, branch)
+		}
+		state.Clamp()
+		return nil
+	}
+
+	if state.Focus == app.FocusBranches && msg.String() == "d" {
+		if !state.OpenBranchDeleteConfirm() {
+			state.SetError("cannot delete the current branch or no branch is selected")
+		}
+		state.Clamp()
+		return nil
+	}
+
 	if state.Focus == app.FocusBranches && msg.Type == tea.KeyEnter {
 		branch, ok := state.SelectedBranchName()
 		if !ok {
