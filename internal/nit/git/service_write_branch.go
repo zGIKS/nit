@@ -24,6 +24,15 @@ func (s Service) CreateBranch(name, source string) (string, error) {
 	)
 }
 
+func (s Service) DeleteBranch(name string) (string, error) {
+	branch := strings.TrimSpace(name)
+	if branch == "" {
+		return "", errors.New("branch name is empty")
+	}
+	_, cmd, err := s.runner.Run("branch", "-d", branch)
+	return cmd, err
+}
+
 func (s Service) SwitchBranch(name string) (string, error) {
 	branch := strings.TrimSpace(name)
 	if branch == "" {

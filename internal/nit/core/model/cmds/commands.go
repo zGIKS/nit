@@ -130,6 +130,19 @@ func CreateBranchCmd(svc g.Service, name, source string, pushRemote bool) tea.Cm
 	}
 }
 
+func DeleteBranchCmd(svc g.Service, name string) tea.Cmd {
+	return func() tea.Msg {
+		cmd, err := svc.DeleteBranch(name)
+		return common.OpDoneMsg{
+			Err:                err,
+			Command:            cmd,
+			RefreshChanges:     true,
+			RefreshGraph:       true,
+			RefreshRepoSummary: true,
+		}
+	}
+}
+
 func SwitchBranchCmd(svc g.Service, name string) tea.Cmd {
 	return func() tea.Msg {
 		cmd, err := svc.SwitchBranch(name)

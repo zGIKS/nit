@@ -15,6 +15,8 @@ var dropdownMenuItems = []DropdownMenuItem{
 	{Separator: true},
 	{Label: "Commit", HasChevron: true},
 	{Label: "Changes", HasChevron: true},
+	{Separator: true},
+	{Label: "Create branch"},
 }
 
 var commitDropdownMenuItems = []DropdownMenuItem{
